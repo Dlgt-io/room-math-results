@@ -1,0 +1,691 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[a4paper,margin=27mm]{geometry}
+\usepackage{microtype,booktabs,array,fancyhdr,listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Sparse progression coverings}
+\fancyhead[R]{\small Public review draft v1.6}
+\fancyfoot[L]{\footnotesize 23 October 2026 \;\textperiodcentered\; Public archive edition \;\textperiodcentered\; Not submitted}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\newcommand{\N}{\mathbb N_0}
+\newcommand{\Np}{\mathbb N_{>0}}
+\newcommand{\card}[1]{\lvert #1\rvert}
+\newcommand{\lf}{\mathcal T}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false}
+\title{Two sparse arithmetic-progression\protect\\covering constructions}
+\author{}
+\date{Public review draft, revision 1.6 (public archive edition), 23 October 2026}
+\begin{document}
+\maketitle\thispagestyle{fancy}
+\begin{abstract}
+We give two explicit strong arithmetic-progression covering constructions. The first is a base-16 digit family whose counting function satisfies the uniform inequality $F(x)\le(17/6)\sqrt{x}$ for every $x\ge1$ and has limsup exactly $17/6$. Its counting proof uses a quadratic bound for complemented digits and 22 rational comparisons, rather than a subdivision of a Cantor set. The second is obtained by lifting and translating a 416-element finite covering certificate; it has $\liminf F(x)/\sqrt{x}\le419\sqrt3/384=1.8899200218\ldots$. We prove a general finite-certificate-to-infinite-set theorem and give reproducible integer certificates for both constructions. The two bounds concern different sets. Both main results have Lean formalizations in an independently rebuilt project; the proofs below do not require familiarity with Lean.
+\end{abstract}
+
+\section{Definitions and main results}\label{sec:main}
+For $A\subseteq\N$ and real $x\ge0$, write
+\[
+F_A(x)=\card{A\cap[0,x]}.
+\]
+A set is \emph{strongly $AP_3$-covering beyond $s$} if every integer $n>s$, including those belonging to $A$, has a representation
+\begin{equation}\label{eq:cover}
+n=2b-a,\qquad a,b\in A,\quad 0\le a<b<n.
+\end{equation}
+Both constructions below satisfy the stronger requirement $a>0$. In the literature, the strong property is usually called simply $AP_3$-covering. A \emph{weak} covering asks for~\eqref{eq:cover} only when $n\notin A$. Chen~\cite{Chen} makes this distinction explicit. Stanley sequences are weak coverings, but are progression-free; our strong covering constructions are not Stanley sequences.
+
+\begin{theorem}[A limsup construction]\label{thm:sup}
+There is an explicitly specified set $A_{16}\subseteq\N$ such that every integer $n\ge89$ has a representation~\eqref{eq:cover} with $a>0$, and
+\begin{equation}\label{eq:sup}
+F_{A_{16}}(x)\le\frac{17}{6}\sqrt{x}\quad(x\ge1),
+\qquad
+\limsup_{x\to\infty}\frac{F_{A_{16}}(x)}{\sqrt{x}}=\frac{17}{6}.
+\end{equation}
+\end{theorem}
+
+\begin{theorem}[A liminf construction]\label{thm:inf}
+There is an explicitly specified set $B\subseteq\Np$ such that every integer $n\ge3$ has a representation~\eqref{eq:cover} with $a>0$, and
+\begin{equation}\label{eq:inf}
+\liminf_{x\to\infty}\frac{F_B(x)}{\sqrt{x}}
+\le\frac{419}{\sqrt{49152}}
+=\frac{419\sqrt3}{384}=1.8899200218\ldots.
+\end{equation}
+\end{theorem}
+
+These improve the constructive comparison points $8/\sqrt5$ for limsup in Fang~\cite{Fang}, and $2$ for liminf in Kiss--S\'andor--Yang~\cite[Theorem 1]{KSY}. The strict comparisons require no floating-point arithmetic:
+\[
+\frac{289}{36}<\frac{64}{5},\qquad
+\frac{175561}{49152}<4.
+\]
+Digit constructions already occur in Chen~\cite{Chen}, and separated-scale constructions occur in Kiss--S\'andor--Yang~\cite{KSY}. Here the specific digit family, its counting estimate, and the small finite certificate give the stated constants. We do not claim that either constant is optimal. The two theorems do not assert that one set achieves both bounds. A separately verified, slightly smaller liminf constant is recorded after the frozen $416$-element construction; it is not silently substituted for Theorem~\ref{thm:inf}.
+
+The first construction is given in Sections~\ref{sec:digits}--\ref{sec:counting}. Section~\ref{sec:transfer} proves the general transfer theorem used for the second, and Section~\ref{sec:certificate} specifies its finite input. All finite checks are reproducible from the certificate supplement, independently of the search that found the sets.
+
+\paragraph{Relation to Stanley-sequence constructions.}
+The greedy framework goes back to Odlyzko and Stanley~\cite{OS}.
+Rolnick's regular sequences~\cite{Rol}, the scaling constructions of Rolnick
+and Venkataramana~\cite{RV}, and the modular and basic sequences of Moy and
+Rolnick~\cite{MR} develop digit and local-structure methods for genuine
+progression-free Stanley sequences. The sets constructed here have a different
+goal: they cover every sufficiently large target, even targets that are members
+of the set. They are therefore not further examples of those progression-free
+families: every covered member is the largest term of a progression inside the
+set. The common use of digits should not obscure this distinction.
+
+\paragraph{Related saturation problems.}
+The broader greedy-sequence background includes Erd\H{o}s et al.~\cite{ELRSS}.
+Digit constructions occur in the finite-group and integer saturation work of
+Csajb\'ok--Nagy~\cite{CN24,CN26}; their recent cyclic constructions have size
+less than $2\sqrt m$. Their integer construction in
+\cite[Theorem 4.13]{CN24} also uses base-4 digit blocks, but its saturation is
+unordered: the new point may be the smallest term of a progression. For example,
+$1=2\cdot2-3$ is an endpoint representation, not a forward witness with both
+elements smaller than 1. A prefix pair count shows that their integer digit-block
+union leaves infinitely many non-members without forward witnesses; the
+companion supplement gives the calculation. Our constructions enforce $a<b<n$
+in the integers, while cyclic identities are modular. Thus these constants and
+transfer steps concern distinct requirements. For higher-order covering and its
+connection to arithmetic Kakeya questions, see Saengrungkongka~\cite{Saeng};
+our results concern ordered three-term coverings.
+
+\paragraph{How to read the two proofs.}
+The base-16 argument has a finite covering window and residue lift (Section~\ref{sec:digits}), then an exact block-count formula and a quadratic digit inequality followed by just 22 rational comparisons (Section~\ref{sec:counting}). The other construction has a reusable transfer principle: start from \emph{any} finite static certificate, lift and repair it, and stack increasingly large translated blocks (Section~\ref{sec:transfer}). Section~\ref{sec:certificate} supplies one explicit finite certificate for that principle. These are independent constructions with different counting arguments. Appendix~\ref{app:lean} maps their lemmas to small Lean modules and distinguishes checker-accepted proof terms from local project compilation.
+
+\section{The base-16 construction and its covering property}\label{sec:digits}
+Put
+\begin{equation}\label{eq:WV}
+\begin{split}
+V&=\{8,11,12,15\},\\
+W&=\{2,3,5,7,10,12,14,21,23,25,28\}=\{w_0<\cdots<w_{10}\},
+\end{split}
+\end{equation}
+Here $w\in W$ is a leading integer block, not necessarily a single base-16
+digit; for example, $21\in W$. The symbols $l$ and $j$ below denote the tail
+length and its rank, respectively. Define
+\[
+D_l=\left\{\sum_{h=0}^{l-1}v_h16^h:v_h\in V\right\},\qquad D_0=\{0\}.
+\]
+Our set is
+\begin{equation}\label{eq:set16}
+A_{16}=\{0\}\cup\bigcup_{l\ge0}\bigcup_{w\in W}(w16^l+D_l).
+\end{equation}
+In particular, $A_{16}\setminus\{0\}$ is closed under $x\mapsto16x+v$ for $v\in V$. Its membership can equivalently be defined recursively by
+\begin{equation}\label{eq:recursion}
+\begin{split}
+n\in A_{16}\ \Longleftrightarrow\ &n=0\ \text{or}\ n\in W\ \text{or}\\
+&\left(n\ge16,\quad n\bmod16\in V,\quad
+\lfloor n/16\rfloor\in A_{16}\setminus\{0\}\right).
+\end{split}
+\end{equation}
+Indeed, removing the last digit of a nonempty tail gives the forward implication; appending a digit gives the reverse implication. The quotient is strictly smaller than $n$ whenever the last alternative applies, so this recursion has a unique solution.
+
+\begin{lemma}[Residue lifting]\label{lem:lift16}
+Every residue $r$ modulo 16 is represented by exactly one ordered pair $(v_1,v_2)\in V^2$ with
+\[
+t_r=2v_1-v_2\equiv r\pmod{16},\qquad 1\le t_r\le22.
+\]
+If $n'=2b'-a'$ with positive $a'<b'$ in $A_{16}$, then
+\[
+16n'+t_r=2(16b'+v_1)-(16a'+v_2)
+\]
+is another representation of the required kind.
+\end{lemma}
+\begin{proof}
+The complete table is
+\begin{center}\small
+\begin{tabular}{c|rrrrrrrr}
+$r$&0&1&2&3&4&5&6&7\\\hline
+$v_1$&12&8&15&15&8&8&15&11\\
+$v_2$&8&15&12&11&12&11&8&15\\
+$t_r$&16&1&18&19&4&5&22&7\\[3pt]\hline
+$r$&8&9&10&11&12&13&14&15\\\hline
+$v_1$&8&12&11&11&12&12&11&15\\
+$v_2$&8&15&12&11&12&11&8&15\\
+$t_r$&8&9&10&11&12&13&14&15
+\end{tabular}
+\end{center}
+The appended numbers belong to the set. Their difference is
+$16(b'-a')+v_1-v_2\ge16-7>0$; the target minus the larger witness is the same positive difference.
+\end{proof}
+
+\paragraph{A lifting example.}
+The leading blocks $3,5\in W$ give $7=2\cdot5-3$. For residue $1$, the
+previous table chooses $(v_1,v_2)=(8,15)$, so
+\[
+113=16\cdot7+1=2(16\cdot5+8)-(16\cdot3+15)=2\cdot88-63.
+\]
+Both $63=3\cdot16+15$ and $88=5\cdot16+8$ belong to $A_{16}$, and
+$0<63<88<113$. This illustrates the lifting lemma, which has no base-window
+restriction; it is not the starting case of the subsequent induction. That
+induction uses the same operation but starts from the verified window
+$89\le n\le1446$.
+
+\begin{lemma}[Finite base window]\label{lem:base}
+Every integer $89\le n\le1446$ is $2b-a$ for positive $a<b<n$ in $A_{16}$.
+\end{lemma}
+\begin{proof}[Certificate proof]
+The certificate supplement gives one witness $(a,b)$ for each of these 1358 integers, in increasing target order. Membership is checked either using~\eqref{eq:set16} or the quotient recursion~\eqref{eq:recursion}; all witnesses lie below 1446. The integer-only verifier in Appendix~\ref{app:cert} recreates and checks the complete table. It checks every target, including members, with no exceptions. The resulting table has the frozen SHA-256 specified in the certificate supplement. The same base-window assertion is a kernel-evaluated finite lemma in the Lean development described in Appendix~\ref{app:lean}.
+\end{proof}
+
+\begin{proof}[Covering assertion in Theorem~\ref{thm:sup}]
+Use strong induction on $n\ge89$. The base window is Lemma~\ref{lem:base}. For $n\ge1447$, take the residue pair of Lemma~\ref{lem:lift16} and set
+\[
+n'=\frac{n-t_{n\bmod16}}{16}.
+\]
+This is an integer with $89\le n'<n$, since $1\le t_r\le22$. Lift its inductively supplied representation. This covers every integer from 89 onward.
+\end{proof}
+
+\section{An exact count and a cylinder-free upper bound}\label{sec:counting}
+A block at level $l$ is contained in
+\begin{equation}\label{eq:block-range}
+\left[w16^l+\frac8{15}(16^l-1),\ (w+1)16^l-1\right].
+\end{equation}
+Different leading parts give disjoint ordered blocks. Successive levels are separated: the largest point at level $l$ is at most $29\cdot16^l-1$, whereas the smallest at level $l+1$ is
+$2\cdot16^{l+1}+\frac8{15}(16^{l+1}-1)$, which is larger. Each level therefore consists of exactly $11\cdot4^l$ distinct elements, and no point is counted twice.
+
+List $D_l$ increasingly as $d_0,\ldots,d_{4^l-1}$. Because the digit list $V$ is increasing, $d_j$ is obtained by replacing the $l$ base-4 digits of $j$ by the corresponding digits of $V$.
+
+\begin{lemma}[Exact count at a member]\label{lem:count}
+If $x=w_i16^l+d_j$ and $B=4^l$, then, with zero counted,
+\begin{equation}\label{eq:count}
+F_{A_{16}}(x)=\left(\frac{11}{3}+i\right)B+(j+1)-\frac83.
+\end{equation}
+\end{lemma}
+\begin{proof}
+There is one zero, $11(4^l-1)/3$ elements in earlier levels, $iB$ in earlier blocks at this level, and $j+1$ in the current block.
+\end{proof}
+
+\begin{lemma}[Complemented digits]\label{lem:digits}
+For $0\le j<B=4^l$, put
+\[
+r=B-1-j,\qquad \Delta=B^2-1-d_j.
+\]
+Then
+\begin{equation}\label{eq:digitbounds}
+0\le\Delta\le3r^2,\qquad 15d_j\ge8(B^2-1).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Complementing the base-4 digits of $j$ gives the digits of $r$. The corresponding complemented base-16 digit map is
+\[
+e(0)=0,\quad e(1)=3,\quad e(2)=4,\quad e(3)=7.
+\]
+Define $E(0)=0$ and $E(4r+q)=16E(r)+e(q)$, $0\le q<4$. Leading zero digits do not matter, and $\Delta=E(r)$. Since $e(q)\le3q^2$, induction gives
+\[
+E(4r+q)\le48r^2+3q^2\le3(4r+q)^2.
+\]
+The other inequality follows by replacing every tail digit by its minimum 8.
+\end{proof}
+
+The following scalar observation avoids any interval-by-interval subdivision of a limiting digit set.
+\begin{lemma}[Scalar comparison]\label{lem:scalar}
+Let $a=289/36$ and $C\ge1$. Suppose
+\[
+0\le u\le1,\qquad 0\le\delta\le\min\{3u^2,7/15\},
+\]
+and
+\begin{equation}\label{eq:two-comparisons}
+C^2\le a(w+1),\qquad
+(C-2/5)^2\le a(w+13/25).
+\end{equation}
+Then $(C-u)^2\le a(w+1-\delta)$.
+\end{lemma}
+\begin{proof}
+For $0\le u\le2/5$, the quadratic
+\[
+H(u)=(C-u)^2-a(w+1-3u^2)
+\]
+is convex. Its values at 0 and $2/5$ are nonpositive by~\eqref{eq:two-comparisons}, so $H(u)\le0$ throughout this interval. Now use $\delta\le3u^2$. For $2/5\le u\le1$, one has $0\le C-u\le C-2/5$. Moreover,
+$13/25\le1-\delta$, because $\delta\le7/15<12/25$. The second inequality in~\eqref{eq:two-comparisons} finishes this case.
+\end{proof}
+
+Apply the lemma with $C_i=14/3+i$ and $w=w_i$. The two inequalities needed for each of the eleven values of $i$ are displayed below in integer-cleared form. Every entry is nonnegative.
+\begin{center}\small
+\begin{tabular}{rrrr}
+\toprule
+$i$ & $w_i$ & $289(w_i+1)-4(14+3i)^2$ & $7225w_i+3757-4(64+15i)^2$\\
+\midrule
+0&2&83&1823\\
+1&3&0&468\\
+2&5&134&4538\\
+3&7&196&6808\\
+4&10&475&14503\\
+5&12&393&13173\\
+6&14&239&10043\\
+7&21&1458&41238\\
+8&23&1160&34508\\
+9&25&790&25978\\
+10&28&637&22873\\
+\bottomrule
+\end{tabular}
+\end{center}
+The last two columns are respectively 36 and 900 times the two differences in~\eqref{eq:two-comparisons}. Thus there are exactly 22 rational comparisons.
+
+\begin{proof}[Counting assertions in Theorem~\ref{thm:sup}]
+First let $x=w_iB^2+d_j$ be a positive member. With the variables of Lemma~\ref{lem:digits}, set
+\[
+u=\frac rB,\qquad\delta=\frac\Delta{B^2},\qquad
+p=B(C_i-u).
+\]
+Equation~\eqref{eq:digitbounds} gives the hypotheses of Lemma~\ref{lem:scalar}; indeed
+$15\Delta\le7(B^2-1)\le7B^2$.
+Also,
+\[
+p=\left(\frac{11}{3}+i\right)B+j+1
+=F_{A_{16}}(x)+\frac83,
+\qquad
+B^2(w_i+1-\delta)=x+1.
+\]
+It follows that $p^2\le a(x+1)$. Since $p\ge11/3$,
+\[
+\begin{split}
+F_{A_{16}}(x)^2
+&=(p-8/3)^2\\
+&\le a(x+1)-\frac{16}{3}p+\frac{64}{9}
+\le a(x+1)-\frac{112}{9}\le ax,
+\end{split}
+\]
+where $112/9>a$. Between consecutive members the numerator is constant while $\sqrt{x}$ increases. On $1\le x<2$ the count is 1. This proves the uniform bound for all real $x\ge1$.
+
+For sharpness, take the leading part $w_1=3$ and all tail digits equal to 15. At
+\[
+x_l=4\cdot16^l-1
+\]
+the exact count is
+\[
+F_{A_{16}}(x_l)=\frac{17}{3}4^l-\frac83.
+\]
+Dividing numerator and denominator by $4^l$ shows that the ratio tends to $17/6$. Combined with the uniform upper bound, this proves~\eqref{eq:sup}.
+\end{proof}
+
+\section{A finite certificate gives an infinite liminf bound}\label{sec:transfer}
+The mechanism is a scale balance. Multiplying the covered range by four should
+roughly double the size of the covering set, preserving a square-root density.
+The lift needs three small repair points, so it is $\card{T_j}+3$, rather than
+$\card{T_j}$, that doubles exactly. We then place increasingly large finite
+blocks in one infinite set. At selected cutoffs the earlier blocks become
+negligible, while the next block contributes at most three points. This is why
+the argument yields a liminf bound rather than a uniform limsup bound.
+\begin{definition}
+A \emph{static certificate at scale $X$} is a finite set $S\subseteq\Np$, with $X\ge3$ and $1,2\in S$, such that every integer $3\le n\le X$ is $2b-a$ for $a,b\in S$ and $1\le a<b$. The identity implies $b<n$.
+\end{definition}
+There is no need to assume $S\subseteq[1,X]$ for the transfer theorem, though the certificates used here do satisfy it.
+
+\begin{theorem}[Finite-to-infinite transfer]\label{thm:transfer}
+Let $S$ be a static certificate at scale $X$, and let $K=\card S$. There is a single strongly covering set $B\subseteq\Np$, covering every integer from 3 onward, such that
+\[
+\liminf_{x\to\infty}\frac{F_B(x)}{\sqrt{x}}\le\frac{K+3}{\sqrt X}.
+\]
+\end{theorem}
+We give a complete construction and proof, including the contribution of future translated blocks to each counting cutoff.
+
+\subsection{Lifting with a bounded repair}
+For a finite positive set $T$, put
+\[
+L(T)=4T\cup(4T+1),\qquad
+\lf(T)=L(T)\cup\{1,2,3\}.
+\]
+\begin{lemma}\label{lem:lift4}
+If $T$ is a static certificate at scale $Y\ge3$, then $\lf(T)$ is a static certificate at scale $4Y$, and
+\[
+\card{\lf(T)}=2\card T+3.
+\]
+\end{lemma}
+\begin{proof}
+The two parts of $L(T)$ are disjoint modulo 4, and their elements are at least 4, proving the cardinality identity. For $11\le n\le4Y+2$, choose a parent $m$ and lifted witnesses according to this table, where $a+m=2b$ is a representation in $T$:
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$n$ & Parent $m$ & New smaller witness & New larger witness\\
+\midrule
+$4q$ & $q$ & $4a$ & $4b$\\
+$4q+1$ & $q$ & $4a+1$ & $4b+1$\\
+$4q+2$ & $q$ & $4a$ & $4b+1$\\
+$4q+3$ & $q+1$ & $4a+1$ & $4b$\\
+\bottomrule
+\end{tabular}
+\end{center}
+In every case $3\le m\le Y$, and the lifted witnesses are positive and strictly ordered. Their target is $n$.
+
+For the remaining targets $3,4,\ldots,10$, the respective witness pairs are
+\[
+(1,2),(2,3),(1,3),(2,4),(1,4),(2,5),(1,5),(8,9).
+\]
+These all belong to $\lf(T)$ because $1,2\in T$. The set $\lf(T)$ contains $1,2$ and is positive. In particular it covers $[3,4Y]$.
+\end{proof}
+
+Define $T_0=S$ and $T_{j+1}=\lf(T_j)$. Induction yields
+\begin{equation}\label{eq:iter}
+T_j\text{ covers }[3,4^jX],\qquad
+\card{T_j}=2^j(K+3)-3.
+\end{equation}
+
+\subsection{The infinite set and the finite counting cutoff}
+For $k\ge0$, put
+\begin{equation}\label{eq:stages}
+R_k=T_{k^2},\qquad Y_k=4^{k^2}X,\qquad
+ t_0=0,\quad t_{k+1}=t_k+Y_k-3,
+\end{equation}
+and set
+\begin{equation}\label{eq:stacked}
+B=\bigcup_{k\ge0}(t_k+R_k),\qquad x_k=t_k+Y_k.
+\end{equation}
+The translations $t_k$ are nonnegative and nondecreasing. The translated covering intervals are
+\[
+[t_k+3,x_k],\qquad t_{k+1}+3=x_k.
+\]
+They meet at their endpoints, begin at 3, and have unbounded right endpoints. Translating the representations in~\eqref{eq:iter} therefore covers every integer $n\ge3$ by witnesses in $B$, with $0<a<b<n$.
+
+\begin{lemma}[Future-stage contribution]\label{lem:future}
+At each cutoff $x_k$,
+\begin{equation}\label{eq:cutoffcount}
+F_B(x_k)\le\sum_{i=0}^k\card{R_i}+3.
+\end{equation}
+\end{lemma}
+\begin{proof}
+We bound the contribution of stages $i\le k$ by their entire cardinalities; no assertion that these translated sets are disjoint is needed. Since $t_{k+1}=x_k-3$, stage $k+1$ can contribute only translated values of $1,2,3$, at most three points. Finally,
+\[
+t_{k+2}=x_k+Y_{k+1}-6>x_k,
+\]
+because $Y_{k+1}\ge12$. Monotonicity of $t_i$ and positivity of the stage sets exclude every later stage. This proves~\eqref{eq:cutoffcount}.
+\end{proof}
+
+\begin{proof}[Conclusion of Theorem~\ref{thm:transfer}]
+An elementary induction gives
+\[
+\sum_{i=0}^m2^{i^2}<2^{m^2+1}\qquad(m\ge0).
+\]
+Using~\eqref{eq:iter} and Lemma~\ref{lem:future}, we obtain the convenient bound
+\begin{equation}\label{eq:countbudget}
+F_B(x_{m+1})\le (K+3)2^{(m+1)^2}+(K+6)2^{m^2+1}.
+\end{equation}
+Also $x_{m+1}\ge Y_{m+1}=X\,4^{(m+1)^2}$. Consequently
+\begin{equation}\label{eq:expliciterror}
+\frac{F_B(x_{m+1})}{\sqrt{x_{m+1}}}
+\le\frac{K+3}{\sqrt X}+\frac{K+6}{\sqrt X}\,4^{-m}.
+\end{equation}
+The cutoffs tend to infinity and the second term tends to zero. Importantly, the set $B$ was fixed in~\eqref{eq:stacked} before taking this limit; a different set is not selected for each cutoff.
+\end{proof}
+
+\section{The 416-element input certificate}\label{sec:certificate}
+Start from the following 50-element set:
+\begin{equation}\label{eq:S768}
+\begin{split}
+S_{768}=\{&1,2,3,4,5,8,9,12,13,16,21,24,33,36,41,44,45,48,53,56,\\
+&77,80,85,88,129,132,137,140,161,164,169,172,253,256,261,\\
+&264,271,301,304,309,312,340,345,348,353,356,377,380,385,388\}.
+\end{split}
+\end{equation}
+Using the operator $\lf$ above, define
+\begin{equation}\label{eq:pruning}
+S_{3072}=\lf(S_{768})\setminus\{13\},\qquad
+S_{49152}=\lf^2(S_{3072})\setminus\{13\}.
+\end{equation}
+Here $\lf^2$ means two compositions, not squaring a set.
+
+\begin{lemma}[Static certificate]\label{lem:static}
+The sets $S_{768},S_{3072},S_{49152}$ cover respectively $[3,768]$, $[3,3072]$, and $[3,49152]$ by positive strictly ordered witnesses. Their sizes are respectively 50, 102, and 416. All contain $1,2$ and have only positive elements.
+\end{lemma}
+\begin{proof}[Certificate proof]
+The defining recipes and the cardinality identity of Lemma~\ref{lem:lift4} give the sizes. The erased element 13 belongs to each set from which it is removed: $13=4\cdot3+1$ and the relevant parent contains 3. The final maximum is 24853.
+
+Coverage after deleting an element does \emph{not} follow automatically from lifting. We verify the pruned sets themselves. The certificate supplement provides all 766, 3070 and 49150 witness rows, respectively, generated by the exact pair-enumeration verifier in Appendix~\ref{app:cert}. Each row checks $a,b\in S_X$, $0<a<b<n$, and $a+n=2b$, and the target list is exactly $3,4,\ldots,X$. Thus there are no uncovered targets in the required windows. The frozen $49152$ certificate is checked in the independently rebuilt modular Lean project. A separate checked implementation proves the same final $419\sqrt3/384$ existence theorem; the reproducibility supplement distinguishes these implementations.
+\end{proof}
+
+\begin{proof}[Theorem~\ref{thm:inf}]
+Apply Theorem~\ref{thm:transfer} to $S=S_{49152}$ and $X=49152$. Since $K=416$ and $49152=128^2\cdot3$, its constant is
+\[
+\frac{K+3}{\sqrt X}=\frac{419}{128\sqrt3}=\frac{419\sqrt3}{384}.
+\]
+This defines $B$ explicitly through~\eqref{eq:stages}--\eqref{eq:stacked}.
+\end{proof}
+
+\begin{remark}[A separately verified smaller liminf bound]\label{rem:smaller}
+One further iteration of the finite construction gives
+\[
+S_{786432}=\lf^2(S_{49152})\setminus\{148\},\qquad
+\card{S_{786432}}=1672.
+\]
+A separately checked certificate shows that every $3\le n\le786432$ is covered after the deletion. The same transfer theorem therefore yields, for a different infinite strong covering set,
+\[
+\liminf_{x\to\infty}\frac{F(x)}{\sqrt x}
+\le \frac{1675}{\sqrt{786432}}=\frac{1675\sqrt3}{1536}
+=1.8887923845\ldots .
+\]
+This stronger instance has a separate checked Lean proof (checker job
+\texttt{042a1cf7}; full identity and source hashes are in the reproducibility
+supplement). The rev-6 extension containing this instance passed an independent
+full-project replay on 23 October 2026. It is not part of the older 38-module
+rev-5 release or the first-release witness-table supplement. We retain the
+416-element certificate for the main exposition and preserve both release
+identities. No optimality claim is made.
+\end{remark}
+
+\begin{remark}[Why a small deletion can be checked locally]
+Suppose $U$ covers $[3,Y]$ and one deletes $e\in U$. Only targets with a witness using $e$ can lose covering. Such a target necessarily has the form $2b-e$ for $b\in U$, $b>e$, or $2e-a$ for $a\in U$, $a<e$. Thus at most $\card U-1$ distinct candidate targets require new witnesses; all other targets retain an old witness. This localized repair is the idea behind the shorter symbolic Lean certificates for the pruned sets.
+\end{remark}
+
+\begin{remark}[The cost of lifting]
+The relevant finite efficiency is $(K+3)/\sqrt X$, not $K/\sqrt X$. The extra 3 is forced by the repeated repair in this construction: $\card{T_j}+3=2^j(K+3)$. The three possible points entering from the next translated stage are accounted for separately in~\eqref{eq:cutoffcount}. Conflating these two roles would give an unjustified smaller constant.
+\end{remark}
+
+\section{What the two arguments share, and what they do not}
+Both results start from finite data and extend coverage by residue lifting. Their density arguments differ. The limsup construction repeats one digit family at every scale, and must control the count at \emph{all} large arguments. The liminf construction places successively larger finite blocks at separated scales, and controls only a sequence of cutoffs. This is why a sparse finite certificate alone is not a limsup theorem, and why improving the liminf certificate need not improve the limsup construction.
+
+The lower-bound argument for weak coverings is a separate analytic contribution developed in a companion manuscript. No part of that argument is required for the proofs here. Neither construction has been shown to be progression-free or generated by the Stanley greedy rule. In fact, an infinite strong covering set necessarily contains progressions with arbitrarily large last terms belonging to the set.
+
+\appendix
+\section{Reproducing the finite certificates}\label{app:cert}
+The certificate supplement refers to the first-release witness-table data, distinct from the Lean release and the \emph{Formal verification and reproducibility supplement}. The original first-release package is unavailable; the public archive reconstructs its recipes, sorted-set files and witness tables, with recovered original files identified separately. The public archive preserves the recovered historical generator at \path{certificates/original-generator/release_data.py}; it supplies the explicit $S_{192}$ list, from which the archived $S_{192}$ artifacts were recovered. The active public verifier at \path{certificates/scripts/verify_constructions.py} is a reconstruction from the published algorithm, because the original verifier is unavailable. It uses only the Python standard library, and its report is \path{certificates/verification-report.json}. The optional $S_{786432}$ witness table is not stored; \path{certificates/optional-1675.md} records its recipe and hashes. The key finite verification can be reproduced with the following elementary procedure; integer arithmetic is exact.
+\begin{lstlisting}[language=Python]
+def witness_rows(S, lo, hi):
+    values = sorted(S)
+    witnesses = {}
+    for i, b in enumerate(values):
+        for a in values[:i]:
+            n = 2*b - a
+            if a > 0 and lo <= n <= hi:
+                witnesses.setdefault(n, (a, b))
+    if set(witnesses) != set(range(lo, hi+1)):
+        raise ValueError("uncovered target")
+    rows = []
+    for n in range(lo, hi+1):
+        a, b = witnesses[n]
+        if not (a in S and b in S and 0 < a < b < n
+                and a+n == 2*b):
+            raise ValueError("invalid witness")
+        rows.append((n, a, b))
+    return rows
+\end{lstlisting}
+For the base-16 check, use the positive part of~\eqref{eq:set16} below $16^4$ and $(\mathrm{lo},\mathrm{hi})=(89,1446)$. There are 679 elements in this prefix. For each static certificate, use the recipe~\eqref{eq:S768}--\eqref{eq:pruning} and $(\mathrm{lo},\mathrm{hi})=(3,X)$.
+
+The canonical serialization is one UTF-8 row \texttt{n,a,b} followed by a newline, with no header and increasing target $n$. Visiting $b$ increasingly selects the smallest valid larger witness. The set serialization is one increasing element per line, each with a trailing newline. Full SHA-256 values and the actual data are in \path{certificates/verification-report.json}; the short identifiers below are for orientation only.
+\begin{center}\small
+\begin{tabular}{lrrl}
+\toprule
+Object & Elements & Witnesses & Witness hash prefix\\
+\midrule
+Base-16 window & 679 in prefix & 1358 & \texttt{820741986eae}\\
+$S_{3072}$ & 102 & 3070 & \texttt{d89f997c4077}\\
+$S_{49152}$ & 416 & 49150 & \texttt{8cd856cd75b4}\\
+\bottomrule
+\end{tabular}
+\end{center}
+Run
+\begin{lstlisting}
+python3 certificates/scripts/verify_constructions.py --extended
+\end{lstlisting}
+The extended run additionally compares recursive and block membership through $16^5$, checks exact counts at all selected elements there, and verifies the 22 rational inequalities. These finite consistency checks are not extrapolations used to prove the infinite conclusions: those conclusions follow from the induction and counting arguments above. The script uses explicit failure checks rather than removable Python assertions.
+
+\section{Formalization and reproducibility}\label{app:lean}
+The two main constructions and the generic finite-to-infinite transfer theorem
+are formalized in the pinned Lean 4.35.0 project. Its complete 38-module release
+has been independently rebuilt, with a strict audit of 24 designated
+declarations and only \texttt{propext}, \texttt{Classical.choice}, and
+\texttt{Quot.sound} as transitive axioms. All frozen source hashes matched;
+the project was compiled afresh using verified cached dependencies. Lean and
+Mathlib themselves were not rebuilt from source.
+
+The accompanying \emph{Formal verification and reproducibility supplement}
+records the exact versions, source manifest and replay command, and points to
+the archived evidence.
+The construction data and integer verifiers described in Appendix~\ref{app:cert}
+provide a separate way to inspect the finite inputs. The infinite conclusions
+follow from the lifting and counting arguments, not from numerical extrapolation.
+
+\paragraph{Reproducible release.}
+These claims refer to the frozen rev~5 source tree, with Mathlib commit
+\par\noindent\path{56a005855ea17e0b0958f73ec801ae140b0a1679}\par
+and release-manifest (\path{SHA256SUMS}) SHA-256
+\par\noindent\path{2d4f22165d1e3b60461315f8cd4e2d8e70d0498aaf1add86e4bd459ff4f090ef}.\par
+The exact list of 24 audited declarations is in \path{scripts/Headline.lean};
+\path{scripts/check_axioms.py} enforces that list. The accompanying supplement
+records the tested commands and archived evidence.
+The public rev~5 source tree is
+\url{https://github.com/Dlgt-io/room-math-results/tree/main/results/erdos-271/lean/rev5}.
+Cedar also independently replayed the rev~6 extension on 23 October 2026:
+39 project modules and all 26 designated declarations passed, with the original
+24 statement/axiom reports unchanged. Its manifest SHA-256 is
+\par\noindent\path{78291fa4ca02d51370c4b2c56073ef58bb5f98d7553a7fa77c5fc156d2219c03}.\par
+The public rev~6 source tree is
+\url{https://github.com/Dlgt-io/room-math-results/tree/main/results/erdos-271/lean/rev6}.
+The two source identities are preserved separately.
+
+\paragraph{Matching the mathematical statements.}
+For the base-16 construction, the formal count is
+$A(x)=\card{A_{16}\cap[1,\lfloor x\rfloor]}$. Thus
+$F_{A_{16}}(x)=A(x)+1$, and the formal uniform bound is exactly the one in
+Theorem~\ref{thm:sup}. The declarations \path{B16_limsup} and
+\path{S16_limsup} establish the real-variable limsup equality; adding
+$1/\sqrt x$ does not change it. The covering theorem applies to every target
+from 89 onward, including members of the set. Both
+\par\noindent\path{Erdos271.B16.B16_main}\par
+and \path{Erdos271.B16.B16_exists} are checked: the recursive characterization
+is not an unsupported existence assumption, since existence is proved as well.
+
+The liminf formalization chooses a single set first and proves that for every
+$\varepsilon>0$ and every integer threshold $N$, some integer $n\ge N$
+satisfies $\card{B\cap[0,n]}\le(c+\varepsilon)\sqrt n$. This implies the
+real-variable liminf assertion. Positivity is proved within the construction,
+although the exported existence statement need not repeat it. The independently
+rebuilt release covers the $419\sqrt3/384$ instance. The smaller constant in
+Remark~\ref{rem:smaller} has a separate checked proof and is not silently
+included in that release. The fully qualified rev-5 liminf theorem is
+\par\noindent\path{Erdos271.Liminf.liminf_construction_1889}.\par
+
+Correspondence between the conventional theorems and the Lean statements was
+established by manual source review, supported by four separately checked
+bridge lemmas. Lean checks those lemmas and the formal statements; it does not
+machine-check the translation of this prose into Lean.
+
+\paragraph{Guide to the source.}
+The mathematical construction, its finite certificates, and the final
+asymptotic deductions have separate entry points:
+\begin{center}\small
+\begin{tabular}{@{}p{0.34\textwidth}p{0.60\textwidth}@{}}
+\toprule
+Mathematical step & Lean source or declaration\\
+\midrule
+Base-16 definition and covering & \path{B16.lean}: \path{S16_char}, \path{mem_iff_blocks}, \path{S16_cover}, \path{B16_main}, \path{B16_exists}\\
+Exact count and uniform bound & \path{B16.lean}: \path{N_block}, \path{member_bound}, \path{bound_all}\\
+Limsup equality & \path{B16Limsup.lean}: \path{B16_limsup}, \path{S16_limsup}\\
+Finite lifting and repair & \path{LiminfCore.lean}: \path{lift_cov}, \path{step_cov}, \path{iter_spec}\\
+General transfer principle & \path{LiminfGen.lean}: \path{StaticCert.liminf_of_cert}\\
+416-element certificate & \path{LiminfCert49152.lean}: \path{S49152_cov}, \path{S49152_card}\\
+Final liminf theorem & \path{LiminfFinal.lean}: \path{liminf_construction_1889}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Large generated certificates and standalone checker terms are not the intended
+entry point for a human reader. Start with the named main theorem and its
+structural lemmas, then inspect the finite certificate. The supplement retains
+the implementation and contribution history; the present paper develops the
+mathematical arguments independently of that history.
+
+\paragraph{Scope of the literature comparison.}
+The comparison with Fang concerns his published theorem statement. The full
+subscription article was not available for a proof-method comparison; that task
+and final specialist review remain open. The cited saturation and higher-order
+covering literature addresses related but different requirements. No claim of
+optimality or an exhaustive priority search is made here.
+
+\begin{thebibliography}{99}\small
+\bibitem{KSY}
+S. Z. Kiss, Cs. S\'andor and Q.-H. Yang,
+\emph{On generalized Stanley sequences},
+Acta Math. Hungar. \textbf{154} (2018), 501--510.
+\href{https://doi.org/10.1007/s10474-018-0791-1}{doi:10.1007/s10474-018-0791-1}.
+Preprint: arXiv:1710.01939.
+
+\bibitem{Chen}
+Y.-G. Chen,
+\emph{On $AP_3$-covering sequences},
+C. R. Math. \textbf{356} (2018), 121--124.
+\href{https://doi.org/10.1016/j.crma.2017.12.013}{doi:10.1016/j.crma.2017.12.013}.
+Preprint: arXiv:1711.00172.
+
+\bibitem{Fang}
+J.-H. Fang,
+\emph{A note on $AP_3$-covering sequences},
+Period. Math. Hungar. \textbf{83} (2021), 67--70
+(published online 1 June 2020).
+\href{https://doi.org/10.1007/s10998-020-00350-1}{doi:10.1007/s10998-020-00350-1}.
+
+\bibitem{Saeng}
+P. Saengrungkongka,
+\emph{Sparse $k$-AP Covering Sets and the Arithmetic Kakeya Conjecture},
+arXiv:2609.02041 (2026), preprint.
+
+\bibitem{ELRSS}
+P. Erd\H{o}s, V. Lev, G. Rauzy, C. S\'andor and A. S\'ark\"ozy,
+\emph{Greedy algorithm, arithmetic progressions, subset sums and divisibility},
+Discrete Math. \textbf{200} (1999), 119--135.
+\href{https://doi.org/10.1016/S0012-365X(98)00385-9}{doi:10.1016/S0012-365X(98)00385-9}.
+
+\bibitem{CN24}
+B. Csajb\'ok and Z. L. Nagy,
+\emph{Complete $3$-term arithmetic progression free sets of small size in vector spaces and other abelian groups},
+arXiv:2401.06283v4 (2024; revised 27 September 2025).
+\href{https://arxiv.org/abs/2401.06283v4}{arXiv:2401.06283v4}.
+
+\bibitem{CN26}
+B. Csajb\'ok and Z. L. Nagy,
+\emph{Small complete 3-term progression free sets in cyclic groups and vector spaces},
+arXiv:2606.30186v1 (2026).
+\href{https://arxiv.org/abs/2606.30186v1}{arXiv:2606.30186v1}.
+
+\bibitem{OS}
+A. M. Odlyzko and R. P. Stanley,
+\emph{Some curious sequences constructed with the greedy algorithm},
+unpublished manuscript, January 1978.
+\href{https://www.dtc.umn.edu/~odlyzko/unpublished/greedy.sequence.pdf}{Author-archived manuscript}.
+
+\bibitem{Rol}
+D. Rolnick, \emph{On the classification of Stanley sequences},
+arXiv:1408.1940 (2014).
+\href{https://arxiv.org/abs/1408.1940}{arXiv:1408.1940}.
+
+\bibitem{RV}
+D. Rolnick and P. S. Venkataramana,
+\emph{On the growth of Stanley sequences},
+arXiv:1408.4710 (2014).
+\href{https://arxiv.org/abs/1408.4710}{arXiv:1408.4710}.
+
+\bibitem{MR}
+R. A. Moy and D. Rolnick, \emph{Novel structures in Stanley sequences},
+Discrete Math. \textbf{339}(2) (2016), 689--698. Preprint: arXiv:1502.06013 (2015).
+\href{https://arxiv.org/abs/1502.06013}{arXiv:1502.06013}.
+\end{thebibliography}
+\end{document}

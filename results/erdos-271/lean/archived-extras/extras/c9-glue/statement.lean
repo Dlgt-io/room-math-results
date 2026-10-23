@@ -1,0 +1,202 @@
+(
+∀ P : Finset Nat, ∀ U : Real, ∀ s : Nat, ∀ x0 : Nat, ∀ X : Nat,
+∀ pairs : Finset (Prod Nat Nat), ∀ fib : Nat → Finset (Prod Nat Nat), ∀ cnt : Nat → Finset Nat,
+∀ mem0 : Finset Nat, ∀ inv : Nat → Real, ∀ rex : Nat → Real, ∀ wt : Prod Nat Nat → Real,
+(∀ q : Prod Nat Nat, Membership.mem pairs q ↔ (Membership.mem P (Prod.fst q) ∧ Membership.mem P (Prod.snd q) ∧ Prod.fst q < Prod.snd q)) →
+(∀ z : Nat, ∀ q : Prod Nat Nat, Membership.mem (fib z) q ↔ (Membership.mem pairs q ∧ 2 * Prod.snd q - Prod.fst q = z)) →
+(∀ t : Nat, ∀ p : Nat, Membership.mem (cnt t) p ↔ (Membership.mem P p ∧ 0 < p ∧ p ≤ t)) →
+(∀ z : Nat, Membership.mem mem0 z ↔ (s < z ∧ z ≤ x0 ∧ Membership.mem P z)) →
+(∀ z : Nat, inv z = 1 / (z : Real)) →
+(∀ z : Nat, rex z = ((Finset.card (fib z) - 1 : Nat) : Real) * inv z) →
+(∀ q : Prod Nat Nat, wt q = inv (2 * Prod.snd q - Prod.fst q)) →
+s ≤ x0 → x0 ≤ X → 0 < x0 → 0 ≤ U →
+(∀ z : Nat, s < z → z ≤ X → ¬ Membership.mem P z → ∃ a : Nat, ∃ b : Nat, Membership.mem P a ∧ Membership.mem P b ∧ a < b ∧ 2 * b - a = z) →
+(∀ t : Nat, x0 ≤ t → t ≤ X → (Finset.card (cnt t) : Real) ≤ U * Real.sqrt (t : Real)) →
+Real.log ((X : Real) + 1) - (harmonic s : Real) - Finset.sum mem0 inv - 2 * U / Real.sqrt (x0 : Real) + Finset.sum (Finset.Ioc s X) rex ≤ Finset.sum pairs wt
+) →
+(
+∀ P : Finset Real, ∀ X : Real, ∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ f : Real → Real,
+∀ K : Real → Real → Real, ∀ B : Real → Real, ∀ Z : Real → Real, ∀ W : Real → Real → Real, ∀ D : Real → Real,
+0 < X → (∀ p : Real, Membership.mem P p → 0 < p ∧ p ≤ X) →
+(∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) →
+(∀ t : Real, A t = Finset.sum P (Function.swap H t)) →
+(∀ t : Real, f t = A t ^ 2 / t ^ 2) →
+(∀ t : Real, ∀ u : Real, K t u = A u * A t / (2 * t - u) ^ 3) →
+(∀ t : Real, B t = intervalIntegral (K t) 0 t MeasureTheory.volume) →
+(∀ p : Real, Z p = 1 / (2 * p)) →
+(∀ p : Real, ∀ q : Real, W p q = ite (p < q) (1 / (2 * q - p)) 0) →
+(∀ p : Real, D p = 1 / (2 * X - p)) →
+IntervalIntegrable f MeasureTheory.volume 0 X ∧ IntervalIntegrable B MeasureTheory.volume 0 X ∧
+Finset.sum P Z + Finset.sum P (Function.comp (Finset.sum P) W) = (3 / 2) * intervalIntegral f 0 X MeasureTheory.volume - 4 * intervalIntegral B 0 X MeasureTheory.volume + ((Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X)) ∧
+0 ≤ (Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ∧
+(Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ≤ (Finset.card P : Real) ^ 2 / (2 * X)
+) →
+(
+∀ K : Real → Real, ∀ h : Real → Real, ∀ L : Real, ∀ U : Real, ∀ t0 : Real, ∀ T : Real,
+∀ sq : Real → Real, ∀ d : Real → Real, ∀ mom : Real → Real, ∀ Kt : Real → Real → Real, ∀ G : Real → Real,
+(∀ v : Real, K v = Real.exp (-(3 * v / 2)) / (2 - Real.exp (-v)) ^ 3) →
+(∀ x : Real, sq x = h x ^ 2) →
+(∀ x : Real, d x = U - h x) →
+(∀ v : Real, mom v = v * K v) →
+(∀ t : Real, ∀ u : Real, Kt t u = K (t - u) * h u) →
+(∀ t : Real, G t = h t * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 t)) (Kt t)) →
+Measurable h → t0 ≤ T → 0 ≤ U →
+(∀ x : Real, Membership.mem (Set.Icc t0 T) x → L ≤ h x ∧ h x ≤ U) →
+0 ≤ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ∧
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ≤ 2 ∧
+(3 / 2) * intervalIntegral sq t0 T MeasureTheory.volume - 4 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 T)) G
+  ≤ (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U ^ 2 * (T - t0)
+    - (2 * (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U - (3 / 2) * (U - L)) * intervalIntegral d t0 T MeasureTheory.volume
+    + 4 * U ^ 2 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom
+) →
+(
+(
+∀ K : Real → Real, ∀ h : Real → Real, ∀ L : Real, ∀ U : Real, ∀ t0 : Real, ∀ T : Real,
+∀ sq : Real → Real, ∀ d : Real → Real, ∀ mom : Real → Real, ∀ Kt : Real → Real → Real, ∀ G : Real → Real,
+(∀ v : Real, K v = Real.exp (-(3 * v / 2)) / (2 - Real.exp (-v)) ^ 3) →
+(∀ x : Real, sq x = h x ^ 2) →
+(∀ x : Real, d x = U - h x) →
+(∀ v : Real, mom v = v * K v) →
+(∀ t : Real, ∀ u : Real, Kt t u = K (t - u) * h u) →
+(∀ t : Real, G t = h t * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 t)) (Kt t)) →
+Measurable h → t0 ≤ T → 0 ≤ U →
+(∀ x : Real, Membership.mem (Set.Icc t0 T) x → L ≤ h x ∧ h x ≤ U) →
+0 ≤ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ∧
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ≤ 2 ∧
+(3 / 2) * intervalIntegral sq t0 T MeasureTheory.volume - 4 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 T)) G
+  ≤ (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U ^ 2 * (T - t0)
+    - (2 * (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U - (3 / 2) * (U - L)) * intervalIntegral d t0 T MeasureTheory.volume
+    + 4 * U ^ 2 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom) →
+∀ P : Finset Real, ∀ L : Real, ∀ U : Real, ∀ x0 : Real, ∀ X : Real,
+∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ f : Real → Real, ∀ K : Real → Real → Real, ∀ B : Real → Real,
+∀ hh : Real → Real, ∀ dd : Real → Real, ∀ Kk : Real → Real, ∀ mom : Real → Real,
+(∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) →
+(∀ t : Real, A t = Finset.sum P (Function.swap H t)) →
+(∀ t : Real, f t = A t ^ 2 / t ^ 2) →
+(∀ t : Real, ∀ u : Real, K t u = A u * A t / (2 * t - u) ^ 3) →
+(∀ t : Real, B t = intervalIntegral (K t) 0 t MeasureTheory.volume) →
+(∀ t : Real, hh t = A (Real.exp t) * Real.exp (-(t / 2))) →
+(∀ t : Real, dd t = U - hh t) →
+(∀ v : Real, Kk v = Real.exp (-(3 * v / 2)) / (2 - Real.exp (-v)) ^ 3) →
+(∀ v : Real, mom v = v * Kk v) →
+(∀ p : Real, Membership.mem P p → 1 ≤ p) → 1 ≤ x0 → x0 ≤ X → 0 ≤ U →
+(∀ x : Real, Membership.mem (Set.Icc x0 X) x → L * Real.sqrt x ≤ A x ∧ A x ≤ U * Real.sqrt x) →
+0 ≤ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ∧
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ≤ 2 ∧
+(3 / 2) * intervalIntegral f 0 X MeasureTheory.volume - 4 * intervalIntegral B 0 X MeasureTheory.volume
+  ≤ (3 / 2) * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo 1 x0)) f
+    + (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U ^ 2 * (Real.log X - Real.log x0)
+    - (2 * (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U - (3 / 2) * (U - L)) * intervalIntegral dd (Real.log x0) (Real.log X) MeasureTheory.volume
+    + 4 * U ^ 2 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom
+) →
+(
+(
+∀ P : Finset Nat, ∀ U : Real, ∀ s : Nat, ∀ x0 : Nat, ∀ X : Nat,
+∀ pairs : Finset (Prod Nat Nat), ∀ fib : Nat → Finset (Prod Nat Nat), ∀ cnt : Nat → Finset Nat,
+∀ mem0 : Finset Nat, ∀ inv : Nat → Real, ∀ rex : Nat → Real, ∀ wt : Prod Nat Nat → Real,
+(∀ q : Prod Nat Nat, Membership.mem pairs q ↔ (Membership.mem P (Prod.fst q) ∧ Membership.mem P (Prod.snd q) ∧ Prod.fst q < Prod.snd q)) →
+(∀ z : Nat, ∀ q : Prod Nat Nat, Membership.mem (fib z) q ↔ (Membership.mem pairs q ∧ 2 * Prod.snd q - Prod.fst q = z)) →
+(∀ t : Nat, ∀ p : Nat, Membership.mem (cnt t) p ↔ (Membership.mem P p ∧ 0 < p ∧ p ≤ t)) →
+(∀ z : Nat, Membership.mem mem0 z ↔ (s < z ∧ z ≤ x0 ∧ Membership.mem P z)) →
+(∀ z : Nat, inv z = 1 / (z : Real)) →
+(∀ z : Nat, rex z = ((Finset.card (fib z) - 1 : Nat) : Real) * inv z) →
+(∀ q : Prod Nat Nat, wt q = inv (2 * Prod.snd q - Prod.fst q)) →
+s ≤ x0 → x0 ≤ X → 0 < x0 → 0 ≤ U →
+(∀ z : Nat, s < z → z ≤ X → ¬ Membership.mem P z → ∃ a : Nat, ∃ b : Nat, Membership.mem P a ∧ Membership.mem P b ∧ a < b ∧ 2 * b - a = z) →
+(∀ t : Nat, x0 ≤ t → t ≤ X → (Finset.card (cnt t) : Real) ≤ U * Real.sqrt (t : Real)) →
+Real.log ((X : Real) + 1) - (harmonic s : Real) - Finset.sum mem0 inv - 2 * U / Real.sqrt (x0 : Real) + Finset.sum (Finset.Ioc s X) rex ≤ Finset.sum pairs wt) →
+(
+∀ P : Finset Real, ∀ X : Real, ∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ f : Real → Real,
+∀ K : Real → Real → Real, ∀ B : Real → Real, ∀ Z : Real → Real, ∀ W : Real → Real → Real, ∀ D : Real → Real,
+0 < X → (∀ p : Real, Membership.mem P p → 0 < p ∧ p ≤ X) →
+(∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) →
+(∀ t : Real, A t = Finset.sum P (Function.swap H t)) →
+(∀ t : Real, f t = A t ^ 2 / t ^ 2) →
+(∀ t : Real, ∀ u : Real, K t u = A u * A t / (2 * t - u) ^ 3) →
+(∀ t : Real, B t = intervalIntegral (K t) 0 t MeasureTheory.volume) →
+(∀ p : Real, Z p = 1 / (2 * p)) →
+(∀ p : Real, ∀ q : Real, W p q = ite (p < q) (1 / (2 * q - p)) 0) →
+(∀ p : Real, D p = 1 / (2 * X - p)) →
+IntervalIntegrable f MeasureTheory.volume 0 X ∧ IntervalIntegrable B MeasureTheory.volume 0 X ∧
+Finset.sum P Z + Finset.sum P (Function.comp (Finset.sum P) W) = (3 / 2) * intervalIntegral f 0 X MeasureTheory.volume - 4 * intervalIntegral B 0 X MeasureTheory.volume + ((Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X)) ∧
+0 ≤ (Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ∧
+(Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ≤ (Finset.card P : Real) ^ 2 / (2 * X)) →
+(
+∀ P : Finset Real, ∀ L : Real, ∀ U : Real, ∀ x0 : Real, ∀ X : Real,
+∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ f : Real → Real, ∀ K : Real → Real → Real, ∀ B : Real → Real,
+∀ hh : Real → Real, ∀ dd : Real → Real, ∀ Kk : Real → Real, ∀ mom : Real → Real,
+(∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) →
+(∀ t : Real, A t = Finset.sum P (Function.swap H t)) →
+(∀ t : Real, f t = A t ^ 2 / t ^ 2) →
+(∀ t : Real, ∀ u : Real, K t u = A u * A t / (2 * t - u) ^ 3) →
+(∀ t : Real, B t = intervalIntegral (K t) 0 t MeasureTheory.volume) →
+(∀ t : Real, hh t = A (Real.exp t) * Real.exp (-(t / 2))) →
+(∀ t : Real, dd t = U - hh t) →
+(∀ v : Real, Kk v = Real.exp (-(3 * v / 2)) / (2 - Real.exp (-v)) ^ 3) →
+(∀ v : Real, mom v = v * Kk v) →
+(∀ p : Real, Membership.mem P p → 1 ≤ p) → 1 ≤ x0 → x0 ≤ X → 0 ≤ U →
+(∀ x : Real, Membership.mem (Set.Icc x0 X) x → L * Real.sqrt x ≤ A x ∧ A x ≤ U * Real.sqrt x) →
+0 ≤ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ∧
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ≤ 2 ∧
+(3 / 2) * intervalIntegral f 0 X MeasureTheory.volume - 4 * intervalIntegral B 0 X MeasureTheory.volume
+  ≤ (3 / 2) * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo 1 x0)) f
+    + (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U ^ 2 * (Real.log X - Real.log x0)
+    - (2 * (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U - (3 / 2) * (U - L)) * intervalIntegral dd (Real.log x0) (Real.log X) MeasureTheory.volume
+    + 4 * U ^ 2 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom) →
+∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+Membership.mem S 0 → ∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+∀ U : Real, 0 ≤ U → U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) →
+(∃ x0 : Nat, 1 ≤ x0 ∧ ∀ x : Real, (x0 : Real) ≤ x → (7 / 5) * Real.sqrt x ≤ AS x ∧ AS x ≤ U * Real.sqrt x) →
+∃ C : Real, ∃ x0 : Nat, ∀ X : Nat, x0 ≤ X → Real.log (X : Real) ≤ Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) * U ^ 2 * Real.log (X : Real) + C
+) →
+(
+(
+∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+Membership.mem S 0 → ∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+∀ U : Real, 0 ≤ U → U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) →
+(∃ x0 : Nat, 1 ≤ x0 ∧ ∀ x : Real, (x0 : Real) ≤ x → (7 / 5) * Real.sqrt x ≤ AS x ∧ AS x ≤ U * Real.sqrt x) →
+∃ C : Real, ∃ x0 : Nat, ∀ X : Nat, x0 ≤ X → Real.log (X : Real) ≤ Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) * U ^ 2 * Real.log (X : Real) + C) →
+∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+Membership.mem S 0 → ∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem S) k : Real))
+) →
+(
+(
+∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+Membership.mem S 0 → ∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem S) k : Real))) →
+(∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem S) k : Real))) ∧
+(∀ A : Finset Nat, ∀ m : Nat, ∀ St : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter St (Set.Icc 1 (Nat.floor x))) : Real)) →
+(∀ n : Nat, n ≤ m → (Membership.mem St n ↔ Membership.mem A n)) →
+(∀ n : Nat, m < n → (Membership.mem St n ↔ ¬ ∃ b : Nat, b < n ∧ ∃ a : Nat, a < b ∧ Membership.mem St a ∧ Membership.mem St b ∧ a + n = 2 * b)) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem St) k : Real)))
+) →
+(∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem S) k : Real))) ∧
+(∀ A : Finset Nat, ∀ m : Nat, ∀ St : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter St (Set.Icc 1 (Nat.floor x))) : Real)) →
+(∀ n : Nat, n ≤ m → (Membership.mem St n ↔ Membership.mem A n)) →
+(∀ n : Nat, m < n → (Membership.mem St n ↔ ¬ ∃ b : Nat, b < n ∧ ∃ a : Nat, a < b ∧ Membership.mem St a ∧ Membership.mem St b ∧ a + n = 2 * b)) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem St) k : Real)))

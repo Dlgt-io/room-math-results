@@ -1,9 +1,9 @@
 # Result index
 
-No result packages have been published yet.
+| Project | Material | Status |
+|---|---|---|
+| [Erdős Problem #271: covering bounds and constructions](erdos-271/README.md) | Two manuscripts, verification supplement, rev-5/rev-6 Lean sources, finite certificates, and build/audit evidence | Public review drafts; formal project independently rebuilt; outside specialist and novelty review remain open |
 
-Add one entry per project when its first package is published. Link to the project's README and state its current version and review or verification status. Keep draft work clearly marked.
+The covering constructions are not claims to solve Erdős #271 or to construct Stanley sequences. Each project overview states the exact mathematical scope, source versions, and review limits.
 
-Use a stable directory such as `results/erdos-271/` for a project. Its README should explain the result and link to the relevant manuscripts, proof sources, computations, and evidence.
-
-See the [contribution guide](../CONTRIBUTING.md) for the information to include.
+See the [contribution guide](../CONTRIBUTING.md) to add another project.

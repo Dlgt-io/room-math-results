@@ -6,7 +6,7 @@ Each result package brings together its mathematical statements, manuscripts, fo
 
 ## Results
 
-See the [result index](results/README.md). No result packages have been published in this repository yet.
+See the [result index](results/README.md). The first package is [covering bounds and constructions related to Erdős Problem #271](results/erdos-271/README.md), shared as public review drafts with formal sources and verification evidence.
 
 ## Organization
 

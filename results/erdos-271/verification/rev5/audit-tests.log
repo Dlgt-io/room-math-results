@@ -1,0 +1,8 @@
+............[fresh-worktree]/scripts/test_check_axioms.py:35: ResourceWarning: unclosed file <_io.TextIOWrapper name='logs/axioms.log' mode='r' encoding='utf-8'>
+  def test_real_log(self): self.ok(open(REAL,encoding='utf-8').read())
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+....
+----------------------------------------------------------------------
+Ran 16 tests in 0.008s
+
+OK

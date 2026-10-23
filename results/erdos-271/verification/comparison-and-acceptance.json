@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "rev6_manifest_sha256": "78291fa4ca02d51370c4b2c56073ef58bb5f98d7553a7fa77c5fc156d2219c03",
+  "theorems": 26,
+  "unique": 26,
+  "project_modules_built": 39,
+  "matching_project_oleans": 39,
+  "audit_tests": 17,
+  "audit_tests_skipped": 0,
+  "original_24_transcript_bytes_identical": true,
+  "original_24_transcript_sha256": "0fd2af8553be4c9a4fecd87d8de05fb18ad35f7aa65a358965f7d2b421a985d0",
+  "original_24_transcript_bytes": 12903,
+  "original_24_transcript_lines": 186,
+  "success_utc": "2026-10-23T12:42:29+00:00",
+  "dependency_scope": "All nine pinned, clean dependency checkouts copied from read-only installed cache; Lean/Mathlib not rebuilt from source."
+}

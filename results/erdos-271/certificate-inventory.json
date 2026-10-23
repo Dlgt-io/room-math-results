@@ -1,0 +1,126 @@
+{
+  "schema": "erdos271-public-certificate-inventory-v1",
+  "status": "verified-reconstruction",
+  "package_root": "certificates/",
+  "source_archives": [
+    {
+      "name": "Erdos271_Lean_Reproducibility_Kit_2026-10-21.zip",
+      "bytes": 1695378,
+      "sha256": "3232ed2aff6d3945678b92c40108a7085b99f454bf4f59b854ed2bde141cfbc2",
+      "identity": "2026-10-21 reproducibility bootstrap; its README states that it is not the complete frozen release or first-release certificate package",
+      "entries": 190,
+      "checksum_manifest": {
+        "listed_entries_checked": 189,
+        "mismatches": 0
+      }
+    },
+    {
+      "name": "erdos271-rev5-release.zip",
+      "bytes": 376765,
+      "sha256": "9ce42e7564c30449f5667bbb9def692e6726c4bd6634fbb1017eb939f86845fb",
+      "identity": "frozen rev-5 Lean release",
+      "entries": 83,
+      "certificate_package_finding": "No scripts/verify_constructions.py, certificates/verification-report.json, or witness-table package was present."
+    }
+  ],
+  "frozen_sources": [
+    {
+      "name": "claude-release-construction-data.md",
+      "bytes": 10151,
+      "sha256": "11d75f2e37360798016d89f5988518fa22fd93dea8cc6a345ca3921756a95825",
+      "use": "Canonical recipes, serialization rules, counts, and frozen hashes."
+    },
+    {
+      "name": "grok-release-package.md",
+      "bytes": 72785,
+      "sha256": "286c812bb9217cff4a923f19aa44616a133cf9d15e7deea7e0092d959d28fe1d",
+      "use": "Rev-5 archive identity and confirmation that the Lean release is separate from the certificate package."
+    },
+    {
+      "name": "Erdos271_Covering_Constructions_Review_v1.5.tex",
+      "bytes": 36191,
+      "sha256": "fc3f73cc0f3535edcb6a50c4aec1205e886b8480cd6dc884bdabd8863712749e",
+      "use": "Paper 2 certificate algorithm, S_768 list, lift/prune recipes, and public verification contract."
+    },
+    {
+      "name": "release_data.py",
+      "bytes": 4482,
+      "sha256": "f856393f7b0338ad4b528efc1c697b4e8cd8e7cc0d04868a5aece99c3cbc6469",
+      "use": "Recovered historical generator containing the explicit S_192 list; archived unchanged and not executed because it writes to hard-coded /tmp/rel paths."
+    }
+  ],
+  "exact_files_extracted_from_bootstrap_kit": [
+    {
+      "source_entry": "Erdos271_Lean_Reproducibility_Kit/historical_component_sources/erdos271_review_v2_and_verification_audit/erdos271-review-v2/audit/b16-independent-base.csv",
+      "destination": "certificates/data/a16-base-window.csv",
+      "sha256": "820741986eaeeb4d6e931db80f8c4da99c6ce3e3fa650d0ac032995694e7e6c4"
+    },
+    {
+      "source_entry": "Erdos271_Lean_Reproducibility_Kit/historical_component_sources/erdos271_finite_prefix_checked/erdos271_finite_prefix_checked/independent_finite_check/covering_witnesses.csv",
+      "destination": "certificates/data/a4-base-window.csv",
+      "sha256": "10e31cd8a6e4fe8ca4f4c9f7217b2d4865e367f2da5dc4e44e39abd15f30aef6"
+    },
+    {
+      "source_entry": "Erdos271_Lean_Reproducibility_Kit/historical_component_sources/erdos271_base16_counting_simplification/erdos271_base16_counting_simplification/twenty_two_checks.csv",
+      "destination": "certificates/data/twenty_two_checks.csv",
+      "sha256": "961f0917f848d5b2ed72eaa46c3cf0867db4c56ab68850c724a3919b55f6d926"
+    }
+  ],
+  "reconstruction": {
+    "verifier": {
+      "path": "certificates/scripts/verify_constructions.py",
+      "bytes": 11257,
+      "sha256": "2a4855323f9604e2f6253204100b635cafdd784d1a8f92b9dca540dfefc26d32",
+      "provenance": "New implementation of the frozen public recipes; not represented as the unavailable original verifier."
+    },
+    "verification_report": {
+      "path": "certificates/verification-report.json",
+      "bytes": 3704,
+      "sha256": "f1f03e712c14408145ba7ffd8634bfd543a1473c8b0d5a45cae8622327b20c01"
+    },
+    "historical_generator": {
+      "path": "certificates/original-generator/release_data.py",
+      "bytes": 4482,
+      "sha256": "f856393f7b0338ad4b528efc1c697b4e8cd8e7cc0d04868a5aece99c3cbc6469",
+      "execution": "Archived unchanged; do not execute in place because it writes to hard-coded /tmp/rel paths."
+    },
+    "public_metadata": [
+      {
+        "path": "certificates/README.md",
+        "bytes": 2410,
+        "sha256": "58f7cc2322ff323a2917400dee567b90aeea81b7b642b162a258d852724a5cfd"
+      },
+      {
+        "path": "certificates/source-provenance.json",
+        "bytes": 3884,
+        "sha256": "d92d0042a104d267fcaf92865cdf0132d947b54ce0b4f20f23c634f889011227"
+      },
+      {
+        "path": "certificates/optional-1675.md",
+        "bytes": 847,
+        "sha256": "c3ab24a447d18462451bf1deebb1e917e6b11e2bf0bc2dd15fc3e029ba0ac876"
+      },
+      {
+        "path": "certificates/original-generator/README.md",
+        "bytes": 397,
+        "sha256": "5ac132181705775845a3da87a90e9508b8634bd2cc69806ece7f4e98f2ed0cd5"
+      }
+    ],
+    "command": "python3 scripts/verify_constructions.py --extended",
+    "result": "pass",
+    "checks": {
+      "stored_files_equal_regenerated_bytes": true,
+      "published_full_hashes_checked": 10,
+      "base16_membership_checked_through": 1048576,
+      "base16_uniform_bound_checked_through": 1048576,
+      "rational_inequalities_checked": 22,
+      "static_witness_rows_checked": 53176
+    }
+  },
+  "limits": {
+    "original_first_release_package": "Not present in either inspected ZIP or the frozen snapshots.",
+    "original_scripts_verify_constructions_py": "Missing; the included script is a reviewed reconstruction.",
+    "s786432": "The optional S_786432 Python witness table is not stored or checked by the executable certificate verifier; optional-1675.md records its room-report recipe and hashes. The corresponding 1675/1536 theorem is included in the independently rebuilt adopted Lean rev6."
+  },
+  "privacy": "The export excludes credentials, private account/server identifiers and machine-specific user paths. The unchanged historical generator intentionally retains a generic /tmp/rel output path and its historical room-5 label; it is not the active verifier."
+}

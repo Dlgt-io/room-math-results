@@ -1,0 +1,91 @@
+{
+  "schema": "erdos271-public-certificate-provenance-v1",
+  "source_archives": [
+    {
+      "name": "Erdos271_Lean_Reproducibility_Kit_2026-10-21.zip",
+      "bytes": 1695378,
+      "sha256": "3232ed2aff6d3945678b92c40108a7085b99f454bf4f59b854ed2bde141cfbc2",
+      "status": "reproducibility bootstrap; not the first-release certificate package",
+      "entries": 190,
+      "checksum_manifest_entries_checked": 189,
+      "checksum_manifest_mismatches": 0
+    },
+    {
+      "name": "erdos271-rev5-release.zip",
+      "bytes": 376765,
+      "sha256": "9ce42e7564c30449f5667bbb9def692e6726c4bd6634fbb1017eb939f86845fb",
+      "status": "frozen rev-5 Lean release; separate from the certificate package",
+      "entries": 83
+    }
+  ],
+  "frozen_public_sources": [
+    {
+      "name": "claude-release-construction-data.md",
+      "bytes": 10151,
+      "sha256": "11d75f2e37360798016d89f5988518fa22fd93dea8cc6a345ca3921756a95825",
+      "role": "canonical recipes, serialization rules, counts, and frozen hashes"
+    },
+    {
+      "name": "grok-release-package.md",
+      "bytes": 72785,
+      "sha256": "286c812bb9217cff4a923f19aa44616a133cf9d15e7deea7e0092d959d28fe1d",
+      "role": "rev-5 identity and separation of the Lean release from the certificate package"
+    },
+    {
+      "name": "Erdos271_Covering_Constructions_Review_v1.5.tex",
+      "bytes": 36191,
+      "sha256": "fc3f73cc0f3535edcb6a50c4aec1205e886b8480cd6dc884bdabd8863712749e",
+      "role": "Paper 2 certificate algorithm, S_768 list, lift/prune recipes, and verification contract"
+    },
+    {
+      "name": "release_data.py",
+      "bytes": 4482,
+      "sha256": "f856393f7b0338ad4b528efc1c697b4e8cd8e7cc0d04868a5aece99c3cbc6469",
+      "role": "recovered historical generator with the explicit S_192 list; archived unchanged and not executed because it writes to hard-coded /tmp/rel paths"
+    }
+  ],
+  "file_status": {
+    "exact_archive_files": [
+      {
+        "path": "data/a16-base-window.csv",
+        "sha256": "820741986eaeeb4d6e931db80f8c4da99c6ce3e3fa650d0ac032995694e7e6c4"
+      },
+      {
+        "path": "data/a4-base-window.csv",
+        "sha256": "10e31cd8a6e4fe8ca4f4c9f7217b2d4865e367f2da5dc4e44e39abd15f30aef6"
+      },
+      {
+        "path": "data/twenty_two_checks.csv",
+        "sha256": "961f0917f848d5b2ed72eaa46c3cf0867db4c56ab68850c724a3919b55f6d926"
+      }
+    ],
+    "reconstructed_from_frozen_recipes": [
+      "data/a16-set.txt",
+      "data/a16-cylinder.csv",
+      "data/s192-set.txt",
+      "data/s192-witnesses.csv",
+      "data/s768-set.txt",
+      "data/s768-witnesses.csv",
+      "data/s3072-set.txt",
+      "data/s3072-witnesses.csv",
+      "data/s49152-set.txt",
+      "data/s49152-witnesses.csv",
+      "scripts/verify_constructions.py",
+      "verification-report.json"
+    ],
+    "exact_recovered_historical_files": [
+      {
+        "path": "original-generator/release_data.py",
+        "bytes": 4482,
+        "sha256": "f856393f7b0338ad4b528efc1c697b4e8cd8e7cc0d04868a5aece99c3cbc6469",
+        "execution": "archived only; do not run in place because of hard-coded /tmp/rel output paths"
+      }
+    ]
+  },
+  "limits": {
+    "original_first_release_package": "not present in the inspected archives or frozen snapshots",
+    "original_verifier": "not present; the included verifier is a new reconstruction from the published algorithm",
+    "s786432": "outside the release and executable verifier; optional-1675.md records the room-report recipe and hashes without storing its witness table"
+  },
+  "privacy": "The export excludes credentials, private account/server identifiers and machine-specific user paths. The unchanged historical generator intentionally retains a generic /tmp/rel output path and its historical room-5 label; it is not the active verifier."
+}

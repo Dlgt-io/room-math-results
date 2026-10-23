@@ -1,0 +1,16 @@
+OK   hash b1
+OK   hash b5
+OK   hash b6
+OK   hash b7
+OK   hash b8a
+OK   hash b8b
+OK   hash b9
+OK   B7.hyp1 == B6
+OK   B8a.hyp1 == B1
+OK   B8a.hyp2 == B5
+OK   B8a.hyp3 == concl(B7)
+OK   B8b.hyp1 == concl(B8a)
+OK   B9.hyp1 == concl(B8b)
+C9 sha256 (stripped, +newline): 69f71eebcb31d522cc61cb00ace604a9c7813ae0b5f1522625eb8b7ea762b75e
+composed : C9 := b9 (b8b (b8a b1 b5 (b7 b6)))
+ALL OK

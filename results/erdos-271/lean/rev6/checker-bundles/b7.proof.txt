@@ -1,0 +1,430 @@
+by
+  intro H6
+  open MeasureTheory Set Real in (
+    let hfun (A : ℝ → ℝ) (t : ℝ) : ℝ := A (exp t) * exp (-(t / 2))
+    let Kker (v : ℝ) : ℝ := exp (-(3 * v / 2)) / (2 - exp (-v)) ^ 3
+
+    have image_exp_Ioo_zero (T : ℝ) : exp '' Ioo 0 T = Ioo 1 (exp T) := by
+      rw [image_exp_Ioo, exp_zero]
+
+
+    have subst_exp (g : ℝ → ℝ) (T : ℝ) :
+        ∫ x in Ioo 1 (exp T), g x = ∫ t in Ioo 0 T, exp t * g (exp t) := by
+      rw [← image_exp_Ioo_zero,
+        integral_image_eq_integral_abs_deriv_smul measurableSet_Ioo
+          (fun x _ => (hasDerivAt_exp x).hasDerivWithinAt) exp_injective.injOn]
+      refine setIntegral_congr_fun measurableSet_Ioo (fun t _ => ?_)
+      simp [abs_of_pos (exp_pos t)]
+
+    have half_sq (t : ℝ) : exp t = exp (t / 2) ^ 2 := by
+      rw [← exp_nat_mul]; ring_nf
+
+    have I_logsub (A : ℝ → ℝ) (T : ℝ) :
+        ∫ x in Ioo 1 (exp T), A x ^ 2 / x ^ 2 = ∫ t in Ioo 0 T, hfun A t ^ 2 := by
+      rw [subst_exp]
+      refine setIntegral_congr_fun measurableSet_Ioo (fun t _ => ?_)
+      have hp := exp_pos (t / 2)
+      simp only [hfun, exp_neg]
+      rw [half_sq t]
+      field_simp
+
+    have J_logsub (A : ℝ → ℝ) (T : ℝ) :
+        ∫ x in Ioo 1 (exp T), A x * ∫ u in Ioo 1 x, A u / (2 * x - u) ^ 3
+          = ∫ τ in Ioo 0 T, hfun A τ * ∫ σ in Ioo 0 τ, Kker (τ - σ) * hfun A σ := by
+      rw [subst_exp]
+      refine setIntegral_congr_fun measurableSet_Ioo (fun τ _ => ?_)
+      rw [subst_exp, ← integral_const_mul, ← integral_const_mul, ← integral_const_mul]
+      refine setIntegral_congr_fun measurableSet_Ioo (fun σ hσ => ?_)
+      have hp := exp_pos (τ / 2)
+      have hq := exp_pos (σ / 2)
+      have hlt : exp (σ / 2) < exp (τ / 2) := exp_lt_exp.mpr (by linarith [hσ.2])
+      have e1 : exp (-(3 * (τ - σ) / 2)) = exp (σ / 2) ^ 3 / exp (τ / 2) ^ 3 := by
+        rw [← exp_nat_mul, ← exp_nat_mul, ← exp_sub]; ring_nf
+      have e2 : exp (-(τ - σ)) = exp (σ / 2) ^ 2 / exp (τ / 2) ^ 2 := by
+        rw [← exp_nat_mul, ← exp_nat_mul, ← exp_sub]; ring_nf
+      have e3 : exp (-(τ / 2)) = 1 / exp (τ / 2) := by rw [exp_neg]; ring
+      have e4 : exp (-(σ / 2)) = 1 / exp (σ / 2) := by rw [exp_neg]; ring
+      simp only [hfun, Kker]
+      rw [e1, e2, e3, e4, half_sq τ, half_sq σ]
+      set p := exp (τ / 2)
+      set q := exp (σ / 2)
+      have hd : 2 * p ^ 2 - q ^ 2 ≠ 0 := by nlinarith
+      have hd' : 2 - q ^ 2 / p ^ 2 ≠ 0 := by
+        rw [sub_ne_zero]; intro h
+        have : q ^ 2 = 2 * p ^ 2 := by field_simp at h; linarith
+        exact hd (by linarith)
+      field_simp
+
+
+
+    let Acount (P : Finset ℝ) (t : ℝ) : ℝ :=
+      ∑ p ∈ P, (Ici p).indicator (fun _ => (1:ℝ)) t
+
+    have Acount_measurable (P : Finset ℝ) : Measurable (Acount P) := by
+      unfold Acount
+      exact Finset.measurable_sum _ (fun p _ => measurable_const.indicator measurableSet_Ici)
+
+    have Acount_nonneg (P : Finset ℝ) (t : ℝ) : 0 ≤ Acount P t :=
+      Finset.sum_nonneg (fun _p _ => indicator_nonneg (fun _ _ => zero_le_one) t)
+
+    have Acount_le (P : Finset ℝ) (t : ℝ) : Acount P t ≤ P.card := by
+      unfold Acount
+      calc ∑ p ∈ P, (Ici p).indicator (fun _ => (1:ℝ)) t ≤ ∑ _p ∈ P, (1:ℝ) :=
+            Finset.sum_le_sum (fun _p _ => indicator_le_self' (fun _ _ => zero_le_one) t |>.trans (le_refl _))
+        _ = P.card := by simp
+
+    have I_integrable (P : Finset ℝ) (X : ℝ) :
+        IntegrableOn (fun x => Acount P x ^ 2 / x ^ 2) (Ioo 1 X) := by
+      refine Measure.integrableOn_of_bounded (M := (P.card : ℝ) ^ 2) measure_Ioo_lt_top.ne ?_ ?_
+      · exact (((Acount_measurable P).pow_const 2).div (measurable_id.pow_const 2)).aestronglyMeasurable
+      · refine (ae_restrict_iff' measurableSet_Ioo).mpr (Filter.Eventually.of_forall (fun x hx => ?_))
+        have hx1 : (1:ℝ) < x := hx.1
+        have h0 := Acount_nonneg P x
+        have h1 := Acount_le P x
+        rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+        rw [div_le_iff₀ (by positivity)]
+        have : Acount P x ^ 2 ≤ (P.card : ℝ) ^ 2 := pow_le_pow_left₀ h0 h1 2
+        have : (1:ℝ) ≤ x ^ 2 := one_le_pow₀ hx1.le
+        nlinarith [sq_nonneg (P.card : ℝ)]
+
+
+    have h_sq_integrable (P : Finset ℝ) (T : ℝ) :
+        IntegrableOn (fun t => hfun (Acount P) t ^ 2) (Ioo 0 T) := by
+      have := (integrableOn_image_iff_integrableOn_abs_deriv_smul (f := exp) (f' := exp) (s := Ioo 0 T) measurableSet_Ioo
+          (fun x _ => (hasDerivAt_exp x).hasDerivWithinAt) exp_injective.injOn
+          (fun x => Acount P x ^ 2 / x ^ 2)).mp (by rw [image_exp_Ioo_zero]; exact I_integrable P _)
+      refine this.congr_fun (fun t _ => ?_) measurableSet_Ioo
+      have hp := exp_pos (t / 2)
+      simp only [hfun, exp_neg, smul_eq_mul, abs_of_pos (exp_pos t)]
+      rw [half_sq t]
+      field_simp
+
+    have Kker_measurable : Measurable Kker := by
+      unfold Kker; fun_prop
+
+    have Kker_bounds {v : ℝ} (hv : 0 ≤ v) : 0 ≤ Kker v ∧ Kker v ≤ 1 := by
+      have h1 : exp (-v) ≤ 1 := exp_le_one_iff.mpr (by linarith)
+      have hd : 1 ≤ (2 - exp (-v)) ^ 3 := one_le_pow₀ (by linarith)
+      have he : exp (-(3 * v / 2)) ≤ 1 := exp_le_one_iff.mpr (by linarith)
+      unfold Kker
+      refine ⟨div_nonneg (exp_pos _).le (by positivity), ?_⟩
+      calc exp (-(3 * v / 2)) / (2 - exp (-v)) ^ 3 ≤ exp (-(3 * v / 2)) :=
+            div_le_self (exp_pos _).le hd
+        _ ≤ 1 := he
+
+
+    let upperIndicator (p t : Real) : Real :=
+      Set.indicator (Set.Ici p) (Function.const Real (1 : Real)) t
+
+    let positiveCount (P : Finset Real) (t : Real) : Real :=
+      P.sum (fun p => upperIndicator p t)
+
+    let squareIntegrand (P : Finset Real) (t : Real) : Real :=
+      positiveCount P t ^ 2 / t ^ 2
+
+    let doubleIntegrand (P : Finset Real) (t : Real) : Real :=
+      intervalIntegral
+        (fun u => positiveCount P u * positiveCount P t / (2 * t - u) ^ 3)
+        0 t MeasureTheory.volume
+
+    let squareIntegral (P : Finset Real) (X : Real) : Real :=
+      intervalIntegral (squareIntegrand P) 0 X MeasureTheory.volume
+
+    let doubleIntegral (P : Finset Real) (X : Real) : Real :=
+      intervalIntegral (doubleIntegrand P) 0 X MeasureTheory.volume
+
+    let forwardPairWeight (p q : Real) : Real :=
+      if p < q then 1 / (2 * q - p) else 0
+
+    let weightedPairs (P : Finset Real) : Real :=
+      P.sum (fun p => 1 / (2 * p)) +
+        P.sum (fun p => P.sum (fun q => forwardPairWeight p q))
+
+    let boundaryTerm (P : Finset Real) (X : Real) : Real :=
+      (P.card : Real) * P.sum (fun p => 1 / (2 * X - p)) -
+        (P.card : Real) ^ 2 / (2 * X)
+
+
+    have lemma4_concrete : ∀ {h : ℝ → ℝ} {L U t0 T : ℝ}, Measurable h → t0 ≤ T → 0 ≤ U →
+        (∀ x ∈ Icc t0 T, L ≤ h x ∧ h x ≤ U) →
+        let β : ℝ := 3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2)
+        let η : ℝ := ∫ v in Ioi 0, v * Kker v
+        0 ≤ η ∧ η ≤ 2 ∧
+        (3 / 2) * (∫ x in t0..T, h x ^ 2)
+          - 4 * (∫ t in Ioo t0 T, h t * ∫ u in Ioo t0 t, Kker (t - u) * h u)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * (T - t0)
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in t0..T, (U - h x))
+            + 4 * U ^ 2 * η := by
+      intro h L U t0 T hm hT hU hb
+      exact H6 Kker h L U t0 T (fun x => h x ^ 2) (fun x => U - h x) (fun v => v * Kker v)
+        (fun t u => Kker (t - u) * h u)
+        (fun t => h t * ∫ u in Ioo t0 t, Kker (t - u) * h u)
+        (fun v => rfl) (fun x => rfl) (fun x => rfl) (fun v => rfl) (fun t u => rfl) (fun t => rfl)
+        hm hT hU hb
+
+    have Acount_eq_zero_of_lt (P : Finset ℝ) (hP : ∀ p ∈ P, 1 ≤ p) {t : ℝ} (ht : t < 1) :
+        Acount P t = 0 := by
+      unfold Acount
+      refine Finset.sum_eq_zero (fun p hp => ?_)
+      have : t ∉ Ici p := fun h => by have := hP p hp; simp only [mem_Ici] at h; linarith
+      simp [this]
+
+
+    have I_range (P : Finset ℝ) (hP : ∀ p ∈ P, 1 ≤ p) (X : ℝ) :
+        ∫ x in Ioo 0 X, Acount P x ^ 2 / x ^ 2 = ∫ x in Ioo 1 X, Acount P x ^ 2 / x ^ 2 := by
+      refine setIntegral_eq_of_subset_of_ae_sdiff_eq_zero measurableSet_Ioo.nullMeasurableSet
+        (Ioo_subset_Ioo_left zero_le_one) ?_
+      filter_upwards [Measure.ae_ne volume 1] with x hx1 hx
+      have hlt : x < 1 := by
+        rcases hx with ⟨⟨_, hxX⟩, hn⟩
+        by_contra h
+        exact hn ⟨lt_of_le_of_ne (not_lt.mp h) (Ne.symm hx1), hxX⟩
+      simp [Acount_eq_zero_of_lt P hP hlt]
+
+    have J_range (P : Finset ℝ) (hP : ∀ p ∈ P, 1 ≤ p) (X : ℝ) :
+        ∫ x in Ioo 0 X, Acount P x * ∫ u in Ioo 0 x, Acount P u / (2 * x - u) ^ 3
+          = ∫ x in Ioo 1 X, Acount P x * ∫ u in Ioo 1 x, Acount P u / (2 * x - u) ^ 3 := by
+
+      have inner : ∀ x, 0 < x →
+          ∫ u in Ioo 0 x, Acount P u / (2 * x - u) ^ 3
+            = ∫ u in Ioo 1 x, Acount P u / (2 * x - u) ^ 3 := by
+        intro x hx
+        by_cases h1 : 1 ≤ x
+        · refine setIntegral_eq_of_subset_of_ae_sdiff_eq_zero measurableSet_Ioo.nullMeasurableSet
+            (Ioo_subset_Ioo_left zero_le_one) ?_
+          filter_upwards [Measure.ae_ne volume 1] with u hu1 hu
+          have hlt : u < 1 := by
+            rcases hu with ⟨⟨_, huX⟩, hn⟩
+            by_contra h
+            exact hn ⟨lt_of_le_of_ne (not_lt.mp h) (Ne.symm hu1), huX⟩
+          simp [Acount_eq_zero_of_lt P hP hlt]
+        · have hx1 : x < 1 := lt_of_not_ge h1
+          rw [Ioo_eq_empty (by linarith : ¬ (1:ℝ) < x)]
+          simp only [Measure.restrict_empty, integral_zero_measure]
+          refine setIntegral_eq_zero_of_forall_eq_zero (fun u hu => ?_)
+          simp [Acount_eq_zero_of_lt P hP (lt_trans hu.2 hx1)]
+      rw [setIntegral_congr_fun measurableSet_Ioo (fun x hx => by rw [inner x hx.1])]
+      refine setIntegral_eq_of_subset_of_ae_sdiff_eq_zero measurableSet_Ioo.nullMeasurableSet
+        (Ioo_subset_Ioo_left zero_le_one) ?_
+      filter_upwards [Measure.ae_ne volume 1] with x hx1 hx
+      have hlt : x < 1 := by
+        rcases hx with ⟨⟨_, hxX⟩, hn⟩
+        by_contra h
+        exact hn ⟨lt_of_le_of_ne (not_lt.mp h) (Ne.symm hx1), hxX⟩
+      simp [Acount_eq_zero_of_lt P hP hlt]
+
+    have hfun_meas (P : Finset ℝ) : Measurable (hfun (Acount P)) := by
+      unfold hfun
+      exact ((Acount_measurable P).comp measurable_exp).mul (by fun_prop)
+
+    have hfun_nonneg (P : Finset ℝ) (t : ℝ) : 0 ≤ hfun (Acount P) t :=
+      mul_nonneg (Acount_nonneg _ _) (exp_pos _).le
+
+    have hfun_le (P : Finset ℝ) {t : ℝ} (ht : 0 ≤ t) : hfun (Acount P) t ≤ P.card := by
+      unfold hfun
+      have h0 := Acount_le P (exp t)
+      have h1 : exp (-(t / 2)) ≤ 1 := exp_le_one_iff.mpr (by linarith)
+      calc Acount P (exp t) * exp (-(t / 2)) ≤ (P.card : ℝ) * 1 :=
+            mul_le_mul h0 h1 (exp_pos _).le (Nat.cast_nonneg _)
+        _ = P.card := mul_one _
+
+    have hfun_env (P : Finset ℝ) {L U x0 X : ℝ} (hx0 : 0 < x0) (hxX : x0 ≤ X)
+        (henv : ∀ x ∈ Icc x0 X, L * √x ≤ Acount P x ∧ Acount P x ≤ U * √x) :
+        ∀ t ∈ Icc (log x0) (log X), L ≤ hfun (Acount P) t ∧ hfun (Acount P) t ≤ U := by
+      intro t ht
+      have hX : 0 < X := lt_of_lt_of_le hx0 hxX
+      have hx : exp t ∈ Icc x0 X := by
+        constructor
+        · rw [← exp_log hx0]; exact exp_le_exp.mpr ht.1
+        · rw [← exp_log hX]; exact exp_le_exp.mpr ht.2
+      obtain ⟨h1, h2⟩ := henv _ hx
+      rw [← exp_half] at h1 h2
+      have he : exp (t / 2) * exp (-(t / 2)) = 1 := by rw [← exp_add]; simp
+      have hp := exp_pos (-(t / 2))
+      unfold hfun
+      constructor
+      · have := mul_le_mul_of_nonneg_right h1 hp.le
+        rw [mul_assoc, he, mul_one] at this; exact this
+      · have := mul_le_mul_of_nonneg_right h2 hp.le
+        rw [mul_assoc, he, mul_one] at this; exact this
+
+
+    have inner_smeas {K g : ℝ → ℝ} (hK : Measurable K) (hg : Measurable g) (a : ℝ) :
+        StronglyMeasurable (fun τ => ∫ σ in Ioo a τ, K (τ - σ) * g σ) := by
+      set S : Set (ℝ × ℝ) := {p | a < p.2 ∧ p.2 < p.1} with hSdef
+      have hS : MeasurableSet S :=
+        (measurableSet_lt measurable_const measurable_snd).inter
+          (measurableSet_lt measurable_snd measurable_fst)
+      have hf : StronglyMeasurable (S.indicator (fun p : ℝ × ℝ => K (p.1 - p.2) * g p.2)) :=
+        (((hK.comp (measurable_fst.sub measurable_snd)).mul (hg.comp measurable_snd)).indicator
+          hS).stronglyMeasurable
+      have e : (fun τ => ∫ σ in Ioo a τ, K (τ - σ) * g σ)
+          = fun τ => ∫ σ, S.indicator (fun p : ℝ × ℝ => K (p.1 - p.2) * g p.2) (τ, σ) := by
+        funext τ
+        rw [← integral_indicator measurableSet_Ioo]
+        congr 1
+      rw [e]
+      exact hf.integral_prod_right' (ν := volume)
+
+
+    have inner_bounds {g : ℝ → ℝ} (hg : Measurable g) {B T a τ : ℝ} (ha : 0 ≤ a)
+        (hT : 0 ≤ T) (hτ : τ ≤ T) (hg0 : ∀ x, 0 ≤ x → x ≤ T → 0 ≤ g x ∧ g x ≤ B) :
+        IntegrableOn (fun σ => Kker (τ - σ) * g σ) (Ioo a τ) volume ∧
+        0 ≤ ∫ σ in Ioo a τ, Kker (τ - σ) * g σ ∧
+        ∫ σ in Ioo a τ, Kker (τ - σ) * g σ ≤ B * T := by
+      have hmem : ∀ σ ∈ Ioo a τ, 0 ≤ Kker (τ - σ) * g σ ∧ Kker (τ - σ) * g σ ≤ B := by
+        intro σ hσ
+        have k := Kker_bounds (by linarith [hσ.2] : 0 ≤ τ - σ)
+        have gg := hg0 σ (by linarith [hσ.1]) (by linarith [hσ.2])
+        exact ⟨mul_nonneg k.1 gg.1, by nlinarith⟩
+      have hmeas : Measurable (fun σ => Kker (τ - σ) * g σ) :=
+        (Kker_measurable.comp (measurable_const.sub measurable_id)).mul hg
+      have hint : IntegrableOn (fun σ => Kker (τ - σ) * g σ) (Ioo a τ) volume :=
+        Measure.integrableOn_of_bounded (M := B) measure_Ioo_lt_top.ne hmeas.aestronglyMeasurable
+          (ae_restrict_of_forall_mem measurableSet_Ioo (fun σ hσ => by
+            rw [Real.norm_eq_abs, abs_of_nonneg (hmem σ hσ).1]; exact (hmem σ hσ).2))
+      refine ⟨hint, setIntegral_nonneg measurableSet_Ioo (fun σ hσ => (hmem σ hσ).1), ?_⟩
+      by_cases hat : a ≤ τ
+      · have hB : 0 ≤ B := by
+          have := hg0 0 le_rfl (by linarith); linarith
+        calc ∫ σ in Ioo a τ, Kker (τ - σ) * g σ ≤ ∫ σ in Ioo a τ, B :=
+              setIntegral_mono_on hint (integrableOn_const measure_Ioo_lt_top.ne)
+                measurableSet_Ioo (fun σ hσ => (hmem σ hσ).2)
+          _ = B * (τ - a) := by
+              rw [setIntegral_const, Real.volume_real_Ioo_of_le hat, smul_eq_mul, mul_comm]
+          _ ≤ B * T := mul_le_mul_of_nonneg_left (by linarith) hB
+      · rw [Ioo_eq_empty (by intro h; exact hat h.le)]
+        simp only [Measure.restrict_empty, integral_zero_measure]
+        have := hg0 0 le_rfl (by linarith)
+        nlinarith
+
+    have outer_int {g : ℝ → ℝ} (hg : Measurable g) {B T a : ℝ} (ha : 0 ≤ a)
+        (hg0 : ∀ x, 0 ≤ x → x ≤ T → 0 ≤ g x ∧ g x ≤ B) :
+        IntegrableOn (fun t => g t * ∫ u in Ioo a t, Kker (t - u) * g u) (Ioo a T) volume ∧
+        ∀ t ∈ Ioo a T, 0 ≤ g t * ∫ u in Ioo a t, Kker (t - u) * g u := by
+      have hmeas : AEStronglyMeasurable (fun t => g t * ∫ u in Ioo a t, Kker (t - u) * g u)
+          volume :=
+        (hg.stronglyMeasurable.mul (inner_smeas Kker_measurable hg a)).aestronglyMeasurable
+      have hpt : ∀ t ∈ Ioo a T, 0 ≤ g t * ∫ u in Ioo a t, Kker (t - u) * g u ∧
+          g t * ∫ u in Ioo a t, Kker (t - u) * g u ≤ B * (B * T) := by
+        intro t ht
+        have gg := hg0 t (by linarith [ht.1]) ht.2.le
+        have ib := inner_bounds hg (a := a) (τ := t) ha (by linarith [ht.1, ht.2]) ht.2.le hg0
+        exact ⟨mul_nonneg gg.1 ib.2.1, mul_le_mul gg.2 ib.2.2 ib.2.1 (le_trans gg.1 gg.2)⟩
+      refine ⟨Measure.integrableOn_of_bounded (M := B * (B * T)) measure_Ioo_lt_top.ne hmeas
+          (ae_restrict_of_forall_mem measurableSet_Ioo (fun t ht => by
+            rw [Real.norm_eq_abs, abs_of_nonneg (hpt t ht).1]; exact (hpt t ht).2)),
+        fun t ht => (hpt t ht).1⟩
+
+
+    have J_drop {g : ℝ → ℝ} (hg : Measurable g) {B t0 T : ℝ} (ht0 : 0 ≤ t0)
+        (hg0 : ∀ x, 0 ≤ x → x ≤ T → 0 ≤ g x ∧ g x ≤ B) :
+        ∫ t in Ioo t0 T, g t * ∫ u in Ioo t0 t, Kker (t - u) * g u
+          ≤ ∫ t in Ioo 0 T, g t * ∫ u in Ioo 0 t, Kker (t - u) * g u := by
+      obtain ⟨iw, _⟩ := outer_int hg (a := t0) ht0 hg0
+      obtain ⟨if0, nf0⟩ := outer_int hg (a := 0) le_rfl hg0
+      calc ∫ t in Ioo t0 T, g t * ∫ u in Ioo t0 t, Kker (t - u) * g u
+          ≤ ∫ t in Ioo t0 T, g t * ∫ u in Ioo 0 t, Kker (t - u) * g u := by
+            refine setIntegral_mono_on iw (if0.mono_set (Ioo_subset_Ioo_left ht0))
+              measurableSet_Ioo (fun t ht => ?_)
+            have gg := hg0 t (by linarith [ht.1]) ht.2.le
+            refine mul_le_mul_of_nonneg_left ?_ gg.1
+            have i0 := inner_bounds hg (a := 0) (τ := t) le_rfl (by linarith [ht.1, ht.2]) ht.2.le hg0
+            exact setIntegral_mono_set i0.1
+              (ae_restrict_of_forall_mem measurableSet_Ioo (fun σ hσ =>
+                mul_nonneg (Kker_bounds (by linarith [hσ.2])).1
+                  (hg0 σ (by linarith [hσ.1]) (by linarith [hσ.2, ht.2])).1))
+              (Filter.Eventually.of_forall (Ioo_subset_Ioo_left ht0))
+        _ ≤ ∫ t in Ioo 0 T, g t * ∫ u in Ioo 0 t, Kker (t - u) * g u :=
+            setIntegral_mono_set if0 (ae_restrict_of_forall_mem measurableSet_Ioo nf0)
+              (Filter.Eventually.of_forall (Ioo_subset_Ioo_left ht0))
+
+    have positiveCount_eq (P : Finset ℝ) : positiveCount P = Acount P := rfl
+
+
+    have squareIntegral_eq (P : Finset ℝ) (hP : ∀ p ∈ P, 1 ≤ p) {X : ℝ} (hX : 0 ≤ X) :
+        squareIntegral P X = ∫ x in Ioo 1 X, Acount P x ^ 2 / x ^ 2 := by
+      unfold squareIntegral squareIntegrand
+      rw [intervalIntegral.integral_of_le hX, integral_Ioc_eq_integral_Ioo, positiveCount_eq]
+      exact I_range P hP X
+
+
+    have doubleIntegral_eq (P : Finset ℝ) (hP : ∀ p ∈ P, 1 ≤ p) {X : ℝ} (hX : 0 ≤ X) :
+        doubleIntegral P X
+          = ∫ x in Ioo 1 X, Acount P x * ∫ u in Ioo 1 x, Acount P u / (2 * x - u) ^ 3 := by
+      unfold doubleIntegral
+      rw [intervalIntegral.integral_of_le hX, integral_Ioc_eq_integral_Ioo, ← J_range P hP X]
+      refine setIntegral_congr_fun measurableSet_Ioo (fun t ht => ?_)
+      try unfold doubleIntegrand
+      rw [intervalIntegral.integral_of_le ht.1.le, integral_Ioc_eq_integral_Ioo, positiveCount_eq,
+        ← MeasureTheory.integral_const_mul]
+      congr 1; funext u; ring
+
+    have I_log (P : Finset ℝ) {X : ℝ} (hX : 0 < X) :
+        ∫ x in Ioo 1 X, Acount P x ^ 2 / x ^ 2 = ∫ t in Ioo 0 (log X), hfun (Acount P) t ^ 2 := by
+      have := I_logsub (Acount P) (log X)
+      rwa [exp_log hX] at this
+
+    have J_log (P : Finset ℝ) {X : ℝ} (hX : 0 < X) :
+        ∫ x in Ioo 1 X, Acount P x * ∫ u in Ioo 1 x, Acount P u / (2 * x - u) ^ 3
+          = ∫ τ in Ioo 0 (log X), hfun (Acount P) τ
+              * ∫ σ in Ioo 0 τ, Kker (τ - σ) * hfun (Acount P) σ := by
+      have := J_logsub (Acount P) (log X)
+      rwa [exp_log hX] at this
+
+
+    have hsq_split (P : Finset ℝ) {t0 T : ℝ} (h0 : 0 ≤ t0) (hT : t0 ≤ T) :
+        ∫ t in Ioo 0 T, hfun (Acount P) t ^ 2
+          = (∫ t in Ioo 0 t0, hfun (Acount P) t ^ 2) + ∫ t in t0..T, hfun (Acount P) t ^ 2 := by
+      have hi : IntervalIntegrable (fun t => hfun (Acount P) t ^ 2) volume 0 T := by
+        rw [intervalIntegrable_iff_integrableOn_Ioc_of_le (by linarith),
+          integrableOn_Ioc_iff_integrableOn_Ioo]
+        exact h_sq_integrable P T
+      have h1 : IntervalIntegrable (fun t => hfun (Acount P) t ^ 2) volume 0 t0 :=
+        hi.mono_set (by rw [uIcc_of_le h0, uIcc_of_le (by linarith)]; exact Icc_subset_Icc le_rfl hT)
+      have h2 : IntervalIntegrable (fun t => hfun (Acount P) t ^ 2) volume t0 T :=
+        hi.mono_set (by rw [uIcc_of_le hT, uIcc_of_le (by linarith)]; exact Icc_subset_Icc h0 le_rfl)
+      rw [← integral_Ioc_eq_integral_Ioo, ← integral_Ioc_eq_integral_Ioo,
+        ← intervalIntegral.integral_of_le (by linarith), ← intervalIntegral.integral_of_le h0,
+        intervalIntegral.integral_add_adjacent_intervals h1 h2]
+
+
+    have log_window_bound (P : Finset ℝ) {L U x0 X : ℝ} (hP : ∀ p ∈ P, 1 ≤ p)
+        (hx0 : 1 ≤ x0) (hxX : x0 ≤ X) (hU : 0 ≤ U)
+        (henv : ∀ x ∈ Icc x0 X, L * √x ≤ Acount P x ∧ Acount P x ≤ U * √x) :
+        let β : ℝ := 3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2)
+        let η : ℝ := ∫ v in Ioi 0, v * Kker v
+        0 ≤ η ∧ η ≤ 2 ∧
+        (3 / 2) * squareIntegral P X - 4 * doubleIntegral P X
+          ≤ (3 / 2) * (∫ x in Ioo 1 x0, Acount P x ^ 2 / x ^ 2)
+            + (3 / 2 - 4 * β) * U ^ 2 * (log X - log x0)
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L))
+                * (∫ t in (log x0)..(log X), (U - hfun (Acount P) t))
+            + 4 * U ^ 2 * η := by
+      intro β η
+      have hx0p : 0 < x0 := by linarith
+      have hXp : 0 < X := by linarith
+      have ht0 : 0 ≤ log x0 := log_nonneg hx0
+      have hT : log x0 ≤ log X := log_le_log hx0p hxX
+      have L4 := lemma4_concrete (hfun_meas P) hT hU (hfun_env P hx0p hxX henv)
+      simp only at L4
+      obtain ⟨hη0, hη2, hmain⟩ := L4
+      refine ⟨hη0, hη2, ?_⟩
+      have hD := J_drop (hfun_meas P) (B := (P.card : ℝ)) (T := log X) ht0
+        (fun x hx _ => ⟨hfun_nonneg P x, hfun_le P hx⟩)
+      rw [squareIntegral_eq P hP hXp.le, doubleIntegral_eq P hP hXp.le, I_log P hXp, J_log P hXp,
+        I_log P hx0p, hsq_split P ht0 hT]
+      simp only [β, η]
+      linarith [hD, hmain]
+
+    intro P L U x0 X H A f K B hh dd Kk mom hH hA hf hK hB hhh hdd hKk hmom hP hx0 hxX hU henv
+    obtain rfl : H = fun p => Set.indicator (Set.Ici p) (Function.const Real (1 : Real)) := funext hH
+    obtain rfl : A = Acount P := funext (fun t => by rw [hA t]; try rfl)
+    obtain rfl : f = fun t => Acount P t ^ 2 / t ^ 2 := funext hf
+    obtain rfl : K = fun t u => Acount P u * Acount P t / (2 * t - u) ^ 3 := funext (fun t => funext (fun u => hK t u))
+    obtain rfl : B = doubleIntegrand P := funext (fun t => by rw [hB t]; try rfl)
+    obtain rfl : hh = hfun (Acount P) := funext (fun t => by rw [hhh t]; try rfl)
+    obtain rfl : dd = fun t => U - hfun (Acount P) t := funext hdd
+    obtain rfl : Kk = Kker := funext (fun v => by rw [hKk v])
+    obtain rfl : mom = fun v => v * Kker v := funext hmom
+    exact log_window_bound P hP hx0 hxX hU henv)

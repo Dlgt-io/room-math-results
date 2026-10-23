@@ -1,0 +1,95 @@
+{
+  "redactions": [
+    {
+      "path": "verification/rev5/acceptance.json",
+      "original_sha256": "e3bfa7276f48e75fd8442968d1b0a324dcd64a3297452bdf15c0d6f26fa9cb48",
+      "public_sha256": "e3bfa7276f48e75fd8442968d1b0a324dcd64a3297452bdf15c0d6f26fa9cb48",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev5/audit-tests.log",
+      "original_sha256": "8113341ca19e7e3d248878c83ac6b7f55a07318418fda1e1523280195ca79763",
+      "public_sha256": "4e33a31c347bc94cc0c938e2abe61082e89a157e9ae2109fb4c7faa3c700352c",
+      "redaction": "Machine-specific worktree path replaced with [fresh-worktree]/; all test output retained."
+    },
+    {
+      "path": "verification/rev5/axioms.log",
+      "original_sha256": "9c79f17e350420353c7c9b8a05601d1cd0f7c90e2322204fe982df43dd74d509",
+      "public_sha256": "9c79f17e350420353c7c9b8a05601d1cd0f7c90e2322204fe982df43dd74d509",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev5/build.log",
+      "original_sha256": "0800229408b84dc9629b0141b6d8151c3f3ecdabce714430cd8b9f8cd8e3f949",
+      "public_sha256": "0800229408b84dc9629b0141b6d8151c3f3ecdabce714430cd8b9f8cd8e3f949",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev5/compose-check.log",
+      "original_sha256": "5f07dd78e332a6b35ef57be3d7e775f6b542e1ee718505f6a54db9e54f13d918",
+      "public_sha256": "5f07dd78e332a6b35ef57be3d7e775f6b542e1ee718505f6a54db9e54f13d918",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev5/grep-audit.log",
+      "original_sha256": "cc716b8162aa8a1654c457735a71d65216ba8b167b18e18b442de859276dba7a",
+      "public_sha256": "cc716b8162aa8a1654c457735a71d65216ba8b167b18e18b442de859276dba7a",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev5/SUCCESS.json",
+      "original_sha256": "84864232a400a452e2abda89e9fce3682bb300a63c95ee5eb199cd1497a8e3fb",
+      "public_sha256": "84864232a400a452e2abda89e9fce3682bb300a63c95ee5eb199cd1497a8e3fb",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/acceptance.json",
+      "original_sha256": "1f72a9d1d24d56ed267cb2345e16c97f3008a470fc815798f6b8f0efe0f1e7bd",
+      "public_sha256": "1f72a9d1d24d56ed267cb2345e16c97f3008a470fc815798f6b8f0efe0f1e7bd",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/audit-tests.log",
+      "original_sha256": "138a4bceef32714f205f0bf0a27b77b982a682eff963ee053ab84aa2464c20c6",
+      "public_sha256": "dbc5071847843f39ea32dcb82a5be2bf80c7c772741dbde890fe954181c2ce3d",
+      "redaction": "Machine-specific worktree path replaced with [fresh-worktree]/; all test output retained."
+    },
+    {
+      "path": "verification/rev6/axioms.log",
+      "original_sha256": "5565608e9f661dd03b706e7afbbd29aeb4c87866e5b5fb1bab5ee1e08ebc1d93",
+      "public_sha256": "5565608e9f661dd03b706e7afbbd29aeb4c87866e5b5fb1bab5ee1e08ebc1d93",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/build.log",
+      "original_sha256": "1629af49994027b3ff1944c5faed19bbf0d12c21a15b76b029e7e1f77415181d",
+      "public_sha256": "1629af49994027b3ff1944c5faed19bbf0d12c21a15b76b029e7e1f77415181d",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/compose-check.log",
+      "original_sha256": "5f07dd78e332a6b35ef57be3d7e775f6b542e1ee718505f6a54db9e54f13d918",
+      "public_sha256": "5f07dd78e332a6b35ef57be3d7e775f6b542e1ee718505f6a54db9e54f13d918",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/grep-audit.log",
+      "original_sha256": "1a38f565dab253e5b9d09bb2429dd589072b406d6a74c3cea09f8f175535d3c5",
+      "public_sha256": "1a38f565dab253e5b9d09bb2429dd589072b406d6a74c3cea09f8f175535d3c5",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/SUCCESS.json",
+      "original_sha256": "51916961aacae9c648e392ce663f347abed5eabace681c7eab0686990b356061",
+      "public_sha256": "51916961aacae9c648e392ce663f347abed5eabace681c7eab0686990b356061",
+      "redaction": null
+    },
+    {
+      "path": "verification/rev6/check-c1675.log",
+      "original_sha256": "078dee285839719ea2bd02b91fe3353568420394414112269e772ff0b12d3e85",
+      "public_sha256": "078dee285839719ea2bd02b91fe3353568420394414112269e772ff0b12d3e85",
+      "redaction": null
+    }
+  ],
+  "excluded": "Host filesystem locations, launcher scripts, server/service status, account/task metadata, and operational console output are not part of this public evidence export."
+}

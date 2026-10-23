@@ -1,0 +1,12 @@
+{
+  "status": "SUCCESS",
+  "sha256sums": "2d4f22165d1e3b60461315f8cd4e2d8e70d0498aaf1add86e4bd459ff4f090ef",
+  "utc": "2026-10-22T19:46:23+00:00",
+  "theorems": 24,
+  "unique": 24,
+  "axioms_allowed": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ]
+}

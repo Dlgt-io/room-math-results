@@ -1,0 +1,722 @@
+by
+  open MeasureTheory Set Real intervalIntegral in (
+    let Kker (v : ℝ) : ℝ := Real.exp (-(3 * v / 2)) / (2 - Real.exp (-v)) ^ 3
+    let T (τ : ℝ) : Set (ℝ × ℝ) := {p : ℝ × ℝ | 0 ≤ p.2 ∧ p.2 ≤ p.1 ∧ p.1 ≤ τ}
+
+
+
+
+    have T_meas (τ : ℝ) : MeasurableSet (T τ) := by
+      show MeasurableSet {p : ℝ × ℝ | 0 ≤ p.2 ∧ p.2 ≤ p.1 ∧ p.1 ≤ τ}
+      refine (measurableSet_le measurable_const measurable_snd).inter
+        ((measurableSet_le measurable_snd measurable_fst).inter
+          (measurableSet_le measurable_fst measurable_const))
+
+    have T_sub (τ : ℝ) : T τ ⊆ Icc 0 τ ×ˢ Icc 0 τ := by
+      rintro ⟨t, u⟩ ⟨h1, h2, h3⟩
+      exact ⟨⟨le_trans h1 h2, h3⟩, ⟨h1, le_trans h2 h3⟩⟩
+
+    have T_finite (τ : ℝ) : (volume : Measure (ℝ × ℝ)) (T τ) ≠ ⊤ := by
+      apply ne_top_of_le_ne_top _ (measure_mono (T_sub τ))
+      rw [Measure.volume_eq_prod, Measure.prod_prod]
+      exact ENNReal.mul_ne_top (by simp) (by simp)
+
+    have integrableOn_T {f : ℝ × ℝ → ℝ} (hf : Measurable f) (τ M : ℝ)
+        (hM : ∀ p ∈ T τ, |f p| ≤ M) : IntegrableOn f (T τ) volume :=
+      Measure.integrableOn_of_bounded (T_finite τ) hf.aestronglyMeasurable
+        (ae_restrict_of_forall_mem (T_meas τ) (fun p hp => by
+          rw [Real.norm_eq_abs]; exact hM p hp))
+
+    have iInt_of_bounded {f : ℝ → ℝ} (hf : Measurable f) {τ : ℝ} (hτ : 0 ≤ τ) (M : ℝ)
+        (hM : ∀ x ∈ Icc 0 τ, |f x| ≤ M) : IntervalIntegrable f volume 0 τ := by
+      rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hτ]
+      exact Measure.integrableOn_of_bounded (by simp) hf.aestronglyMeasurable
+        (ae_restrict_of_forall_mem measurableSet_Ioc (fun x hx => by
+          rw [Real.norm_eq_abs]; exact hM x (Ioc_subset_Icc_self hx)))
+
+    have abs_le_of_bounds {L U x : ℝ} (h1 : L ≤ x) (h2 : x ≤ U) : |x| ≤ |L| + |U| := by
+      rw [abs_le]; constructor
+      · have := neg_abs_le L; have := abs_nonneg U; linarith
+      · have := le_abs_self U; have := abs_nonneg L; linarith
+
+    have sq_integral_bound {h : ℝ → ℝ} (hm : Measurable h) {L U τ : ℝ} (hτ : 0 ≤ τ)
+        (hb : ∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U) :
+        ∫ x in (0:ℝ)..τ, h x ^ 2 ≤ U ^ 2 * τ - (L + U) * ∫ x in (0:ℝ)..τ, (U - h x) := by
+      have hB : ∀ x ∈ Icc 0 τ, |h x| ≤ |L| + |U| := fun x hx =>
+        abs_le_of_bounds (hb x hx).1 (hb x hx).2
+      have hi : IntervalIntegrable h volume 0 τ := iInt_of_bounded hm hτ _ hB
+      have hi2 : IntervalIntegrable (fun x => h x ^ 2) volume 0 τ :=
+        iInt_of_bounded (hm.pow_const 2) hτ ((|L| + |U|) ^ 2) (fun x hx => by
+          rw [abs_pow]; exact pow_le_pow_left₀ (abs_nonneg _) (hB x hx) 2)
+      have hmono : ∫ x in (0:ℝ)..τ, h x ^ 2 ≤ ∫ x in (0:ℝ)..τ, ((L + U) * h x - L * U) := by
+        apply integral_mono_on hτ hi2 ((hi.const_mul _).sub intervalIntegrable_const)
+        intro x hx
+        obtain ⟨h1, h2⟩ := hb x hx
+        nlinarith [mul_nonneg (sub_nonneg.mpr h1) (sub_nonneg.mpr h2)]
+      have e1 : ∫ x in (0:ℝ)..τ, ((L + U) * h x - L * U)
+          = (L + U) * (∫ x in (0:ℝ)..τ, h x) - L * U * τ := by
+        rw [integral_sub (hi.const_mul _) intervalIntegrable_const, intervalIntegral.integral_const_mul,
+          intervalIntegral.integral_const]
+        simp; ring
+      have e2 : ∫ x in (0:ℝ)..τ, (U - h x) = U * τ - ∫ x in (0:ℝ)..τ, h x := by
+        rw [integral_sub intervalIntegrable_const hi, intervalIntegral.integral_const]; simp; ring
+      rw [e2]; rw [e1] at hmono; nlinarith [hmono]
+
+    have kdiff_bounds {K h : ℝ → ℝ} {L U τ KM : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U))) {p : ℝ × ℝ}
+        (hp : p ∈ T τ) :
+        0 ≤ K (p.1 - p.2) ∧ K (p.1 - p.2) ≤ KM ∧ p.1 ∈ Icc 0 τ ∧ p.2 ∈ Icc 0 τ := by
+      obtain ⟨h1, h2, h3⟩ := hp
+      refine ⟨H.2.2.1 _ (by linarith) (by linarith), H.2.2.2.1 _ (by linarith) (by linarith),
+        ⟨by linarith, h3⟩, ⟨h1, by linarith⟩⟩
+
+    have Q_lower {K h : ℝ → ℝ} {L U τ KM : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U))) :
+        U ^ 2 * (∫ p in T τ, K (p.1 - p.2))
+          - U * (∫ p in T τ, K (p.1 - p.2) * (U - h p.1))
+          - U * (∫ p in T τ, K (p.1 - p.2) * (U - h p.2))
+          ≤ ∫ p in T τ, K (p.1 - p.2) * h p.1 * h p.2 := by
+      have hKmp : Measurable (fun p : ℝ × ℝ => K (p.1 - p.2)) :=
+        H.1.comp (measurable_fst.sub measurable_snd)
+      have hh1 : Measurable (fun p : ℝ × ℝ => h p.1) := H.2.1.comp measurable_fst
+      have hh2 : Measurable (fun p : ℝ × ℝ => h p.2) := H.2.1.comp measurable_snd
+      set B := |L| + |U| with hBdef
+      have hB : ∀ x ∈ Icc 0 τ, |h x| ≤ B := fun x hx =>
+        abs_le_of_bounds (H.2.2.2.2 x hx).1 (H.2.2.2.2 x hx).2
+      have hKabs : ∀ p ∈ T τ, |K (p.1 - p.2)| ≤ KM := by
+        intro p hp; obtain ⟨k0, k1, -, -⟩ := kdiff_bounds H hp
+        rw [abs_of_nonneg k0]; exact k1
+      have hdB : ∀ x ∈ Icc 0 τ, |U - h x| ≤ |U| + B := fun x hx => by
+        have := hB x hx
+        calc |U - h x| ≤ |U| + |h x| := abs_sub _ _
+          _ ≤ |U| + B := by linarith
+      have i0 : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2)) (T τ) volume :=
+        integrableOn_T hKmp τ KM hKabs
+      have i1 : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.1)) (T τ) volume :=
+        integrableOn_T (f := fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.1))
+          (hKmp.mul (measurable_const.sub hh1)) τ (KM * (|U| + B)) (fun p hp => by
+          obtain ⟨-, -, ht, -⟩ := kdiff_bounds H hp
+          show |K (p.1 - p.2) * (U - h p.1)| ≤ _
+          rw [abs_mul]
+          exact mul_le_mul (hKabs p hp) (hdB _ ht) (abs_nonneg _)
+            (le_trans (abs_nonneg _) (hKabs p hp)))
+      have i2 : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.2)) (T τ) volume :=
+        integrableOn_T (f := fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.2))
+          (hKmp.mul (measurable_const.sub hh2)) τ (KM * (|U| + B)) (fun p hp => by
+          obtain ⟨-, -, -, hu⟩ := kdiff_bounds H hp
+          show |K (p.1 - p.2) * (U - h p.2)| ≤ _
+          rw [abs_mul]
+          exact mul_le_mul (hKabs p hp) (hdB _ hu) (abs_nonneg _)
+            (le_trans (abs_nonneg _) (hKabs p hp)))
+      have i3 : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2) * h p.1 * h p.2) (T τ) volume :=
+        integrableOn_T (f := fun p : ℝ × ℝ => K (p.1 - p.2) * h p.1 * h p.2)
+          ((hKmp.mul hh1).mul hh2) τ (KM * B * B) (fun p hp => by
+          obtain ⟨-, -, ht, hu⟩ := kdiff_bounds H hp
+          show |K (p.1 - p.2) * h p.1 * h p.2| ≤ _
+          rw [abs_mul, abs_mul]
+          have hk := hKabs p hp
+          have hb1 := hB _ ht
+          have hb2 := hB _ hu
+          have hB0 : 0 ≤ B := le_trans (abs_nonneg _) hb1
+          exact mul_le_mul (mul_le_mul hk hb1 (abs_nonneg _) (le_trans (abs_nonneg _) hk)) hb2
+            (abs_nonneg _) (mul_nonneg (le_trans (abs_nonneg _) hk) hB0))
+      have hA : IntegrableOn (fun p : ℝ × ℝ => U ^ 2 * K (p.1 - p.2)
+          - U * (K (p.1 - p.2) * (U - h p.1))) (T τ) volume :=
+        (i0.const_mul _).sub (i1.const_mul _)
+      have hA2 : IntegrableOn (fun p : ℝ × ℝ => U ^ 2 * K (p.1 - p.2)
+          - U * (K (p.1 - p.2) * (U - h p.1)) - U * (K (p.1 - p.2) * (U - h p.2))) (T τ) volume :=
+        hA.sub (i2.const_mul _)
+      have hlin : U ^ 2 * (∫ p in T τ, K (p.1 - p.2))
+          - U * (∫ p in T τ, K (p.1 - p.2) * (U - h p.1))
+          - U * (∫ p in T τ, K (p.1 - p.2) * (U - h p.2))
+          = ∫ p in T τ, (U ^ 2 * K (p.1 - p.2) - U * (K (p.1 - p.2) * (U - h p.1))
+              - U * (K (p.1 - p.2) * (U - h p.2))) := by
+        rw [integral_sub hA (i2.const_mul _), integral_sub (i0.const_mul _) (i1.const_mul _),
+          MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul,
+          MeasureTheory.integral_const_mul]
+      rw [hlin]
+      apply setIntegral_mono_on hA2 i3 (T_meas τ)
+      intro p hp
+      obtain ⟨k0, -, ht, hu⟩ := kdiff_bounds H hp
+      have d1 : 0 ≤ U - h p.1 := sub_nonneg.mpr (H.2.2.2.2 _ ht).2
+      have d2 : 0 ≤ U - h p.2 := sub_nonneg.mpr (H.2.2.2.2 _ hu).2
+      have key : K (p.1 - p.2) * ((U - h p.1) * (U - h p.2)) ≥ 0 :=
+        mul_nonneg k0 (mul_nonneg d1 d2)
+      nlinarith [key]
+
+    have lemma4_of_kernel_bounds {K h : ℝ → ℝ} {L U τ KM β η : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U)))
+        (hτ : 0 ≤ τ) (hU : 0 ≤ U)
+        (hQ1 : β * τ - η ≤ ∫ p in T τ, K (p.1 - p.2))
+        (hC1 : ∫ p in T τ, K (p.1 - p.2) * (U - h p.1) ≤ β * ∫ x in (0:ℝ)..τ, (U - h x))
+        (hC2 : ∫ p in T τ, K (p.1 - p.2) * (U - h p.2) ≤ β * ∫ x in (0:ℝ)..τ, (U - h x)) :
+        (3 / 2) * (∫ x in (0:ℝ)..τ, h x ^ 2) - 4 * (∫ p in T τ, K (p.1 - p.2) * h p.1 * h p.2)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * τ
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in (0:ℝ)..τ, (U - h x))
+            + 4 * U ^ 2 * η := by
+      have ha := sq_integral_bound H.2.1 hτ H.2.2.2.2
+      have hq := Q_lower H
+      set D := ∫ x in (0:ℝ)..τ, (U - h x)
+      set Q1 := ∫ p in T τ, K (p.1 - p.2)
+      set C1 := ∫ p in T τ, K (p.1 - p.2) * (U - h p.1)
+      set C2 := ∫ p in T τ, K (p.1 - p.2) * (U - h p.2)
+      have hU2 : 0 ≤ U ^ 2 := sq_nonneg U
+      have s1 : U ^ 2 * (β * τ - η) ≤ U ^ 2 * Q1 := mul_le_mul_of_nonneg_left hQ1 hU2
+      have s2 : U * C1 ≤ U * (β * D) := mul_le_mul_of_nonneg_left hC1 hU
+      have s3 : U * C2 ≤ U * (β * D) := mul_le_mul_of_nonneg_left hC2 hU
+      nlinarith [ha, hq, s1, s2, s3]
+
+
+
+
+
+
+    have tri_iter {τ : ℝ} {F : ℝ × ℝ → ℝ} (hF : IntegrableOn F (T τ) volume) :
+        ∫ p in T τ, F p = ∫ t in Icc 0 τ, ∫ u in Icc 0 t, F (t, u) := by
+      rw [← MeasureTheory.integral_indicator (T_meas τ)]
+      have hI : Integrable ((T τ).indicator F) (volume.prod volume) := by
+        rw [← Measure.volume_eq_prod]; exact hF.integrable_indicator (T_meas τ)
+      rw [Measure.volume_eq_prod, integral_prod _ hI]
+      rw [← MeasureTheory.integral_indicator measurableSet_Icc]
+      congr 1
+      ext t
+      by_cases ht : t ≤ τ
+      · by_cases h0 : 0 ≤ t
+        · rw [indicator_of_mem (show t ∈ Icc 0 τ from ⟨h0, ht⟩)]
+          rw [← MeasureTheory.integral_indicator measurableSet_Icc]
+          congr 1; ext u
+          simp only [indicator, T, mem_ofPred_eq, mem_Icc]
+          by_cases hu : 0 ≤ u ∧ u ≤ t
+          · simp [hu.1, hu.2, ht]
+          · have : ¬ (0 ≤ u ∧ u ≤ t ∧ t ≤ τ) := fun h => hu ⟨h.1, h.2.1⟩
+            simp only [this, hu, ite_false]
+        · rw [indicator_of_notMem (show t ∉ Icc 0 τ from fun h => h0 h.1)]
+          have : ∀ u, (T τ).indicator F (t, u) = 0 := by
+            intro u
+            apply indicator_of_notMem
+            rintro ⟨h1, h2, -⟩
+            exact h0 (le_trans h1 h2)
+          simp [this]
+      · rw [indicator_of_notMem (show t ∉ Icc 0 τ from fun h => ht h.2)]
+        have : ∀ u, (T τ).indicator F (t, u) = 0 := by
+          intro u
+          apply indicator_of_notMem
+          rintro ⟨-, -, h3⟩
+          exact ht h3
+        simp [this]
+
+    have tri_iter_swap {τ : ℝ} {F : ℝ × ℝ → ℝ} (hF : IntegrableOn F (T τ) volume) :
+        ∫ p in T τ, F p = ∫ u in Icc 0 τ, ∫ t in Icc u τ, F (t, u) := by
+      rw [← MeasureTheory.integral_indicator (T_meas τ)]
+      have hI : Integrable ((T τ).indicator F) (volume.prod volume) := by
+        rw [← Measure.volume_eq_prod]; exact hF.integrable_indicator (T_meas τ)
+      rw [Measure.volume_eq_prod, integral_prod_symm _ hI]
+      rw [← MeasureTheory.integral_indicator measurableSet_Icc]
+      congr 1
+      ext u
+      by_cases hu : 0 ≤ u ∧ u ≤ τ
+      · rw [indicator_of_mem (show u ∈ Icc 0 τ from hu)]
+        rw [← MeasureTheory.integral_indicator measurableSet_Icc]
+        congr 1; ext t
+        simp only [indicator, T, mem_ofPred_eq, mem_Icc]
+        by_cases ht : u ≤ t ∧ t ≤ τ
+        · simp [ht.1, ht.2, hu.1]
+        · simp only [ht, and_false, ↓reduceIte]
+      · rw [indicator_of_notMem (show u ∉ Icc 0 τ from hu)]
+        have : ∀ t, (T τ).indicator F (t, u) = 0 := by
+          intro t
+          apply indicator_of_notMem
+          rintro ⟨h1, h2, h3⟩
+          exact hu ⟨h1, le_trans h2 h3⟩
+        simp [this]
+
+    have iInt_eq_Icc {f : ℝ → ℝ} {τ : ℝ} (hτ : 0 ≤ τ) :
+        ∫ x in (0:ℝ)..τ, f x = ∫ x in Icc 0 τ, f x := by
+      rw [intervalIntegral.integral_of_le hτ, integral_Icc_eq_integral_Ioc]
+
+    have outer_bound {g m : ℝ → ℝ} {τ β : ℝ} (hτ : 0 ≤ τ) (hg : Measurable g) (G : ℝ)
+        (hgb : ∀ x ∈ Icc 0 τ, 0 ≤ g x ∧ g x ≤ G) (hm0 : ∀ x ∈ Icc 0 τ, 0 ≤ m x)
+        (hmβ : ∀ x ∈ Icc 0 τ, m x ≤ β) :
+        ∫ x in Icc 0 τ, g x * m x ≤ β * ∫ x in (0:ℝ)..τ, g x := by
+      rw [iInt_eq_Icc hτ, ← MeasureTheory.integral_const_mul]
+      have hgi : IntegrableOn (fun x => β * g x) (Icc 0 τ) volume := by
+        refine Measure.integrableOn_of_bounded (M := |β| * G) (by simp)
+          (hg.const_mul β).aestronglyMeasurable
+          (ae_restrict_of_forall_mem measurableSet_Icc (fun x hx => ?_))
+        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hgb x hx).1]
+        exact mul_le_mul_of_nonneg_left (hgb x hx).2 (abs_nonneg _)
+      apply integral_mono_of_nonneg _ hgi
+      · exact ae_restrict_of_forall_mem measurableSet_Icc (fun x hx => by
+          have := hgb x hx
+          show g x * m x ≤ β * g x
+          nlinarith [hmβ x hx, this.1])
+      · exact ae_restrict_of_forall_mem measurableSet_Icc (fun x hx =>
+          mul_nonneg (hgb x hx).1 (hm0 x hx))
+
+    have C1_le {K h : ℝ → ℝ} {L U τ KM β : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U))) (hτ : 0 ≤ τ)
+        (hβ : ∀ t ∈ Icc 0 τ, ∫ u in Icc 0 t, K (t - u) ≤ β) :
+        ∫ p in T τ, K (p.1 - p.2) * (U - h p.1) ≤ β * ∫ x in (0:ℝ)..τ, (U - h x) := by
+      have hint : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.1)) (T τ) volume := by
+        have hKmp : Measurable (fun p : ℝ × ℝ => K (p.1 - p.2)) :=
+          H.1.comp (measurable_fst.sub measurable_snd)
+        refine integrableOn_T (f := fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.1))
+          (hKmp.mul (measurable_const.sub (H.2.1.comp measurable_fst))) τ (KM * (U - L))
+          (fun p hp => ?_)
+        obtain ⟨k0, k1, ht, -⟩ := kdiff_bounds H hp
+        have := H.2.2.2.2 _ ht
+        show |K (p.1 - p.2) * (U - h p.1)| ≤ _
+        rw [abs_mul, abs_of_nonneg k0, abs_of_nonneg (by linarith)]
+        exact mul_le_mul k1 (by linarith) (by linarith) (le_trans k0 k1)
+      rw [tri_iter hint]
+      have hinner : ∀ t, ∫ u in Icc 0 t, K (t - u) * (U - h t)
+          = (U - h t) * ∫ u in Icc 0 t, K (t - u) := by
+        intro t; rw [MeasureTheory.integral_mul_const, mul_comm]
+      simp_rw [hinner]
+      refine outer_bound hτ (measurable_const.sub H.2.1) (U - L)
+        (fun x hx => ⟨by linarith [(H.2.2.2.2 x hx).2], by linarith [(H.2.2.2.2 x hx).1]⟩) ?_ hβ
+      intro t ht
+      apply setIntegral_nonneg measurableSet_Icc
+      intro u hu
+      exact H.2.2.1 _ (by linarith [hu.2]) (by linarith [hu.1, ht.2])
+
+    have C2_le {K h : ℝ → ℝ} {L U τ KM β : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U))) (hτ : 0 ≤ τ)
+        (hβ : ∀ u ∈ Icc 0 τ, ∫ t in Icc u τ, K (t - u) ≤ β) :
+        ∫ p in T τ, K (p.1 - p.2) * (U - h p.2) ≤ β * ∫ x in (0:ℝ)..τ, (U - h x) := by
+      have hint : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.2)) (T τ) volume := by
+        have hKmp : Measurable (fun p : ℝ × ℝ => K (p.1 - p.2)) :=
+          H.1.comp (measurable_fst.sub measurable_snd)
+        refine integrableOn_T (f := fun p : ℝ × ℝ => K (p.1 - p.2) * (U - h p.2))
+          (hKmp.mul (measurable_const.sub (H.2.1.comp measurable_snd))) τ (KM * (U - L))
+          (fun p hp => ?_)
+        obtain ⟨k0, k1, -, hu⟩ := kdiff_bounds H hp
+        have := H.2.2.2.2 _ hu
+        show |K (p.1 - p.2) * (U - h p.2)| ≤ _
+        rw [abs_mul, abs_of_nonneg k0, abs_of_nonneg (by linarith)]
+        exact mul_le_mul k1 (by linarith) (by linarith) (le_trans k0 k1)
+      rw [tri_iter_swap hint]
+      have hinner : ∀ u, ∫ t in Icc u τ, K (t - u) * (U - h u)
+          = (U - h u) * ∫ t in Icc u τ, K (t - u) := by
+        intro u; rw [MeasureTheory.integral_mul_const, mul_comm]
+      simp_rw [hinner]
+      refine outer_bound hτ (measurable_const.sub H.2.1) (U - L)
+        (fun x hx => ⟨by linarith [(H.2.2.2.2 x hx).2], by linarith [(H.2.2.2.2 x hx).1]⟩) ?_ hβ
+      intro u hu
+      apply setIntegral_nonneg measurableSet_Icc
+      intro t ht
+      exact H.2.2.1 _ (by linarith [ht.1]) (by linarith [ht.2, hu.1])
+
+    have lemma4_reduced {K h : ℝ → ℝ} {L U τ KM β η : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U)))
+        (hτ : 0 ≤ τ) (hU : 0 ≤ U)
+        (hQ1 : β * τ - η ≤ ∫ p in T τ, K (p.1 - p.2))
+        (hβ1 : ∀ t ∈ Icc 0 τ, ∫ u in Icc 0 t, K (t - u) ≤ β)
+        (hβ2 : ∀ u ∈ Icc 0 τ, ∫ t in Icc u τ, K (t - u) ≤ β) :
+        (3 / 2) * (∫ x in (0:ℝ)..τ, h x ^ 2) - 4 * (∫ p in T τ, K (p.1 - p.2) * h p.1 * h p.2)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * τ
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in (0:ℝ)..τ, (U - h x))
+            + 4 * U ^ 2 * η :=
+      lemma4_of_kernel_bounds H hτ hU hQ1 (C1_le H hτ hβ1) (C2_le H hτ hβ2)
+
+    have partial_mass_le {K : ℝ → ℝ} {β s : ℝ} (hK0 : ∀ v, 0 < v → 0 ≤ K v)
+        (hKi : IntegrableOn K (Ioi 0) volume) (hβ : ∫ v in Ioi 0, K v = β) :
+        ∫ v in Ioc 0 s, K v ≤ β := by
+      rw [← hβ]
+      apply setIntegral_mono_set hKi
+      · exact ae_restrict_of_forall_mem measurableSet_Ioi (fun v hv => hK0 v hv)
+      · exact Filter.Eventually.of_forall (fun v hv => (show v ∈ Ioi (0:ℝ) from hv.1))
+
+    have inner1_le {K : ℝ → ℝ} {β t : ℝ} (ht : 0 ≤ t) (hK0 : ∀ v, 0 < v → 0 ≤ K v)
+        (hKi : IntegrableOn K (Ioi 0) volume) (hβ : ∫ v in Ioi 0, K v = β) :
+        ∫ u in Icc 0 t, K (t - u) ≤ β := by
+      rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le ht,
+        intervalIntegral.integral_comp_sub_left, sub_self, sub_zero,
+        intervalIntegral.integral_of_le ht]
+      exact partial_mass_le hK0 hKi hβ
+
+    have inner2_le {K : ℝ → ℝ} {β u τ : ℝ} (hu : u ≤ τ) (hK0 : ∀ v, 0 < v → 0 ≤ K v)
+        (hKi : IntegrableOn K (Ioi 0) volume) (hβ : ∫ v in Ioi 0, K v = β) :
+        ∫ t in Icc u τ, K (t - u) ≤ β := by
+      rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hu,
+        intervalIntegral.integral_comp_sub_right, sub_self,
+        intervalIntegral.integral_of_le (by linarith)]
+      exact partial_mass_le hK0 hKi hβ
+
+    have lemma4_from_mass {K h : ℝ → ℝ} {L U τ KM β η : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U)))
+        (hτ : 0 ≤ τ) (hU : 0 ≤ U)
+        (hK0 : ∀ v, 0 < v → 0 ≤ K v) (hKi : IntegrableOn K (Ioi 0) volume)
+        (hβ : ∫ v in Ioi 0, K v = β)
+        (hQ1 : β * τ - η ≤ ∫ p in T τ, K (p.1 - p.2)) :
+        (3 / 2) * (∫ x in (0:ℝ)..τ, h x ^ 2) - 4 * (∫ p in T τ, K (p.1 - p.2) * h p.1 * h p.2)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * τ
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in (0:ℝ)..τ, (U - h x))
+            + 4 * U ^ 2 * η :=
+      lemma4_reduced H hτ hU hQ1 (fun _ ht => inner1_le ht.1 hK0 hKi hβ)
+        (fun _ hu => inner2_le hu.2 hK0 hKi hβ)
+
+    have Q1_eq {K : ℝ → ℝ} {τ KM : ℝ} (hKm : Measurable K)
+        (hKb : ∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v ∧ K v ≤ KM) :
+        ∫ p in T τ, K (p.1 - p.2) = ∫ v in Icc 0 τ, (τ - v) * K v := by
+      have hKmp : Measurable (fun p : ℝ × ℝ => K (p.1 - p.2)) :=
+        hKm.comp (measurable_fst.sub measurable_snd)
+      have i1 : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2)) (T τ) volume :=
+        integrableOn_T hKmp τ KM (fun p hp => by
+          obtain ⟨h1, h2, h3⟩ := hp
+          have := hKb (p.1 - p.2) (by linarith) (by linarith)
+          rw [abs_of_nonneg this.1]; exact this.2)
+      have i2 : IntegrableOn (fun p : ℝ × ℝ => K p.2) (T τ) volume :=
+        integrableOn_T (hKm.comp measurable_snd) τ KM (fun p hp => by
+          obtain ⟨h1, h2, h3⟩ := hp
+          have := hKb p.2 h1 (by linarith)
+          show |K p.2| ≤ KM
+          rw [abs_of_nonneg this.1]; exact this.2)
+      rw [tri_iter i1]
+      have hshift : EqOn (fun t => ∫ u in Icc 0 t, K (t - u)) (fun t => ∫ u in Icc 0 t, K u)
+          (Icc 0 τ) := by
+        intro t ht
+        simp only
+        rw [integral_Icc_eq_integral_Ioc, integral_Icc_eq_integral_Ioc,
+          ← intervalIntegral.integral_of_le ht.1, ← intervalIntegral.integral_of_le ht.1,
+          intervalIntegral.integral_comp_sub_left, sub_self, sub_zero]
+      rw [setIntegral_congr_fun measurableSet_Icc hshift]
+      have e2 := tri_iter i2
+      have e3 := tri_iter_swap i2
+      simp only at e2 e3
+      rw [← e2, e3]
+      apply setIntegral_congr_fun measurableSet_Icc
+      intro v hv
+      simp only
+      rw [MeasureTheory.integral_const, smul_eq_mul]
+      simp only [Measure.real, Measure.restrict_apply_univ, Real.volume_Icc]
+      rw [ENNReal.toReal_ofReal (by linarith [hv.2])]
+
+    have Q1_ge {K : ℝ → ℝ} {τ KM β η : ℝ} (hτ : 0 ≤ τ) (hKm : Measurable K)
+        (hKb : ∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v ∧ K v ≤ KM) (hK0 : ∀ v, 0 < v → 0 ≤ K v)
+        (hKi : IntegrableOn K (Ioi 0) volume) (hβ : ∫ v in Ioi 0, K v = β)
+        (hMi : IntegrableOn (fun v => v * K v) (Ioi 0) volume)
+        (hη : ∫ v in Ioi 0, v * K v = η) :
+        β * τ - η ≤ ∫ p in T τ, K (p.1 - p.2) := by
+      rw [Q1_eq hKm hKb, integral_Icc_eq_integral_Ioc]
+      have hfi : IntegrableOn (fun v => (τ - v) * K v) (Ioi 0) volume := by
+        have : (fun v => (τ - v) * K v) = fun v => τ * K v - v * K v := by ext v; ring
+        rw [this]; exact (hKi.const_mul τ).sub hMi
+      have hsplit : ∫ v in Ioi 0, (τ - v) * K v
+          = (∫ v in Ioc 0 τ, (τ - v) * K v) + ∫ v in Ioi τ, (τ - v) * K v := by
+        rw [← Ioc_union_Ioi_eq_Ioi hτ] at hfi ⊢
+        exact setIntegral_union (Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
+          (hfi.mono_set subset_union_left) (hfi.mono_set subset_union_right)
+      have hneg : ∫ v in Ioi τ, (τ - v) * K v ≤ 0 := by
+        apply setIntegral_nonpos measurableSet_Ioi
+        intro v hv
+        have : 0 ≤ K v := hK0 v (lt_of_le_of_lt hτ hv)
+        have : τ - v ≤ 0 := by linarith [show τ < v from hv]
+        nlinarith
+      have hlin : ∫ v in Ioi 0, (τ - v) * K v = β * τ - η := by
+        have : (fun v => (τ - v) * K v) = fun v => τ * K v - v * K v := by ext v; ring
+        rw [this, integral_sub (hKi.const_mul τ) hMi, MeasureTheory.integral_const_mul, hβ, hη]
+        ring
+      linarith
+
+    have lemma4_integral {K h : ℝ → ℝ} {L U τ KM β η : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U)))
+        (hτ : 0 ≤ τ) (hU : 0 ≤ U)
+        (hK0 : ∀ v, 0 < v → 0 ≤ K v) (hKi : IntegrableOn K (Ioi 0) volume)
+        (hβ : ∫ v in Ioi 0, K v = β)
+        (hMi : IntegrableOn (fun v => v * K v) (Ioi 0) volume)
+        (hη : ∫ v in Ioi 0, v * K v = η) :
+        (3 / 2) * (∫ x in (0:ℝ)..τ, h x ^ 2) - 4 * (∫ p in T τ, K (p.1 - p.2) * h p.1 * h p.2)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * τ
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in (0:ℝ)..τ, (U - h x))
+            + 4 * U ^ 2 * η :=
+      lemma4_from_mass H hτ hU hK0 hKi hβ
+        (Q1_ge hτ H.1 (fun v h0 h1 => ⟨H.2.2.1 v h0 h1, H.2.2.2.1 v h0 h1⟩) hK0 hKi hβ hMi hη)
+
+
+
+    have Kker_measurable : Measurable Kker := by
+      unfold Kker; fun_prop
+
+    have Kker_bounds {v : ℝ} (hv : 0 ≤ v) : 0 ≤ Kker v ∧ Kker v ≤ 1 := by
+      have h1 : exp (-v) ≤ 1 := exp_le_one_iff.mpr (by linarith)
+      have hd : 1 ≤ (2 - exp (-v)) ^ 3 := one_le_pow₀ (by linarith)
+      have he : exp (-(3 * v / 2)) ≤ 1 := exp_le_one_iff.mpr (by linarith)
+      unfold Kker
+      refine ⟨div_nonneg (exp_pos _).le (by positivity), ?_⟩
+      calc exp (-(3 * v / 2)) / (2 - exp (-v)) ^ 3 ≤ exp (-(3 * v / 2)) :=
+            div_le_self (exp_pos _).le hd
+        _ ≤ 1 := he
+
+
+    have Q_eq_iter {K h : ℝ → ℝ} {L U τ KM : ℝ} (H : (Measurable K ∧ Measurable h ∧ (∀ v, 0 ≤ v → v ≤ τ → 0 ≤ K v) ∧ (∀ v, 0 ≤ v → v ≤ τ → K v ≤ KM) ∧ (∀ x ∈ Icc 0 τ, L ≤ h x ∧ h x ≤ U))) :
+        ∫ p in T τ, K (p.1 - p.2) * h p.1 * h p.2
+          = ∫ t in Ioo 0 τ, h t * ∫ u in Ioo 0 t, K (t - u) * h u := by
+      have hKmp : Measurable (fun p : ℝ × ℝ => K (p.1 - p.2)) :=
+        H.1.comp (measurable_fst.sub measurable_snd)
+      set B := |L| + |U|
+      have hB : ∀ x ∈ Icc 0 τ, |h x| ≤ B := fun x hx =>
+        abs_le_of_bounds (H.2.2.2.2 x hx).1 (H.2.2.2.2 x hx).2
+      have i3 : IntegrableOn (fun p : ℝ × ℝ => K (p.1 - p.2) * h p.1 * h p.2) (T τ) volume :=
+        integrableOn_T (f := fun p : ℝ × ℝ => K (p.1 - p.2) * h p.1 * h p.2)
+          ((hKmp.mul (H.2.1.comp measurable_fst)).mul (H.2.1.comp measurable_snd)) τ (KM * B * B)
+          (fun p hp => by
+            obtain ⟨k0, k1, ht, hu⟩ := kdiff_bounds H hp
+            show |K (p.1 - p.2) * h p.1 * h p.2| ≤ _
+            rw [abs_mul, abs_mul, abs_of_nonneg k0]
+            have hb1 := hB _ ht
+            have hb2 := hB _ hu
+            have hB0 : 0 ≤ B := le_trans (abs_nonneg _) hb1
+            exact mul_le_mul (mul_le_mul k1 hb1 (abs_nonneg _) (le_trans k0 k1)) hb2
+              (abs_nonneg _) (mul_nonneg (le_trans k0 k1) hB0))
+      rw [tri_iter i3, integral_Icc_eq_integral_Ioo]
+      congr 1; ext t
+      rw [integral_Icc_eq_integral_Ioo, ← MeasureTheory.integral_const_mul]
+      congr 1; ext u; ring
+
+
+    have shift_Ioo (f : ℝ → ℝ) {a b : ℝ} (hab : a ≤ b) :
+        ∫ x in Ioo a b, f x = ∫ x in Ioo 0 (b - a), f (x + a) := by
+      rw [← integral_Ioc_eq_integral_Ioo, ← integral_Ioc_eq_integral_Ioo,
+        ← intervalIntegral.integral_of_le hab, ← intervalIntegral.integral_of_le (by linarith),
+        intervalIntegral.integral_comp_add_right]
+      simp
+
+
+    have iter_shift (K h : ℝ → ℝ) {t0 T : ℝ} (hT : t0 ≤ T) :
+        ∫ t in Ioo t0 T, h t * ∫ u in Ioo t0 t, K (t - u) * h u
+          = ∫ t in Ioo 0 (T - t0), h (t + t0) * ∫ u in Ioo 0 t, K (t - u) * h (u + t0) := by
+      rw [shift_Ioo _ hT]
+      apply setIntegral_congr_fun measurableSet_Ioo
+      intro t ht
+      simp only
+      rw [shift_Ioo _ (by linarith [ht.1] : t0 ≤ t + t0)]
+      congr 1
+      rw [show t + t0 - t0 = t by ring]
+      congr 1; ext u
+      rw [show t + t0 - (u + t0) = t - u by ring]
+
+
+    have lemma4_window {h : ℝ → ℝ} {L U t0 T β η : ℝ} (hm : Measurable h) (hT : t0 ≤ T)
+        (hU : 0 ≤ U) (hb : ∀ x ∈ Icc t0 T, L ≤ h x ∧ h x ≤ U)
+        (hKi : IntegrableOn Kker (Ioi 0) volume) (hβ : ∫ v in Ioi 0, Kker v = β)
+        (hMi : IntegrableOn (fun v => v * Kker v) (Ioi 0) volume)
+        (hη : ∫ v in Ioi 0, v * Kker v = η) :
+        (3 / 2) * (∫ x in t0..T, h x ^ 2)
+          - 4 * (∫ t in Ioo t0 T, h t * ∫ u in Ioo t0 t, Kker (t - u) * h u)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * (T - t0)
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in t0..T, (U - h x))
+            + 4 * U ^ 2 * η := by
+      set g : ℝ → ℝ := fun t => h (t + t0) with hg
+      have Hg : (Measurable Kker ∧ Measurable g ∧ (∀ v, 0 ≤ v → v ≤ T - t0 → 0 ≤ Kker v) ∧ (∀ v, 0 ≤ v → v ≤ T - t0 → Kker v ≤ 1) ∧ (∀ x ∈ Icc 0 (T - t0), L ≤ g x ∧ g x ≤ U)) :=
+        ⟨Kker_measurable, hm.comp (measurable_id.add_const t0), fun v hv _ => (Kker_bounds hv).1, fun v hv _ => (Kker_bounds hv).2, fun x hx => hb (x + t0) ⟨by linarith [hx.1], by linarith [hx.2]⟩⟩
+      have main := lemma4_integral Hg (by linarith) hU (fun v hv => (Kker_bounds hv.le).1)
+        hKi hβ hMi hη
+      rw [Q_eq_iter Hg] at main
+      have e1 : ∫ x in (0:ℝ)..(T - t0), g x ^ 2 = ∫ x in t0..T, h x ^ 2 := by
+        simp only [hg]
+        rw [intervalIntegral.integral_comp_add_right (fun x => h x ^ 2)]; simp
+      have e2 : ∫ x in (0:ℝ)..(T - t0), (U - g x) = ∫ x in t0..T, (U - h x) := by
+        simp only [hg]
+        rw [intervalIntegral.integral_comp_add_right (fun x => U - h x)]; simp
+      rw [e1, e2] at main
+      rw [iter_shift Kker h hT]
+      exact main
+
+    have kernel_formula :
+    ∀ K : Real → Real, (∀ v : Real, K v = Real.exp (-3 * v / 2) / (2 - Real.exp (-v)) ^ 3) → MeasureTheory.IntegrableOn K (Set.Ioi 0) MeasureTheory.volume ∧ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) K = 3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2) :=
+    by
+      intro K hK
+      have primitive_derivative :
+        ∀ H : Real → Real → Real, (∀ r : Real, ∀ t : Real, H r t = (1 / 2) * (t / (2 - t ^ 2) ^ 2) - (1 / 8) * (t / (2 - t ^ 2)) - (1 / (16 * r)) * (Real.log (r + t) - Real.log (r - t))) → ∀ r : Real, ∀ t : Real, 1 < r → r ^ 2 = 2 → 0 ≤ t → t ≤ 1 → HasDerivAt (H r) (2 * t ^ 2 / (2 - t ^ 2) ^ 3) t :=
+        by
+          intro H hH r t hr hr2 ht0 ht1
+          have hr0 : r ≠ 0 := ne_of_gt (by linarith)
+          have hdpos : 0 < 2 - t ^ 2 := by
+            have hp := mul_nonneg (sub_nonneg.mpr ht1) (by linarith : 0 ≤ 1 + t)
+            nlinarith
+          have hd : 2 - t ^ 2 ≠ 0 := ne_of_gt hdpos
+          have hp : r + t ≠ 0 := ne_of_gt (by linarith)
+          have hm : r - t ≠ 0 := ne_of_gt (by linarith)
+          have hlogalg : 1 / (r + t) + 1 / (r - t) = 2 * r / (2 - t ^ 2) := by
+            have heq : 2 - t ^ 2 = (r + t) * (r - t) := by nlinarith [hr2]
+            rw [heq]
+            field_simp [hp, hm]
+            <;> ring
+          have hden : HasDerivAt (fun x : Real => 2 - x ^ 2) (-2 * t) t := by
+            exact ((hasDerivAt_const t (2 : Real)).sub
+              ((hasDerivAt_id t).fun_pow 2)).congr_deriv (by norm_num <;> ring)
+          have hlog : HasDerivAt
+              (fun x : Real => Real.log (r + x) - Real.log (r - x))
+              (2 * r / (2 - t ^ 2)) t := by
+            have hp' := ((hasDerivAt_const t r).add (hasDerivAt_id t)).log hp
+            have hm' := ((hasDerivAt_const t r).sub (hasDerivAt_id t)).log hm
+            have hs := hp'.sub hm'
+            have hvalue : (0 + 1 : Real) / (r + t) - (0 - 1 : Real) / (r - t) =
+                2 * r / (2 - t ^ 2) := by
+              simpa only [zero_add, zero_sub, neg_div, sub_neg_eq_add] using hlogalg
+            exact hs.congr_deriv (by
+              change (0 + 1 : Real) / (r + t) - (0 - 1 : Real) / (r - t) =
+                2 * r / (2 - t ^ 2)
+              exact hvalue)
+          have ha := (hasDerivAt_id t).div (hden.pow 2) (pow_ne_zero 2 hd)
+          have hb := (hasDerivAt_id t).div hden hd
+          have hc := ((ha.const_mul (1 / 2 : Real)).sub
+            (hb.const_mul (1 / 8 : Real))).sub (hlog.const_mul (1 / (16 * r)))
+          rw [show H r = (fun x : Real => (1 / 2) * (x / (2 - x ^ 2) ^ 2) -
+              (1 / 8) * (x / (2 - x ^ 2)) -
+              (1 / (16 * r)) * (Real.log (r + x) - Real.log (r - x))) from funext (hH r)]
+          exact hc.congr_deriv (by dsimp; field_simp [hr0, hd] <;> ring)
+      let r : Real := Real.sqrt 2
+      have hr2 : r ^ 2 = (2 : Real) := Real.sq_sqrt (by norm_num)
+      have hr : (1 : Real) < r := by
+        have hnon : 0 ≤ r := Real.sqrt_nonneg 2
+        nlinarith
+      have hr0 : r ≠ 0 := ne_of_gt (by linarith)
+      let H : Real → Real → Real := fun r t =>
+        (1 / 2) * (t / (2 - t ^ 2) ^ 2) - (1 / 8) * (t / (2 - t ^ 2)) -
+        (1 / (16 * r)) * (Real.log (r + t) - Real.log (r - t))
+      have hdH (t : Real) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
+          HasDerivAt (H r) (2 * t ^ 2 / (2 - t ^ 2) ^ 3) t :=
+        primitive_derivative H (by intro r t; rfl) r t hr hr2 ht0 ht1
+      have hH0 : H r 0 = 0 := by simp [H]
+      have hH1 : H r 1 = 3 / 8 - Real.log (1 + r) / (8 * r) := by
+        have hm : r - 1 ≠ 0 := ne_of_gt (by linarith)
+        have hp : r + 1 ≠ 0 := ne_of_gt (by linarith)
+        have hprod : (r - 1) * (r + 1) = 1 := by nlinarith [hr2]
+        have hlog : Real.log (r - 1) + Real.log (r + 1) = 0 := by
+          rw [← Real.log_mul hm hp, hprod, Real.log_one]
+        have hlog' : Real.log (r - 1) = -Real.log (r + 1) := by linarith
+        dsimp [H]
+        norm_num
+        rw [hlog', show 1 + r = r + 1 by ring]
+        field_simp [hr0]
+        <;> ring
+      let F : Real → Real := fun v => -H r (Real.exp (-v / 2))
+      have hdF : ∀ v ∈ Set.Ici (0 : Real), HasDerivAt F (K v) v := by
+        intro v hv
+        have hv0 : 0 ≤ v := hv
+        have he0 : 0 ≤ Real.exp (-v / 2) := (Real.exp_pos _).le
+        have he1 : Real.exp (-v / 2) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
+        have he2 : Real.exp (-v / 2) ^ 2 = Real.exp (-v) := by
+          rw [pow_two, ← Real.exp_add]
+          congr 1
+          ring
+        have he3 : Real.exp (-v / 2) ^ 3 = Real.exp (-3 * v / 2) := by
+          calc
+            _ = Real.exp (-v / 2) * Real.exp (-v / 2) * Real.exp (-v / 2) := by ring
+            _ = Real.exp ((-v / 2) + (-v / 2) + (-v / 2)) := by
+              rw [Real.exp_add, Real.exp_add]
+            _ = _ := by congr 1; ring
+        have hcomp := ((hdH _ he0 he1).comp v
+          (((hasDerivAt_id v).neg.div_const 2).exp)).neg
+        apply hcomp.congr_deriv
+        change -(2 * Real.exp (-v / 2) ^ 2 / (2 - Real.exp (-v / 2) ^ 2) ^ 3 *
+          (Real.exp (-v / 2) * (-(1 : Real) / 2))) = K v
+        calc
+          _ = Real.exp (-v / 2) ^ 3 / (2 - Real.exp (-v / 2) ^ 2) ^ 3 := by ring
+          _ = K v := by rw [he2, he3, hK v]
+      have hpos : ∀ v ∈ Set.Ioi (0 : Real), 0 ≤ K v := by
+        intro v hv
+        have hv0 : 0 ≤ v := le_of_lt hv
+        have he : Real.exp (-v) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
+        rw [hK v]
+        apply div_nonneg (Real.exp_nonneg _)
+        exact pow_nonneg (by linarith : 0 ≤ 2 - Real.exp (-v)) 3
+      have hx : Filter.Tendsto (fun v : Real => v / 2) Filter.atTop Filter.atTop :=
+        Filter.Tendsto.atTop_div_const (by norm_num : (0 : Real) < 2) Filter.tendsto_id
+      have he : Filter.Tendsto (fun v : Real => Real.exp (-v / 2)) Filter.atTop (nhds 0) := by
+        simpa only [Function.comp_def, neg_div] using
+          Real.tendsto_exp_neg_atTop_nhds_zero.comp hx
+      have hlimit : Filter.Tendsto F Filter.atTop (nhds 0) := by
+        have ht := (((hdH 0 (by norm_num) (by norm_num)).continuousAt.tendsto).comp he).neg
+        simpa only [F, Function.comp_def, Pi.neg_apply, hH0, neg_zero] using ht
+      constructor
+      · exact MeasureTheory.integrableOn_Ioi_deriv_of_nonneg' hdF hpos hlimit
+      · have hf := MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonneg' hdF hpos hlimit
+        have hF0 : F 0 = -H r 1 := by simp [F]
+        rw [hF0, zero_sub, neg_neg, hH1] at hf
+        exact hf
+
+    have FirstMoment_checked :
+    ∀ (K M : Real → Real), (∀ v, K v = Real.exp (-3 * v / 2) / (2 - Real.exp (-v)) ^ 3) → (∀ v, M v = v * K v) → MeasureTheory.IntegrableOn M (Set.Ioi 0) MeasureTheory.volume ∧ 0 ≤ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) M ∧ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) M ≤ 2 :=
+    by
+      intro K M hK hM
+      have hmeas : Measurable M := by
+        have heq : M = fun v : Real => v * (Real.exp (-3 * v / 2) / (2 - Real.exp (-v)) ^ 3) := by
+          funext v
+          rw [hM v, hK v]
+        rw [heq]
+        fun_prop
+      have hbound : ∀ v : Real, 0 ≤ v → 0 ≤ M v ∧ M v ≤ 2 * Real.exp (-v) := by
+        intro v hv
+        have he : Real.exp (-v) ≤ 1 := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hv)
+        have hd : 1 ≤ 2 - Real.exp (-v) := by linarith
+        have hd0 : 0 ≤ 2 - Real.exp (-v) := by linarith
+        have hd2 : 1 ≤ (2 - Real.exp (-v)) ^ 2 := by
+          nlinarith [sq_nonneg (2 - Real.exp (-v) - 1)]
+        have hd3 : 1 ≤ (2 - Real.exp (-v)) ^ 3 := by
+          nlinarith [mul_nonneg (sub_nonneg.mpr hd) (sq_nonneg (2 - Real.exp (-v)))]
+        have hk0 : 0 ≤ K v := by
+          rw [hK v]
+          exact div_nonneg (Real.exp_nonneg _) (pow_nonneg hd0 _)
+        have hk1 : K v ≤ Real.exp (-3 * v / 2) := by
+          rw [hK v]
+          exact div_le_self (Real.exp_nonneg _) hd3
+        have hvexp : v ≤ 2 * Real.exp (v / 2) := by
+          have h := Real.add_one_le_exp (v / 2)
+          linarith
+        have hex : Real.exp (v / 2) * Real.exp (-3 * v / 2) = Real.exp (-v) := by
+          rw [← Real.exp_add]
+          congr 1
+          ring
+        constructor
+        · rw [hM v]
+          exact mul_nonneg hv hk0
+        · calc
+            M v = v * K v := hM v
+            _ ≤ v * Real.exp (-3 * v / 2) := mul_le_mul_of_nonneg_left hk1 hv
+            _ ≤ (2 * Real.exp (v / 2)) * Real.exp (-3 * v / 2) := mul_le_mul_of_nonneg_right hvexp (Real.exp_nonneg _)
+            _ = 2 * Real.exp (-v) := by rw [mul_assoc, hex]
+      have hg : MeasureTheory.IntegrableOn (fun v : Real => 2 * Real.exp (-v)) (Set.Ioi 0) MeasureTheory.volume :=
+        (integrableOn_exp_neg_Ioi 0).const_mul 2
+      have hmi : MeasureTheory.IntegrableOn M (Set.Ioi 0) MeasureTheory.volume := by
+        apply hg.mono' hmeas.aestronglyMeasurable
+        filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with v hv
+        have hb := hbound v (le_of_lt hv)
+        rw [Real.norm_eq_abs, abs_of_nonneg hb.1]
+        exact hb.2
+      refine ⟨hmi, ?_, ?_⟩
+      · apply MeasureTheory.integral_nonneg_of_ae
+        filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with v hv
+        exact (hbound v (le_of_lt hv)).1
+      · have hcmp := MeasureTheory.integral_mono_ae hmi hg (by
+          filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with v hv
+          exact (hbound v (le_of_lt hv)).2)
+        have hgi : MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) (fun v : Real => 2 * Real.exp (-v)) = 2 := by
+          rw [MeasureTheory.integral_const_mul, integral_exp_neg_Ioi_zero]
+          ring
+        rw [hgi] at hcmp
+        exact hcmp
+
+    have Kker_spec (v : ℝ) : Kker v = Real.exp (-3 * v / 2) / (2 - Real.exp (-v)) ^ 3 := by
+      unfold Kker; congr 2; ring
+
+
+    have lemma4_concrete {h : ℝ → ℝ} {L U t0 T : ℝ} (hm : Measurable h) (hT : t0 ≤ T)
+        (hU : 0 ≤ U) (hb : ∀ x ∈ Icc t0 T, L ≤ h x ∧ h x ≤ U) :
+        let β : ℝ := 3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2)
+        let η : ℝ := ∫ v in Ioi 0, v * Kker v
+        0 ≤ η ∧ η ≤ 2 ∧
+        (3 / 2) * (∫ x in t0..T, h x ^ 2)
+          - 4 * (∫ t in Ioo t0 T, h t * ∫ u in Ioo t0 t, Kker (t - u) * h u)
+          ≤ (3 / 2 - 4 * β) * U ^ 2 * (T - t0)
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * (∫ x in t0..T, (U - h x))
+            + 4 * U ^ 2 * η := by
+      intro β η
+      obtain ⟨hKi, hβ⟩ := kernel_formula Kker Kker_spec
+      obtain ⟨hMi, h0, h2⟩ := FirstMoment_checked Kker (fun v => v * Kker v)
+        Kker_spec (fun v => rfl)
+      exact ⟨h0, h2, lemma4_window hm hT hU hb hKi hβ hMi rfl⟩
+
+    intro K h L U t0 T' sq d mom Kt G hK hsq hd hmom hKt hG hm hT hU hb
+    obtain rfl : sq = fun x => h x ^ 2 := funext hsq
+    obtain rfl : d = fun x => U - h x := funext hd
+    have hKK : K = Kker := funext (fun v => by rw [hK v])
+    subst hKK
+    obtain rfl : mom = fun v => v * Kker v := funext hmom
+    obtain rfl : Kt = fun t u => Kker (t - u) * h u := funext (fun t => funext (fun u => hKt t u))
+    obtain rfl : G = fun t => h t * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 t)) (fun u => Kker (t - u) * h u) := funext hG
+    exact lemma4_concrete hm hT hU hb)

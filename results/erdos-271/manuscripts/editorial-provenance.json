@@ -1,0 +1,111 @@
+{
+  "schema": "erdos271-public-editorial-provenance-v1",
+  "scope": "Cedar public archive edition derived from the named room source snapshots; source hashes distinguish it from any preliminary author handoff.",
+  "inputs": [
+    {
+      "path": "Erdos271_Weighted_Covering_Review_v2.5.tex",
+      "bytes": 29460,
+      "sha256": "d3814c5a850e67e74d55a285d4bcaf7d3d7a5bc3c215fc9c6793f294875f8be1",
+      "path_kind": "room_note"
+    },
+    {
+      "path": "Erdos271_Covering_Constructions_Review_v1.5.tex",
+      "bytes": 36191,
+      "sha256": "fc3f73cc0f3535edcb6a50c4aec1205e886b8480cd6dc884bdabd8863712749e",
+      "path_kind": "room_note"
+    },
+    {
+      "path": "Erdos271_Verification_Supplement_v1.1.tex",
+      "bytes": 22112,
+      "sha256": "799797902b9790a04b1d36599ea0ee399d8bfa14dfb88687ed2c338687b67ef7",
+      "path_kind": "room_note"
+    },
+    {
+      "path": "claude-signoff-v2.5-v1.5-supplement-v1.1.md",
+      "role": "Source of the seven numbered minor fixes",
+      "path_kind": "room_note"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "Erdos271_Weighted_Covering_Review_v2.6.tex",
+      "bytes": 29960,
+      "sha256": "72d9349c29a1361d9be2a27223377ac41feb1b9964b57d6f6a37b7380dd75229"
+    },
+    {
+      "path": "Erdos271_Covering_Constructions_Review_v1.6.tex",
+      "bytes": 37373,
+      "sha256": "23a438bc740f3c13392b8cea61dd71cac50bd1a2ea83f3508e3e35e4f2d5ee04"
+    },
+    {
+      "path": "Erdos271_Verification_Supplement_v1.2.tex",
+      "bytes": 22826,
+      "sha256": "4b0d7bf0a36540a6d6d00b0e71efd822e8cc35b9a10cad51afc6e4a5c6b98176"
+    }
+  ],
+  "signoff_fixes": [
+    {
+      "id": "S1",
+      "target": "supplement: Bundle composition row",
+      "change": "Identify archived glue job 68fdc6fb-0c74-4be9-a243-8d7f6ad400ef, resubmission e0c9847a, eight-verdict composition, and rejected single-term job bb93cb63."
+    },
+    {
+      "id": "S2",
+      "target": "supplement: Paper 2 status record",
+      "change": "Point to the full commit hash in Section 1 and the release manifest below."
+    },
+    {
+      "id": "S3",
+      "target": "supplement: scope/fidelity review sentence",
+      "change": "State that the comparisons are manual and separate from machine-checked compilation evidence."
+    },
+    {
+      "id": "S4",
+      "target": "Paper 1 and Paper 2 reproducibility summaries",
+      "change": "Describe the supplement contents without overstating archived inputs or full dependency pins."
+    },
+    {
+      "id": "S5",
+      "target": "Paper 1 statement correspondence pointer",
+      "change": "Point to supplement Section 1 instead of a nonexistent guide."
+    },
+    {
+      "id": "S6",
+      "target": "Paper 1 witness-form assembly description",
+      "change": "Describe the assembly as separately written and sharing the analytic layer."
+    },
+    {
+      "id": "S7",
+      "target": "Paper 2 certificate references",
+      "change": "Qualify first-release witness-table references as the certificate supplement and distinguish them from the formal verification supplement."
+    }
+  ],
+  "public_export_adjustments": [
+    "Label Paper 1 v2.6 and Paper 2 v1.6 as public review drafts and all three files as the public archive edition.",
+    "Set the verification supplement to revision 1.2 and update its companion-version line.",
+    "Use public archive URLs for lean/rev5, lean/rev6, lean/archived-extras, verification/rev5, and verification/rev6 evidence.",
+    "Retain rev-5 manifest 2d4f22165d1e3b60461315f8cd4e2d8e70d0498aaf1add86e4bd459ff4f090ef and identify 78291fa4ca02d51370c4b2c56073ef58bb5f98d7553a7fa77c5fc156d2219c03 as the adopted rev-6 manifest.",
+    "Add B16_exists to the supplement source table.",
+    "Record the recovered historical generator, recovered S_192 artifacts, reconstructed active verifier, verification report, and the absence of a stored optional S_786432 witness table.",
+    "Independent public-package review: remove the unavailable tests/ command and distinguish reconstructed certificate data from the unavailable original first-release package."
+  ],
+  "validation": {
+    "compilation_performed": true,
+    "bibliography_blocks_exact": true,
+    "contribution_record_exact": true,
+    "all_source_qualified_names_retained": true,
+    "balanced_unescaped_braces": true,
+    "display_math_exact": {
+      "paper1": 29,
+      "paper2": 27,
+      "supplement": 4
+    },
+    "math_and_proof_environments": {
+      "paper1": "All 31 theorem, lemma, corollary, definition, remark, proof, equation, align, and align-star blocks are byte-identical to the source.",
+      "paper2": "All 45 theorem, lemma, definition, remark, proof, and equation blocks match after normalizing the two allowed certificate-supplement labels back to supplement.",
+      "supplement": "The one gathered environment is byte-identical to the source."
+    },
+    "required_public_markers_present": true,
+    "compilation_manifest": "pdf-build-manifest.json"
+  }
+}

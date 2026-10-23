@@ -1,0 +1,1 @@
+∃ A : Set Nat, (∀ n : Nat, 3 ≤ n → ∃ a : Nat, ∃ b : Nat, Membership.mem A a ∧ Membership.mem A b ∧ 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧ ∀ eps : Real, 0 < eps → ∀ N : Nat, ∃ n : Nat, N ≤ n ∧ (Set.ncard (Inter.inter A (Set.Iic n)) : Real) ≤ (1675 * Real.sqrt 3 / 1536 + eps) * Real.sqrt (n : Real)

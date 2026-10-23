@@ -1,0 +1,19 @@
+∀ K : Real → Real, ∀ h : Real → Real, ∀ L : Real, ∀ U : Real, ∀ τ : Real, ∀ KM : Real, ∀ β : Real, ∀ η : Real,
+∀ T : Real → Set (Prod Real Real), ∀ sq : Real → Real, ∀ d : Real → Real, ∀ mom : Real → Real, ∀ F : Prod Real Real → Real,
+(∀ s : Real, ∀ p : Prod Real Real, Membership.mem (T s) p ↔ (0 ≤ Prod.snd p ∧ Prod.snd p ≤ Prod.fst p ∧ Prod.fst p ≤ s)) →
+(∀ x : Real, sq x = h x ^ 2) →
+(∀ x : Real, d x = U - h x) →
+(∀ v : Real, mom v = v * K v) →
+(∀ p : Prod Real Real, F p = K (Prod.fst p - Prod.snd p) * h (Prod.fst p) * h (Prod.snd p)) →
+Measurable K → Measurable h →
+(∀ v : Real, 0 ≤ v → v ≤ τ → 0 ≤ K v) →
+(∀ v : Real, 0 ≤ v → v ≤ τ → K v ≤ KM) →
+(∀ x : Real, 0 ≤ x → x ≤ τ → L ≤ h x ∧ h x ≤ U) →
+0 ≤ τ → 0 ≤ U →
+(∀ v : Real, 0 < v → 0 ≤ K v) →
+MeasureTheory.IntegrableOn K (Set.Ioi 0) MeasureTheory.volume →
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) K = β →
+MeasureTheory.IntegrableOn mom (Set.Ioi 0) MeasureTheory.volume →
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom = η →
+(3 / 2) * intervalIntegral sq 0 τ MeasureTheory.volume - 4 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (T τ)) F
+  ≤ (3 / 2 - 4 * β) * U ^ 2 * τ - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L)) * intervalIntegral d 0 τ MeasureTheory.volume + 4 * U ^ 2 * η

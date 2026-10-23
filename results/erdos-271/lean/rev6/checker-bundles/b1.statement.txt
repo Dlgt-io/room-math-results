@@ -1,0 +1,14 @@
+∀ P : Finset Nat, ∀ U : Real, ∀ s : Nat, ∀ x0 : Nat, ∀ X : Nat,
+∀ pairs : Finset (Prod Nat Nat), ∀ fib : Nat → Finset (Prod Nat Nat), ∀ cnt : Nat → Finset Nat,
+∀ mem0 : Finset Nat, ∀ inv : Nat → Real, ∀ rex : Nat → Real, ∀ wt : Prod Nat Nat → Real,
+(∀ q : Prod Nat Nat, Membership.mem pairs q ↔ (Membership.mem P (Prod.fst q) ∧ Membership.mem P (Prod.snd q) ∧ Prod.fst q < Prod.snd q)) →
+(∀ z : Nat, ∀ q : Prod Nat Nat, Membership.mem (fib z) q ↔ (Membership.mem pairs q ∧ 2 * Prod.snd q - Prod.fst q = z)) →
+(∀ t : Nat, ∀ p : Nat, Membership.mem (cnt t) p ↔ (Membership.mem P p ∧ 0 < p ∧ p ≤ t)) →
+(∀ z : Nat, Membership.mem mem0 z ↔ (s < z ∧ z ≤ x0 ∧ Membership.mem P z)) →
+(∀ z : Nat, inv z = 1 / (z : Real)) →
+(∀ z : Nat, rex z = ((Finset.card (fib z) - 1 : Nat) : Real) * inv z) →
+(∀ q : Prod Nat Nat, wt q = inv (2 * Prod.snd q - Prod.fst q)) →
+s ≤ x0 → x0 ≤ X → 0 < x0 → 0 ≤ U →
+(∀ z : Nat, s < z → z ≤ X → ¬ Membership.mem P z → ∃ a : Nat, ∃ b : Nat, Membership.mem P a ∧ Membership.mem P b ∧ a < b ∧ 2 * b - a = z) →
+(∀ t : Nat, x0 ≤ t → t ≤ X → (Finset.card (cnt t) : Real) ≤ U * Real.sqrt (t : Real)) →
+Real.log ((X : Real) + 1) - (harmonic s : Real) - Finset.sum mem0 inv - 2 * U / Real.sqrt (x0 : Real) + Finset.sum (Finset.Ioc s X) rex ≤ Finset.sum pairs wt

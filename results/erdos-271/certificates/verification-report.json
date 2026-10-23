@@ -1,0 +1,124 @@
+{
+  "canonical_serialization": {
+    "sets": "UTF-8 increasing integer plus LF, no header",
+    "witnesses": "UTF-8 n,a,b plus LF, increasing n, smallest valid b, no header"
+  },
+  "extended_checks": {
+    "finite_uniform_bound_range": [
+      1,
+      1048576
+    ],
+    "membership_range": [
+      0,
+      1048576
+    ],
+    "rational_inequalities": 22,
+    "recursion_equals_block_generation": true,
+    "uncovered_positive_targets_below_16_pow_4": [
+      1,
+      6,
+      20,
+      24
+    ]
+  },
+  "facts": {
+    "a16_elements": 679,
+    "a16_witnesses": 1358,
+    "a4_witnesses": 3556,
+    "cylinder_expected_failure": {
+      "digits": "3333",
+      "leader": 3,
+      "rank": 1
+    },
+    "cylinder_rows": 2816,
+    "static_set_sizes": {
+      "192": 24,
+      "3072": 102,
+      "49152": 416,
+      "768": 50
+    },
+    "static_witness_counts": {
+      "192": 190,
+      "3072": 3070,
+      "49152": 49150,
+      "768": 766
+    }
+  },
+  "files": {
+    "a16-base-window.csv": {
+      "bytes": 15609,
+      "sha256": "820741986eaeeb4d6e931db80f8c4da99c6ce3e3fa650d0ac032995694e7e6c4"
+    },
+    "a16-cylinder.csv": {
+      "bytes": 121599,
+      "sha256": "7e59db2b5fe2596aa6940df267c2dbf4a878d45b8600ca670dd64ae5245bf26d"
+    },
+    "a16-set.txt": {
+      "bytes": 3733,
+      "sha256": "03429a757d2ce20b2c3be9016dad53d564bb494100f05316a55422d3c1d793b7"
+    },
+    "a4-base-window.csv": {
+      "bytes": 49699,
+      "sha256": "10e31cd8a6e4fe8ca4f4c9f7217b2d4865e367f2da5dc4e44e39abd15f30aef6"
+    },
+    "s192-set.txt": {
+      "bytes": 67,
+      "sha256": "f204b98bbb5528e25160ad2475da67ea9049f161b25d16ceb633b50bdeed07d7"
+    },
+    "s192-witnesses.csv": {
+      "bytes": 1682,
+      "sha256": "b553f88a0e2df239dab69aaec8b9f0638d79e523613dc0ab9188fe073590bed6"
+    },
+    "s3072-set.txt": {
+      "bytes": 411,
+      "sha256": "67f1e3d63e62f14ca442094a98d8186748d1ea7f656f4ba0f97f391aae4bcfd8"
+    },
+    "s3072-witnesses.csv": {
+      "bytes": 38421,
+      "sha256": "d89f997c4077382071d1a3a6454db0119af1a2e2e06bedee9b6d2ec4c1184590"
+    },
+    "s49152-set.txt": {
+      "bytes": 2133,
+      "sha256": "a3a45288c9946ab6c51fab578bc733a49e7cf4d60aa65356b8f2ec95785cc137"
+    },
+    "s49152-witnesses.csv": {
+      "bytes": 780699,
+      "sha256": "8cd856cd75b4f91c5b4bc13d1f12b05b9c2e1d9e355efc7e9e212cb3c8bcb54b"
+    },
+    "s768-set.txt": {
+      "bytes": 169,
+      "sha256": "3fb1ff6d1858d4710e23ceaa8aac829027fe35f199ca1bfdfb8238ffbc42516e"
+    },
+    "s768-witnesses.csv": {
+      "bytes": 8008,
+      "sha256": "9b321ad447638ff9999f660ce5530a50da36cc050e5c732da22f6f4c17960d07"
+    },
+    "twenty_two_checks.csv": {
+      "bytes": 316,
+      "sha256": "961f0917f848d5b2ed72eaa46c3cf0867db4c56ab68850c724a3919b55f6d926"
+    }
+  },
+  "historical_generator": {
+    "execution_note": "Archived unchanged for history; do not execute in place because it writes to hard-coded /tmp/rel paths.",
+    "path": "original-generator/release_data.py",
+    "sha256": "f856393f7b0338ad4b528efc1c697b4e8cd8e7cc0d04868a5aece99c3cbc6469"
+  },
+  "known_missing_input": {
+    "original_verifier": "The exact first-release scripts/verify_constructions.py was not present in the inspected local archives."
+  },
+  "published_full_hashes_checked": [
+    "a16-base-window.csv",
+    "a16-cylinder.csv",
+    "a16-set.txt",
+    "a4-base-window.csv",
+    "s192-set.txt",
+    "s192-witnesses.csv",
+    "s3072-witnesses.csv",
+    "s49152-set.txt",
+    "s49152-witnesses.csv",
+    "twenty_two_checks.csv"
+  ],
+  "schema": "erdos271-certificate-reconstruction-v1",
+  "scope": "Finite integer certificates only; no claim of reconstructing the unavailable original package bytes.",
+  "status": "verified-reconstruction"
+}

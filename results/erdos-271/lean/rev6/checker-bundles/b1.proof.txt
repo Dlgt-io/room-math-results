@@ -1,0 +1,212 @@
+by
+  intro P U s x0 X pairs fib cnt mem0 inv rex wt hpairs hfib hcnt hmem0 hinv hrex hwt hsx hxX hx0 hU hcov henv
+  classical
+  have step_ineq : ∀ {U a T k : ℝ}, 0 < a → a ≤ T → 0 ≤ k → k ≤ U * √a →
+      k * (1 / a - 1 / T) ≤ 2 * U * (1 / √a - 1 / √T) := by
+    intro U a T k ha haT hk0 hk
+    have hT : 0 < T := lt_of_lt_of_le ha haT
+    set u := √a with hu
+    set v := √T with hv
+    have hu0 : 0 < u := Real.sqrt_pos.mpr ha
+    have hv0 : 0 < v := Real.sqrt_pos.mpr hT
+    have huv : u ≤ v := Real.sqrt_le_sqrt haT
+    have hau : a = u ^ 2 := (Real.sq_sqrt ha.le).symm
+    have hTv : T = v ^ 2 := (Real.sq_sqrt hT.le).symm
+    have hdiff : 0 ≤ 1 / a - 1 / T := by
+      rw [sub_nonneg]; exact one_div_le_one_div_of_le ha haT
+    have hU : 0 ≤ U := by
+      by_contra h; push Not at h
+      have : U * u < 0 := mul_neg_of_neg_of_pos h hu0
+      linarith
+    calc k * (1 / a - 1 / T) ≤ (U * u) * (1 / a - 1 / T) :=
+          mul_le_mul_of_nonneg_right hk hdiff
+      _ ≤ 2 * U * (1 / u - 1 / v) := by
+          rw [hau, hTv]
+          have key : u * (1 / u ^ 2 - 1 / v ^ 2) ≤ 2 * (1 / u - 1 / v) := by
+            have e1 : u * (1 / u ^ 2 - 1 / v ^ 2) = ((v - u) * (v + u)) / (u * v ^ 2) := by
+              field_simp; ring
+            have e2 : 2 * (1 / u - 1 / v) = (2 * (v - u) * v) / (u * v ^ 2) := by
+              field_simp
+            rw [e1, e2]
+            apply div_le_div_of_nonneg_right _ (by positivity)
+            nlinarith [mul_nonneg (sub_nonneg.mpr huv) (sub_nonneg.mpr huv)]
+          calc U * u * (1 / u ^ 2 - 1 / v ^ 2) = U * (u * (1 / u ^ 2 - 1 / v ^ 2)) := by ring
+            _ ≤ U * (2 * (1 / u - 1 / v)) := mul_le_mul_of_nonneg_left key hU
+            _ = 2 * U * (1 / u - 1 / v) := by ring
+  have abel_core : ∀ (U x0 : ℝ), 0 ≤ U → 0 < x0 → ∀ (Q : Finset ℕ),
+      (∀ q ∈ Q, x0 < (q : ℝ)) →
+      (∀ q ∈ Q, ((Q.filter (fun p => p ≤ q)).card : ℝ) ≤ U * √(q : ℝ)) →
+      ∀ T : ℝ, (∀ q ∈ Q, (q : ℝ) ≤ T) → x0 ≤ T →
+        ∑ q ∈ Q, ((q : ℝ))⁻¹ ≤ 2 * U / √x0 - 2 * U / √T + (Q.card : ℝ) / T := by
+    intro U x0 hU hx0 Q hQ hrank
+    induction Q using Finset.induction_on_max with
+    | empty =>
+      intro T _ hT
+      simp only [Finset.sum_empty, Finset.card_empty, Nat.cast_zero, zero_div, add_zero]
+      have h1 : √x0 ≤ √T := Real.sqrt_le_sqrt hT
+      have h2 : 0 < √x0 := Real.sqrt_pos.mpr hx0
+      have : 2 * U / √T ≤ 2 * U / √x0 :=
+        div_le_div_of_nonneg_left (by positivity) h2 h1
+      linarith
+    | insert a s hlt ih =>
+      intro T hle hT
+      have has : a ∉ s := fun h => lt_irrefl a (hlt a h)
+      have ha0 : x0 < (a : ℝ) := hQ a (Finset.mem_insert_self a s)
+      have hapos : 0 < (a : ℝ) := lt_trans hx0 ha0
+      have haT : (a : ℝ) ≤ T := hle a (Finset.mem_insert_self a s)
+      have hfilt : ∀ q ∈ s, (insert a s).filter (fun p => p ≤ q) = s.filter (fun p => p ≤ q) := by
+        intro q hq
+        rw [Finset.filter_insert]
+        have : ¬ a ≤ q := not_le.mpr (hlt q hq)
+        simp [this]
+      have ih' := ih (fun q hq => hQ q (Finset.mem_insert_of_mem hq))
+        (fun q hq => by rw [← hfilt q hq]; exact hrank q (Finset.mem_insert_of_mem hq))
+        (a : ℝ) (fun q hq => by exact_mod_cast (hlt q hq).le) ha0.le
+      have hfa : (insert a s).filter (fun p => p ≤ a) = insert a s := by
+        apply Finset.filter_true_of_mem
+        intro x hx
+        rcases Finset.mem_insert.mp hx with rfl | hx
+        · exact le_refl _
+        · exact (hlt x hx).le
+      have hka : ((s.card : ℝ) + 1) ≤ U * √(a : ℝ) := by
+        have := hrank a (Finset.mem_insert_self a s)
+        rw [hfa, Finset.card_insert_of_notMem has] at this
+        push_cast at this; exact this
+      have hstep := step_ineq hapos haT (by positivity) hka
+      rw [Finset.sum_insert has, Finset.card_insert_of_notMem has]
+      push_cast
+      have e1 : (s.card : ℝ) / a + (a : ℝ)⁻¹ = ((s.card : ℝ) + 1) * (1 / a) := by
+        field_simp
+      have e2 : ((s.card : ℝ) + 1) / T = ((s.card : ℝ) + 1) * (1 / T) := by ring
+      have e3 : 2 * U / √(a : ℝ) - 2 * U / √T = 2 * U * (1 / √(a : ℝ) - 1 / √T) := by ring
+      nlinarith [hstep, ih', e1, e2, e3]
+  -- members' tail (original `member_tail`, with Acnt P t := card (cnt t))
+  have member_tail :
+      ∑ z ∈ (Finset.Ioc x0 X).filter (fun z => z ∈ P), ((z : ℝ))⁻¹ ≤ 2 * U / √(x0 : ℝ) := by
+    set Q := (Finset.Ioc x0 X).filter (fun z => z ∈ P) with hQdef
+    have hmemQ : ∀ q ∈ Q, x0 < q ∧ q ≤ X ∧ q ∈ P := by
+      intro q hq
+      simp only [hQdef, Finset.mem_filter, Finset.mem_Ioc] at hq
+      exact ⟨hq.1.1, hq.1.2, hq.2⟩
+    have hx0r : (0 : ℝ) < x0 := by exact_mod_cast hx0
+    have hrankA : ∀ q, (Q.filter (fun p => p ≤ q)).card ≤ (cnt q).card := by
+      intro q
+      apply Finset.card_le_card
+      intro p hp
+      simp only [Finset.mem_filter] at hp
+      obtain ⟨h1, h2, h3⟩ := hmemQ p hp.1
+      exact (hcnt q p).2 ⟨h3, by omega, hp.2⟩
+    have hrank : ∀ q ∈ Q, ((Q.filter (fun p => p ≤ q)).card : ℝ) ≤ U * √(q : ℝ) := by
+      intro q hq
+      obtain ⟨h1, h2, _⟩ := hmemQ q hq
+      calc ((Q.filter (fun p => p ≤ q)).card : ℝ) ≤ ((cnt q).card : ℝ) := by
+            exact_mod_cast hrankA q
+        _ ≤ U * √(q : ℝ) := henv q h1.le h2
+    by_cases hXx : X ≤ x0
+    · have : Q = ∅ := by
+        apply Finset.eq_empty_of_forall_notMem
+        intro q hq; obtain ⟨h1, h2, _⟩ := hmemQ q hq; omega
+      rw [this, Finset.sum_empty]; positivity
+    push Not at hXx
+    have hXr : (x0 : ℝ) ≤ X := by exact_mod_cast hXx.le
+    have hXpos : (0 : ℝ) < X := lt_of_lt_of_le hx0r hXr
+    have hcore := abel_core U x0 hU hx0r Q (fun q hq => by exact_mod_cast (hmemQ q hq).1)
+      hrank (X : ℝ) (fun q hq => by exact_mod_cast (hmemQ q hq).2.1) hXr
+    have hcardQ : (Q.card : ℝ) ≤ U * √(X : ℝ) := by
+      have h1 : Q.card ≤ (cnt X).card := by
+        apply Finset.card_le_card
+        intro p hp
+        obtain ⟨h1, h2, h3⟩ := hmemQ p hp
+        exact (hcnt X p).2 ⟨h3, by omega, h2⟩
+      calc (Q.card : ℝ) ≤ ((cnt X).card : ℝ) := by exact_mod_cast h1
+        _ ≤ U * √(X : ℝ) := henv X hXx.le le_rfl
+    have hsX : 0 < √(X : ℝ) := Real.sqrt_pos.mpr hXpos
+    have hdiv : (Q.card : ℝ) / X ≤ 2 * U / √(X : ℝ) := by
+      rw [div_le_div_iff₀ hXpos hsX]
+      nlinarith [hcardQ, mul_nonneg hU hsX.le, Real.mul_self_sqrt hXpos.le]
+    linarith
+  -- harmonic lower bound on (s, X]
+  have hsX : s ≤ X := le_trans hsx hxX
+  have harm : Real.log ((X : ℝ) + 1) - (harmonic s : ℝ) ≤ ∑ z ∈ Finset.Ioc s X, (z : ℝ)⁻¹ := by
+    have hsplit : (harmonic X : ℝ) = (harmonic s : ℝ) + ∑ z ∈ Finset.Ioc s X, (z : ℝ)⁻¹ := by
+      simp only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
+      have hI : ∀ n : ℕ, Finset.Icc 1 n = Finset.Ioc 0 n := fun n => by
+        ext i; simp only [Finset.mem_Icc, Finset.mem_Ioc]; omega
+      rw [hI, hI, Finset.sum_Ioc_consecutive _ (Nat.zero_le s) hsX]
+    have h := log_add_one_le_harmonic X
+    push_cast at h
+    linarith
+  have hinv' : ∀ z : ℕ, inv z = (z : ℝ)⁻¹ := fun z => by rw [hinv z, one_div]
+  -- witness gives card (fib z) ≥ 1
+  have one_le : ∀ z, s < z → z ≤ X → z ∉ P → 1 ≤ (fib z).card := by
+    intro z h1 h2 hz
+    obtain ⟨a, b, ha, hb, hab, hab'⟩ := hcov z h1 h2 hz
+    apply Finset.card_pos.mpr
+    exact ⟨(a, b), (hfib z (a, b)).2 ⟨(hpairs (a, b)).2 ⟨ha, hb, hab⟩, hab'⟩⟩
+  -- weighted covering, pointwise
+  have hpt : ∑ z ∈ (Finset.Ioc s X).filter (fun z => z ∉ P), (z : ℝ)⁻¹ + ∑ z ∈ Finset.Ioc s X, rex z
+      ≤ ∑ z ∈ Finset.Ioc s X, ((fib z).card : ℝ) * (z : ℝ)⁻¹ := by
+    rw [Finset.sum_filter, ← Finset.sum_add_distrib]
+    refine Finset.sum_le_sum (fun z hz => ?_)
+    have hzinv : (0 : ℝ) ≤ (z : ℝ)⁻¹ := by positivity
+    rw [hrex z, hinv' z]
+    by_cases hP : z ∈ P
+    · simp only [hP, not_true_eq_false, ite_false, zero_add]
+      exact mul_le_mul_of_nonneg_right (by exact_mod_cast Nat.sub_le _ _) hzinv
+    · simp only [hP, not_false_eq_true, ite_true]
+      have hz' := Finset.mem_Ioc.mp hz
+      have h1 := one_le z hz'.1 hz'.2 hP
+      have : (((fib z).card - 1 : ℕ) : ℝ) = ((fib z).card : ℝ) - 1 := by
+        rw [Nat.cast_sub h1, Nat.cast_one]
+      rw [this]; ring_nf; exact le_refl _
+  -- fibre bound
+  have hfibeq : ∀ z, fib z = pairs.filter (fun q => 2 * q.2 - q.1 = z) := by
+    intro z; ext q; rw [hfib z q, Finset.mem_filter]
+  have hfiber : ∑ z ∈ Finset.Ioc s X, ((fib z).card : ℝ) * (z : ℝ)⁻¹ ≤ ∑ q ∈ pairs, wt q := by
+    have hfib2 : ∑ z ∈ Finset.Ioc s X, ((fib z).card : ℝ) * (z : ℝ)⁻¹
+        = ∑ q ∈ pairs.filter (fun q => 2 * q.2 - q.1 ∈ Finset.Ioc s X), wt q := by
+      rw [← Finset.sum_fiberwise_of_maps_to (g := fun q : ℕ × ℕ => 2 * q.2 - q.1)
+        (t := Finset.Ioc s X) (fun q hq => (Finset.mem_filter.mp hq).2)]
+      refine Finset.sum_congr rfl (fun z hz => ?_)
+      rw [Finset.filter_filter]
+      have hset : pairs.filter (fun q => 2 * q.2 - q.1 ∈ Finset.Ioc s X ∧ 2 * q.2 - q.1 = z)
+          = fib z := by
+        rw [hfibeq z]
+        refine Finset.filter_congr (fun q _ => ?_)
+        constructor
+        · exact fun h => h.2
+        · intro h; exact ⟨h ▸ hz, h⟩
+      rw [hset]
+      have : ∑ q ∈ fib z, wt q = ∑ q ∈ fib z, (z : ℝ)⁻¹ :=
+        Finset.sum_congr rfl (fun q hq => by rw [hwt q, hinv', ((hfib z q).1 hq).2])
+      rw [this, Finset.sum_const, nsmul_eq_mul]
+    rw [hfib2]
+    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+      (fun q _ _ => by rw [hwt q, hinv']; positivity)
+  -- split members of (s, X] at x0
+  have hmem0eq : mem0 = (Finset.Ioc s x0).filter (fun z => z ∈ P) := by
+    ext z; rw [hmem0 z, Finset.mem_filter, Finset.mem_Ioc, and_assoc]
+  have hsplit : (Finset.Ioc s X).filter (fun z => z ∈ P)
+      = (Finset.Ioc s x0).filter (fun z => z ∈ P) ∪ (Finset.Ioc x0 X).filter (fun z => z ∈ P) := by
+    ext z
+    simp only [Finset.mem_filter, Finset.mem_Ioc, Finset.mem_union]
+    constructor
+    · rintro ⟨⟨h1, h2⟩, h3⟩
+      by_cases h : z ≤ x0
+      · exact Or.inl ⟨⟨h1, h⟩, h3⟩
+      · exact Or.inr ⟨⟨by omega, h2⟩, h3⟩
+    · rintro (⟨⟨h1, h2⟩, h3⟩ | ⟨⟨h1, h2⟩, h3⟩)
+      · exact ⟨⟨h1, by omega⟩, h3⟩
+      · exact ⟨⟨by omega, h2⟩, h3⟩
+  have hdisj : Disjoint ((Finset.Ioc s x0).filter (fun z => z ∈ P))
+      ((Finset.Ioc x0 X).filter (fun z => z ∈ P)) := by
+    rw [Finset.disjoint_left]
+    intro z h1 h2
+    simp only [Finset.mem_filter, Finset.mem_Ioc] at h1 h2; omega
+  have h3 := Finset.sum_filter_add_sum_filter_not (Finset.Ioc s X) (fun z => z ∈ P)
+    (fun z => (z : ℝ)⁻¹)
+  rw [hsplit, Finset.sum_union hdisj] at h3
+  have hm0 : Finset.sum mem0 inv = ∑ z ∈ (Finset.Ioc s x0).filter (fun z => z ∈ P), (z : ℝ)⁻¹ := by
+    rw [hmem0eq]; exact Finset.sum_congr rfl (fun z _ => hinv' z)
+  rw [hm0]
+  linarith

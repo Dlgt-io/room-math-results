@@ -1,0 +1,205 @@
+Erdos271.Final.erdos271_limsup : ∀ (S : Set ℕ) [inst : DecidablePred fun x => x ∈ S],
+  0 ∈ S →
+    ∀ (s : ℕ),
+      (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+        ∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)), ¬∀ᶠ (x : ℝ) in Filter.atTop, Erdos271.Side.AS S x ≤ U * √x
+'Erdos271.Final.erdos271_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Final.erdos271_ak : ∀ (S : Set ℕ) [DecidablePred fun x => x ∈ S],
+  0 ∈ S →
+    ∀ (s : ℕ),
+      (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+        ∀ (c : ℝ),
+          Real.log (1 + √2) / (2 * √2) < c → ¬∀ᶠ (k : ℕ) in Filter.atTop, c * ↑k ^ 2 ≤ ↑(Nat.nth (fun x => x ∈ S) k)
+'Erdos271.Final.erdos271_ak' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Final.erdos271_limsup_any : ∀ (S : Set ℕ) [inst : DecidablePred fun x => x ∈ S] (s : ℕ),
+  (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+    ∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)), ¬∀ᶠ (x : ℝ) in Filter.atTop, Erdos271.Side.AS S x ≤ U * √x
+'Erdos271.Final.erdos271_limsup_any' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Final.erdos271_limsup_ge_any : ∀ (S : Set ℕ) [inst : DecidablePred fun x => x ∈ S] (s : ℕ),
+  (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+    (Filter.IsBoundedUnder (fun x1 x2 => x1 ≤ x2) Filter.atTop fun x => Erdos271.Side.AS S x / √x) →
+      1 / √(Real.log (1 + √2) / (2 * √2)) ≤ Filter.limsup (fun x => Erdos271.Side.AS S x / √x) Filter.atTop
+'Erdos271.Final.erdos271_limsup_ge_any' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Final.erdos271_ak_any : ∀ (S : Set ℕ) [DecidablePred fun x => x ∈ S] (s : ℕ),
+  (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+    ∀ (c : ℝ),
+      Real.log (1 + √2) / (2 * √2) < c → ¬∀ᶠ (k : ℕ) in Filter.atTop, c * ↑k ^ 2 ≤ ↑(Nat.nth (fun x => x ∈ S) k)
+'Erdos271.Final.erdos271_ak_any' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Stanley.stanley_limsup : ∀ (A : Finset ℕ) (m : ℕ),
+  (∀ a ∈ A, a ≤ m) →
+    (∀ a ∈ A, ∀ b ∈ A, ∀ c ∈ A, a < b → b < c → a + c ≠ 2 * b) →
+      ∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)),
+        ¬∀ᶠ (x : ℝ) in Filter.atTop, Erdos271.Side.AS (Erdos271.Stanley.StanleySeq A m) x ≤ U * √x
+'Erdos271.Stanley.stanley_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Stanley.stanley_ak : ∀ (A : Finset ℕ) (m : ℕ),
+  (∀ a ∈ A, a ≤ m) →
+    (∀ a ∈ A, ∀ b ∈ A, ∀ c ∈ A, a < b → b < c → a + c ≠ 2 * b) →
+      ∀ (c : ℝ),
+        Real.log (1 + √2) / (2 * √2) < c →
+          ¬∀ᶠ (k : ℕ) in Filter.atTop, c * ↑k ^ 2 ≤ ↑(Nat.nth (fun x => x ∈ Erdos271.Stanley.StanleySeq A m) k)
+'Erdos271.Stanley.stanley_ak' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Stanley.stanley_std_limsup : ∀ (A : Finset ℕ) (hne : A.Nonempty),
+  (∀ a ∈ A, ∀ b ∈ A, ∀ c ∈ A, a < b → b < c → a + c ≠ 2 * b) →
+    ∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)),
+      ¬∀ᶠ (x : ℝ) in Filter.atTop, Erdos271.Side.AS (Erdos271.Stanley.StanleySeq A (A.max' hne)) x ≤ U * √x
+'Erdos271.Stanley.stanley_std_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Stanley.stanley_std_ak : ∀ (A : Finset ℕ) (hne : A.Nonempty),
+  (∀ a ∈ A, ∀ b ∈ A, ∀ c ∈ A, a < b → b < c → a + c ≠ 2 * b) →
+    ∀ (c : ℝ),
+      Real.log (1 + √2) / (2 * √2) < c →
+        ¬∀ᶠ (k : ℕ) in Filter.atTop, c * ↑k ^ 2 ≤ ↑(Nat.nth (fun x => x ∈ Erdos271.Stanley.StanleySeq A (A.max' hne)) k)
+'Erdos271.Stanley.stanley_std_ak' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Stanley.two_seed_limsup : ∀ (n : ℕ),
+  ∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)),
+    ¬∀ᶠ (x : ℝ) in Filter.atTop, Erdos271.Side.AS (Erdos271.Stanley.StanleySeq {0, n} n) x ≤ U * √x
+'Erdos271.Stanley.two_seed_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Stanley.two_seed_ak : ∀ (n : ℕ) (c : ℝ),
+  Real.log (1 + √2) / (2 * √2) < c →
+    ¬∀ᶠ (k : ℕ) in Filter.atTop, c * ↑k ^ 2 ≤ ↑(Nat.nth (fun x => x ∈ Erdos271.Stanley.StanleySeq {0, n} n) k)
+'Erdos271.Stanley.two_seed_ak' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.IndependentEndgame.arbitrarily_large_witnesses : ∀ (S : Set ℕ) [inst : DecidablePred fun x => x ∈ S] (s : ℕ),
+  (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+    ∀ U < 1 / √Erdos271.Alpha.α, ∀ (R : ℝ), ∃ x, R ≤ x ∧ U * √x < Erdos271.Side.AS S x
+'Erdos271.IndependentEndgame.arbitrarily_large_witnesses' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.IndependentEndgame.fixed_error_budget : ∀ (S : Set ℕ) [inst : DecidablePred fun x => x ∈ S],
+  0 ∈ S →
+    ∀ (s x0 : ℕ) (L U : ℝ),
+      s ≤ x0 →
+        0 < x0 →
+          0 ≤ U →
+            (∀ (z : ℕ), s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+              (∀ (x : ℝ), ↑x0 ≤ x → L * √x ≤ Erdos271.Side.AS S x ∧ Erdos271.Side.AS S x ≤ U * √x) →
+                ∀ (X : ℕ),
+                  x0 ≤ X →
+                    Erdos271.WeightedCover.Rex (Erdos271.Side.Pfin S X) s X +
+                        (2 * Erdos271.FinalBudget.alpha * U - 3 / 2 * (U - L)) *
+                          Erdos271.FinalBudget.deficit (Erdos271.Side.Pfin S X) x0 X U ≤
+                      (Erdos271.FinalBudget.alpha * U ^ 2 - 1) * (Real.log ↑X - Real.log ↑x0) +
+                        Erdos271.IndependentEndgame.fixedError S s x0 U
+'Erdos271.IndependentEndgame.fixed_error_budget' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Liminf.StaticCert.liminf_of_cert : ∀ (C : Erdos271.Liminf.StaticCert),
+  ∃ A,
+    (∀ (n : ℕ), 3 ≤ n → ∃ a ∈ A, ∃ b ∈ A, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+      ∀ (ε : ℝ), 0 < ε → ∀ (N : ℕ), ∃ n ≥ N, ↑(A ∩ Set.Iic n).ncard ≤ ((↑C.S.card + 3) / √↑C.X + ε) * √↑n
+'Erdos271.Liminf.StaticCert.liminf_of_cert' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Liminf.liminf_construction_1889 : ∃ A,
+  (∀ (n : ℕ), 3 ≤ n → ∃ a ∈ A, ∃ b ∈ A, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+    ∀ (ε : ℝ), 0 < ε → ∀ (N : ℕ), ∃ n ≥ N, ↑(A ∩ Set.Iic n).ncard ≤ (419 * √3 / 384 + ε) * √↑n
+'Erdos271.Liminf.liminf_construction_1889' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Liminf.liminf_construction_1894 : ∃ A,
+  (∀ (n : ℕ), 3 ≤ n → ∃ a ∈ A, ∃ b ∈ A, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+    ∀ (ε : ℝ), 0 < ε → ∀ (N : ℕ), ∃ n ≥ N, ↑(A ∩ Set.Iic n).ncard ≤ (35 * √3 / 32 + ε) * √↑n
+'Erdos271.Liminf.liminf_construction_1894' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Liminf.liminf_construction_1912 : ∃ A,
+  (∀ (n : ℕ), 3 ≤ n → ∃ a ∈ A, ∃ b ∈ A, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+    ∀ (ε : ℝ), 0 < ε → ∀ (N : ℕ), ∃ n ≥ N, ↑(A ∩ Set.Iic n).ncard ≤ (53 * √3 / 48 + ε) * √↑n
+'Erdos271.Liminf.liminf_construction_1912' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Liminf.liminf_construction : ∃ A,
+  (∀ (n : ℕ), 3 ≤ n → ∃ a ∈ A, ∃ b ∈ A, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+    ∀ (ε : ℝ), 0 < ε → ∀ (N : ℕ), ∃ n ≥ N, ↑(A ∩ Set.Iic n).ncard ≤ (53 * √3 / 48 + ε) * √↑n
+'Erdos271.Liminf.liminf_construction' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.B16.B16_main : ∀ (S : Set ℕ),
+  (∀ (n : ℕ),
+      n ∈ S ↔
+        n = 0 ∨
+          n = 2 ∨
+            n = 3 ∨
+              n = 5 ∨
+                n = 7 ∨
+                  n = 10 ∨
+                    n = 12 ∨
+                      n = 14 ∨
+                        n = 21 ∨
+                          n = 23 ∨
+                            n = 25 ∨
+                              n = 28 ∨
+                                16 ≤ n ∧
+                                  (n.mod 16 = 8 ∨ n.mod 16 = 11 ∨ n.mod 16 = 12 ∨ n.mod 16 = 15) ∧
+                                    0 < n / 16 ∧ n / 16 ∈ S) →
+    (∀ (z : ℕ), 88 < z → ∃ a b, a ∈ S ∧ b ∈ S ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z) ∧
+      (∀ (x : ℝ), 1 ≤ x → ↑(S ∩ Set.Icc 1 ⌊x⌋₊).ncard + 1 ≤ 17 / 6 * √x) ∧
+        ∀ U < 17 / 6, ∀ (M : ℝ), ∃ x, M ≤ x ∧ U * √x < ↑(S ∩ Set.Icc 1 ⌊x⌋₊).ncard
+'Erdos271.B16.B16_main' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.B16.B16_exists : ∃ S,
+  (∀ (n : ℕ),
+      n ∈ S ↔
+        n = 0 ∨
+          n = 2 ∨
+            n = 3 ∨
+              n = 5 ∨
+                n = 7 ∨
+                  n = 10 ∨
+                    n = 12 ∨
+                      n = 14 ∨
+                        n = 21 ∨
+                          n = 23 ∨
+                            n = 25 ∨
+                              n = 28 ∨
+                                16 ≤ n ∧
+                                  (n.mod 16 = 8 ∨ n.mod 16 = 11 ∨ n.mod 16 = 12 ∨ n.mod 16 = 15) ∧
+                                    0 < n / 16 ∧ n / 16 ∈ S) ∧
+    (∀ (z : ℕ), 88 < z → ∃ a b, a ∈ S ∧ b ∈ S ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z) ∧
+      (∀ (x : ℝ), 1 ≤ x → ↑(S ∩ Set.Icc 1 ⌊x⌋₊).ncard + 1 ≤ 17 / 6 * √x) ∧
+        ∀ U < 17 / 6, ∀ (M : ℝ), ∃ x, M ≤ x ∧ U * √x < ↑(S ∩ Set.Icc 1 ⌊x⌋₊).ncard
+'Erdos271.B16.B16_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.B16.mem_iff_blocks : ∀ (n : ℕ),
+  Erdos271.B16.mem n = true ↔ ∃ l w d, Erdos271.B16.Wb w = true ∧ Erdos271.B16.inD l d ∧ n = w * 16 ^ l + d
+'Erdos271.B16.mem_iff_blocks' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.B16.B16_limsup : ∀ (S : Set ℕ),
+  (∀ (n : ℕ),
+      n ∈ S ↔
+        n = 0 ∨
+          n = 2 ∨
+            n = 3 ∨
+              n = 5 ∨
+                n = 7 ∨
+                  n = 10 ∨
+                    n = 12 ∨
+                      n = 14 ∨
+                        n = 21 ∨
+                          n = 23 ∨
+                            n = 25 ∨
+                              n = 28 ∨
+                                16 ≤ n ∧
+                                  (n.mod 16 = 8 ∨ n.mod 16 = 11 ∨ n.mod 16 = 12 ∨ n.mod 16 = 15) ∧
+                                    0 < n / 16 ∧ n / 16 ∈ S) →
+    (∀ (z : ℕ), 88 < z → ∃ a b, a ∈ S ∧ b ∈ S ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z) ∧
+      Filter.limsup (fun x => ↑(S ∩ Set.Icc 1 ⌊x⌋₊).ncard / √x) Filter.atTop = 17 / 6
+'Erdos271.B16.B16_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.B16.S16_limsup : Filter.limsup (fun x => ↑(Erdos271.B16.S16 ∩ Set.Icc 1 ⌊x⌋₊).ncard / √x) Filter.atTop = 17 / 6
+'Erdos271.B16.S16_limsup' depends on axioms: [propext, Classical.choice, Quot.sound]
+ComposedC9.composed : (∀ (S : Set ℕ) (AS : ℝ → ℝ),
+    (∀ (x : ℝ), AS x = ↑(S ∩ Set.Icc 1 ⌊x⌋₊).ncard) →
+      ∀ (s : ℕ),
+        (∀ (z : ℕ), s < z → z ∉ S → ∃ a b, a ∈ S ∧ b ∈ S ∧ a < b ∧ 2 * b - a = z) →
+          (∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)), ¬∃ M, ∀ (x : ℝ), M ≤ x → AS x ≤ U * √x) ∧
+            ∀ (c : ℝ),
+              Real.log (1 + √2) / (2 * √2) < c →
+                ¬∃ K, ∀ (k : ℕ), K ≤ k → c * ↑k ^ 2 ≤ ↑(Nat.nth (Membership.mem S) k)) ∧
+  ∀ (A : Finset ℕ) (m : ℕ) (St : Set ℕ) (AS : ℝ → ℝ),
+    (∀ (x : ℝ), AS x = ↑(St ∩ Set.Icc 1 ⌊x⌋₊).ncard) →
+      (∀ n ≤ m, n ∈ St ↔ n ∈ A) →
+        (∀ (n : ℕ), m < n → (n ∈ St ↔ ¬∃ b < n, ∃ a < b, a ∈ St ∧ b ∈ St ∧ a + n = 2 * b)) →
+          (∀ U < 1 / √(Real.log (1 + √2) / (2 * √2)), ¬∃ M, ∀ (x : ℝ), M ≤ x → AS x ≤ U * √x) ∧
+            ∀ (c : ℝ),
+              Real.log (1 + √2) / (2 * √2) < c → ¬∃ K, ∀ (k : ℕ), K ≤ k → c * ↑k ^ 2 ≤ ↑(Nat.nth (Membership.mem St) k)
+'ComposedC9.composed' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.FiniteIntegrals.finite_weighted_integral_identity : ∀ (P : Finset ℝ) (X : ℝ),
+  0 < X →
+    (∀ p ∈ P, 0 < p ∧ p ≤ X) →
+      IntervalIntegrable (Erdos271.FiniteIntegrals.squareIntegrand P) MeasureTheory.volume 0 X ∧
+        IntervalIntegrable (Erdos271.FiniteIntegrals.doubleIntegrand P) MeasureTheory.volume 0 X ∧
+          Erdos271.FiniteIntegrals.weightedPairs P =
+              3 / 2 * Erdos271.FiniteIntegrals.squareIntegral P X - 4 * Erdos271.FiniteIntegrals.doubleIntegral P X +
+                Erdos271.FiniteIntegrals.boundaryTerm P X ∧
+            0 ≤ Erdos271.FiniteIntegrals.boundaryTerm P X ∧
+              Erdos271.FiniteIntegrals.boundaryTerm P X ≤ ↑P.card ^ 2 / (2 * X)
+'Erdos271.FiniteIntegrals.finite_weighted_integral_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
+Erdos271.Liminf1675.liminf_construction_1675 : ∃ A,
+  (∀ (n : ℕ), 3 ≤ n → ∃ a b, a ∈ A ∧ b ∈ A ∧ 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+    ∀ (eps : ℝ), 0 < eps → ∀ (N : ℕ), ∃ n, N ≤ n ∧ ↑(A ∩ Set.Iic n).ncard ≤ (1675 * √3 / 1536 + eps) * √↑n
+'Erdos271.Liminf1675.liminf_construction_1675' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+real	0m8.371s
+user	0m4.522s
+sys	0m3.737s

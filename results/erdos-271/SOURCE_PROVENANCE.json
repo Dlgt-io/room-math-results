@@ -1,0 +1,113 @@
+{
+  "origin_room_title": "Erdős Problem #271 — Stanley sequences",
+  "archive_date": "2026-10-23",
+  "source_archives": [
+    {
+      "name": "erdos271-rev5-release.zip",
+      "sha256": "9ce42e7564c30449f5667bbb9def692e6726c4bd6634fbb1017eb939f86845fb"
+    },
+    {
+      "name": "assembled-rev6.zip",
+      "sha256": "64c51536ef1948bbf96a37adfae4b505f3d8570ff935133a5e177df6273f4858"
+    }
+  ],
+  "formal_source_manifests": {
+    "rev5": "2d4f22165d1e3b60461315f8cd4e2d8e70d0498aaf1add86e4bd459ff4f090ef",
+    "rev6": "78291fa4ca02d51370c4b2c56073ef58bb5f98d7553a7fa77c5fc156d2219c03",
+    "archived_extras": "15d9b61152f5aa13577002e4fc20d5b7ea66228a90922a94c43d1d9dd1f2a736"
+  },
+  "review_source_snapshots": [
+    {
+      "room_note_path": "claude-citation-audit-v2.4-v1.4.md",
+      "sha256": "3c8d795b4599526154e7dc822f7d5d4e35951af6a2b18d739cb74f79ebf92f85"
+    },
+    {
+      "room_note_path": "claude-release-construction-data.md",
+      "sha256": "11d75f2e37360798016d89f5988518fa22fd93dea8cc6a345ca3921756a95825"
+    },
+    {
+      "room_note_path": "claude-signoff-v2.5-v1.5-supplement-v1.1.md",
+      "sha256": "a71f7c1787d2c9505258d9312ab3af044206c0d5471e21adbb884572b87cf060"
+    },
+    {
+      "room_note_path": "Erdos271_Covering_Constructions_Review_v1.5.tex",
+      "sha256": "fc3f73cc0f3535edcb6a50c4aec1205e886b8480cd6dc884bdabd8863712749e"
+    },
+    {
+      "room_note_path": "Erdos271_Verification_Supplement_v1.1.tex",
+      "sha256": "799797902b9790a04b1d36599ea0ee399d8bfa14dfb88687ed2c338687b67ef7"
+    },
+    {
+      "room_note_path": "Erdos271_Weighted_Covering_Review_v2.5.tex",
+      "sha256": "d3814c5a850e67e74d55a285d4bcaf7d3d7a5bc3c215fc9c6793f294875f8be1"
+    },
+    {
+      "room_note_path": "grok-fidelity-crosswalk.md",
+      "sha256": "5652a48341da241c074b3520bc95e4a1ad11264ddaab6c3f454c5a614e0da336"
+    },
+    {
+      "room_note_path": "grok-release-package.md",
+      "sha256": "286c812bb9217cff4a923f19aa44616a133cf9d15e7deea7e0092d959d28fe1d"
+    },
+    {
+      "room_note_path": "grok-release-rev6-proposal.md",
+      "sha256": "b978b8fd234bd8a2d396588b6f4ab41ea5ad17901772abc947d951ee44f9f7e2"
+    },
+    {
+      "room_note_path": "problem.md",
+      "sha256": "1f55878e82962d967668ef5fd8df816833d698b21fcc36b67016663a8de4c9c7"
+    },
+    {
+      "room_note_path": "publication-20261023/citation-authenticity-closeout.md",
+      "sha256": "caa89544a646c4e80a7550e9ef7588412c564e0a5c7640b4537683cffe25043c"
+    },
+    {
+      "room_note_path": "sources.md",
+      "sha256": "75e046790f4803cbef38d6db2e089a597003f2bef59b6c2a6516cf3862079a57"
+    }
+  ],
+  "scope": "Public review package, preserving exact formal source trees and their historical manifests; manuscript edition and certificate reconstruction have separate provenance.",
+  "release_status": {
+    "current": "rev6",
+    "record": "grok-release-rev6-proposal.md",
+    "revision": 9,
+    "sha256": "fcf3f45ec385703b72358bbf616e4df0bb5fc57c4d71294e595f7945c9449a32",
+    "recorded_by": "Grok",
+    "status": "Adopted after independent replay and cross-checks; original README retains candidate wording under its frozen hash."
+  },
+  "public_manuscript_edition": {
+    "editor": "Cedar",
+    "status": "Public archive edition, distinct from preliminary author handoffs",
+    "provenance": "manuscripts/editorial-provenance.json",
+    "compiled_pdfs": "manuscripts/pdf-build-manifest.json",
+    "files": [
+      {
+        "source": "Erdos271_Weighted_Covering_Review_v2.6.tex",
+        "source_sha256": "72d9349c29a1361d9be2a27223377ac41feb1b9964b57d6f6a37b7380dd75229",
+        "pdf": "Erdos271_Weighted_Covering_Review_v2.6.pdf",
+        "pdf_sha256": "e7cdbe6f67dd8c27c44bdb19a59048402080560d00afb22f518761b0746036ef",
+        "pdf_bytes": 123389,
+        "exit_code": 0,
+        "pages": 11
+      },
+      {
+        "source": "Erdos271_Covering_Constructions_Review_v1.6.tex",
+        "source_sha256": "23a438bc740f3c13392b8cea61dd71cac50bd1a2ea83f3508e3e35e4f2d5ee04",
+        "pdf": "Erdos271_Covering_Constructions_Review_v1.6.pdf",
+        "pdf_sha256": "7942ea9772494213e991cf1523d521eae5bba4e1849b1680d177b11143f31715",
+        "pdf_bytes": 130396,
+        "exit_code": 0,
+        "pages": 12
+      },
+      {
+        "source": "Erdos271_Verification_Supplement_v1.2.tex",
+        "source_sha256": "4b0d7bf0a36540a6d6d00b0e71efd822e8cc35b9a10cad51afc6e4a5c6b98176",
+        "pdf": "Erdos271_Verification_Supplement_v1.2.pdf",
+        "pdf_sha256": "e0a2a46c08df657dc1b19fc56b9d9e1e818bdb42ab6cb01d38006e1ead3e4a8f",
+        "pdf_bytes": 74587,
+        "exit_code": 0,
+        "pages": 7
+      }
+    ]
+  }
+}

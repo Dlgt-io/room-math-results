@@ -1,0 +1,437 @@
+by
+  intro C8a
+  open MeasureTheory Set Real Finset Filter in (
+    let pairs (P : Finset ℕ) : Finset (ℕ × ℕ) := (P ×ˢ P).filter (fun q => q.1 < q.2)
+
+
+    have card_pairs_le (P : Finset ℕ) : (pairs P).card ≤ P.card.choose 2 := by
+      classical
+      rw [← Finset.card_powersetCard]
+      apply Finset.card_le_card_of_injOn (fun q => ({q.1, q.2} : Finset ℕ))
+      · intro q hq
+        simp only [pairs, Finset.mem_coe, Finset.mem_filter, Finset.mem_product] at hq
+        rw [Finset.mem_coe, Finset.mem_powersetCard]
+        refine ⟨?_, Finset.card_pair (ne_of_lt hq.2)⟩
+        intro x hx
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+        rcases hx with rfl | rfl
+        · exact hq.1.1
+        · exact hq.1.2
+      · intro q hq q' hq' heq
+        simp only [pairs, Finset.mem_coe, Finset.mem_filter] at hq hq'
+        simp only at heq
+        have h1 : q.1 ∈ ({q'.1, q'.2} : Finset ℕ) := by
+          rw [← heq]; simp
+        have h2 : q.2 ∈ ({q'.1, q'.2} : Finset ℕ) := by
+          rw [← heq]; simp
+        simp only [Finset.mem_insert, Finset.mem_singleton] at h1 h2
+        have := hq.2; have := hq'.2
+        rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2
+        · omega
+        · exact Prod.ext h1 h2
+        · omega
+        · omega
+
+
+    have omitted_le_pairs (P : Finset ℕ) (s X : ℕ)
+        (hcov : ∀ z ∈ Finset.Ioc s X, z ∉ P → ∃ a ∈ P, ∃ b ∈ P, a < b ∧ 2 * b - a = z) :
+        ((Finset.Ioc s X).filter (fun z => z ∉ P)).card ≤ (pairs P).card := by
+      classical
+      have hw : ∀ z ∈ (Finset.Ioc s X).filter (fun z => z ∉ P),
+          ∃ q : ℕ × ℕ, q ∈ pairs P ∧ 2 * q.2 - q.1 = z := by
+        intro z hz
+        rw [Finset.mem_filter] at hz
+        obtain ⟨a, ha, b, hb, hab, h⟩ := hcov z hz.1 hz.2
+        exact ⟨(a, b), Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨ha, hb⟩, hab⟩, h⟩
+      choose! f hf using hw
+      apply Finset.card_le_card_of_injOn f
+      · intro z hz; exact (hf z hz).1
+      · intro z hz z' hz' heq
+        have e1 := (hf z hz).2
+        have e2 := (hf z' hz').2
+        rw [← e1, ← e2, heq]
+
+
+    have moy_finite (P : Finset ℕ) (s X : ℕ) (hPX : ∀ p ∈ P, p ≤ X)
+        (hcov : ∀ z ∈ Finset.Ioc s X, z ∉ P → ∃ a ∈ P, ∃ b ∈ P, a < b ∧ 2 * b - a = z) :
+        2 * X ≤ ((P.filter (fun p => 0 < p ∧ p ≤ X)).card) ^ 2
+          + 3 * (P.filter (fun p => 0 < p ∧ p ≤ X)).card + 2 * s := by
+      classical
+      set A := (P.filter (fun p => 0 < p ∧ p ≤ X)).card with hA
+
+      have hP : P.card ≤ A + 1 := by
+        have hsub : P ⊆ insert 0 (P.filter (fun p => 0 < p ∧ p ≤ X)) := by
+          intro p hp
+          rcases Nat.eq_zero_or_pos p with h | h
+          · rw [h]; exact Finset.mem_insert_self _ _
+          · exact Finset.mem_insert_of_mem (Finset.mem_filter.mpr ⟨hp, h, hPX p hp⟩)
+        calc P.card ≤ (insert 0 (P.filter (fun p => 0 < p ∧ p ≤ X))).card := Finset.card_le_card hsub
+          _ ≤ A + 1 := Finset.card_insert_le _ _
+
+      have hmem : ((Finset.Ioc s X).filter (fun z => z ∈ P)).card ≤ A := by
+        apply Finset.card_le_card
+        intro z hz
+        simp only [Finset.mem_filter, Finset.mem_Ioc] at hz ⊢
+        exact ⟨hz.2, by omega, hz.1.2⟩
+      have hsplit := Finset.card_filter_add_card_filter_not (s := Finset.Ioc s X) (fun z => z ∈ P)
+      have hIoc : (Finset.Ioc s X).card = X - s := Nat.card_Ioc s X
+      have hom := le_trans (omitted_le_pairs P s X hcov) (card_pairs_le P)
+      have hch : P.card.choose 2 ≤ (A + 1).choose 2 := Nat.choose_le_choose 2 hP
+      have hc2 : 2 * (A + 1).choose 2 = (A + 1) * A := by
+        rw [Nat.choose_two_right]
+        have : 2 ∣ (A + 1) * A := by
+          rcases Nat.even_or_odd A with ⟨k, hk⟩ | ⟨k, hk⟩
+          · exact ⟨(A + 1) * k, by rw [hk]; ring⟩
+          · exact ⟨(k + 1) * A, by rw [hk]; ring⟩
+        simp only [Nat.add_sub_cancel]
+        exact Nat.mul_div_cancel' this
+      have key : X - s ≤ (A + 1).choose 2 + A := by omega
+      have hsq : (A + 1) * A = A ^ 2 + A := by ring
+      rw [hsq] at hc2
+      generalize A ^ 2 = B at hc2 ⊢
+      omega
+
+
+    have moy_set (S : Set ℕ) [DecidablePred (· ∈ S)] (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) (X : ℕ) :
+        2 * X ≤ (((range (X + 1)).filter (· ∈ S)).filter (fun p => 0 < p ∧ p ≤ X)).card ^ 2
+          + 3 * (((range (X + 1)).filter (· ∈ S)).filter (fun p => 0 < p ∧ p ≤ X)).card
+          + 2 * s := by
+      apply moy_finite
+      · intro p hp
+        have := (Finset.mem_filter.mp hp).1
+        rw [Finset.mem_range] at this; omega
+      · intro z hz hzP
+        rw [Finset.mem_Ioc] at hz
+        have hzS : z ∉ S := by
+          intro h; apply hzP
+          exact Finset.mem_filter.mpr ⟨Finset.mem_range.mpr (by omega), h⟩
+        obtain ⟨a, ha, b, hb, hab, h⟩ := hcov z hz.1 hzS
+        have hbz : b < z := by omega
+        refine ⟨a, Finset.mem_filter.mpr ⟨Finset.mem_range.mpr (by omega), ha⟩,
+          b, Finset.mem_filter.mpr ⟨Finset.mem_range.mpr (by omega), hb⟩, hab, h⟩
+
+
+    have moy_sqrt (A s X : ℕ) (h : 2 * X ≤ A ^ 2 + 3 * A + 2 * s) :
+        Real.sqrt (2 * ((X : ℝ) - s)) ≤ (A : ℝ) + 3 / 2 := by
+      have h' : (2 * X : ℝ) ≤ (A : ℝ) ^ 2 + 3 * A + 2 * s := by exact_mod_cast h
+      rw [Real.sqrt_le_left (by positivity)]
+      nlinarith
+
+    let α : ℝ := Real.log (1 + √2) / (2 * √2)
+
+    have sqrt2_sq : (√2 : ℝ) ^ 2 = 2 := Real.sq_sqrt (by norm_num)
+
+    have log_one_add_sqrt2_ge :
+        (√2 / 2) * (1 + 1/6 + 1/20 + 1/56 + 1/144) ≤ Real.log (1 + √2) := by
+      set y : ℝ := √2 / 2 with hy
+      have hs0 : 0 < √2 := by positivity
+      have hs1 : √2 < 2 := by nlinarith [sqrt2_sq]
+      have hy0 : 0 < y := by positivity
+      have hy1 : |y| < 1 := by rw [abs_of_pos hy0]; linarith
+      have hy2 : y ^ 2 = 1 / 2 := by rw [hy, div_pow, sqrt2_sq]; norm_num
+      have hH := hasSum_log_sub_log_of_abs_lt_one hy1
+      have hS := sum_le_hasSum (Finset.range 5)
+        (fun i _ => by positivity) hH
+      have hpow : ∀ k : ℕ, y ^ (2 * k + 1) = y * (1 / 2) ^ k := by
+        intro k; rw [pow_succ, pow_mul, hy2, mul_comm]
+      simp only [hpow, Finset.sum_range_succ, Finset.sum_range_zero] at hS
+
+      have h1 : 0 < 1 - y := by linarith
+      have hq : (1 + y) / (1 - y) = (1 + √2) ^ 2 := by
+        rw [div_eq_iff h1.ne']
+        rw [hy]; ring_nf; rw [show (√2 : ℝ) ^ 3 = √2 ^ 2 * √2 by ring, sqrt2_sq]; ring
+      have hl : Real.log (1 + y) - Real.log (1 - y) = 2 * Real.log (1 + √2) := by
+        rw [← Real.log_div (by linarith) h1.ne', hq, Real.log_pow]; push_cast; ring
+      rw [hl] at hS
+      norm_num at hS
+      linarith
+
+    have alpha_gt : (25 : ℝ) / 81 < α := by
+      have h := log_one_add_sqrt2_ge
+      have hs0 : 0 < √2 := by positivity
+      unfold α
+      rw [lt_div_iff₀ (by positivity)]
+      nlinarith
+
+    have alpha_gt_three_tenths : (3 : ℝ) / 10 < α := by
+      have := alpha_gt; linarith
+
+    have alpha_pos : 0 < α := by
+      have := alpha_gt; linarith
+
+
+    have Cstar_lt : 1 / √α < 9 / 5 := by
+      have ha := alpha_gt
+      have hsa : 5 / 9 < √α := by
+        rw [show (5 : ℝ) / 9 = √(25 / 81) by
+          rw [show (25 : ℝ) / 81 = (5 / 9) ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
+        exact Real.sqrt_lt_sqrt (by norm_num) ha
+      rw [div_lt_iff₀ (by linarith)]
+      linarith
+
+    let Pfin_unused := 0
+    let Pfin (S : Set ℕ) [DecidablePred (· ∈ S)] (X : ℕ) : Finset ℕ := (range (X + 1)).filter (· ∈ S)
+
+
+    let AS_loc (S : Set ℕ) [DecidablePred (· ∈ S)] (x : ℝ) : ℝ :=
+      (((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card : ℝ)
+
+    have AS_nonneg (S : Set ℕ) [DecidablePred (· ∈ S)] (x : ℝ) : 0 ≤ AS_loc S x := Nat.cast_nonneg _
+
+    have AS_floor (S : Set ℕ) [DecidablePred (· ∈ S)] (x : ℝ) : AS_loc S x = AS_loc S (⌊x⌋₊ : ℝ) := by
+      unfold AS_loc; rw [Nat.floor_natCast]
+
+    have lower_env (S : Set ℕ) [DecidablePred (· ∈ S)] (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) :
+        ∀ x : ℝ, (156 + 50 * (s : ℝ)) ^ 2 ≤ x → (7 / 5) * √x ≤ AS_loc S x := by
+      intro x hx
+      have hs : (0 : ℝ) ≤ s := Nat.cast_nonneg _
+      set X := ⌊x⌋₊ with hXdef
+      have hx0 : 0 ≤ x := le_trans (by positivity) hx
+      have hXx : x < X + 1 := Nat.lt_floor_add_one x
+      have hm := moy_set S s hcov X
+      set A := (((range (X + 1)).filter (· ∈ S)).filter (fun p => 0 < p ∧ p ≤ X)).card with hA
+      have hAS : AS_loc S x = (A : ℝ) := by
+        unfold AS_loc; rw [← hXdef, hA]
+        congr 2
+        ext n; simp only [Finset.mem_filter, Finset.mem_range]
+        constructor
+        · rintro ⟨h1, h2, h3⟩; exact ⟨⟨h1, h2⟩, h3, by omega⟩
+        · rintro ⟨⟨h1, h2⟩, h3, _⟩; exact ⟨h1, h2, h3⟩
+      rw [hAS]
+      have hmr : (2 * X : ℝ) ≤ (A : ℝ) ^ 2 + 3 * A + 2 * s := by exact_mod_cast hm
+      set u := √x with hu
+      have hu0 : 0 ≤ u := Real.sqrt_nonneg _
+      have hux : u ^ 2 = x := Real.sq_sqrt hx0
+      have hu1 : 156 + 50 * (s : ℝ) ≤ u := by
+        rw [hu]; exact Real.le_sqrt_of_sq_le hx
+      by_contra hlt
+      push Not at hlt
+      have hA0 : (0 : ℝ) ≤ A := Nat.cast_nonneg _
+      have hA2 : (A : ℝ) ^ 2 ≤ (7 / 5 * u) ^ 2 := pow_le_pow_left₀ hA0 hlt.le 2
+      nlinarith
+
+    have env_of_limsup (S : Set ℕ) [DecidablePred (· ∈ S)] {U : ℝ}
+        (hb : IsBoundedUnder (· ≤ ·) atTop (fun x => AS_loc S x / √x))
+        (h : limsup (fun x => AS_loc S x / √x) atTop < U) :
+        ∀ᶠ x in atTop, AS_loc S x ≤ U * √x := by
+      filter_upwards [eventually_lt_of_limsup_lt h hb, eventually_gt_atTop 0] with x hx hx0
+      have := Real.sqrt_pos.mpr hx0
+      rw [div_lt_iff₀ this] at hx
+      exact hx.le
+
+    have alpha_lt_one : α < 1 := by
+      unfold α
+      have hs : (1 : ℝ) < √2 := by
+        rw [show (1 : ℝ) = √1 by simp]; exact Real.sqrt_lt_sqrt (by norm_num) (by norm_num)
+      have hl : Real.log (1 + √2) ≤ √2 := by
+        have := Real.log_le_sub_one_of_pos (by positivity : (0 : ℝ) < 1 + √2); linarith
+      rw [div_lt_one (by positivity)]
+      linarith
+
+    have Cstar_gt_one : 1 < 1 / √α := by
+      have h0 := alpha_pos
+      have h1 := alpha_lt_one
+      have hs : √α < 1 := by
+        rw [show (1 : ℝ) = √1 by simp]; exact Real.sqrt_lt_sqrt h0.le h1
+      rw [lt_div_iff₀ (Real.sqrt_pos.mpr h0)]; linarith
+
+    let Budget61 (U : ℝ) : Prop :=
+      ∃ C : ℝ, ∃ x0 : ℕ, ∀ X : ℕ, x0 ≤ X → Real.log X ≤ α * U ^ 2 * Real.log X + C
+
+
+    let H61 (S : Set ℕ) [DecidablePred (· ∈ S)] : Prop :=
+      ∀ U : ℝ, 0 ≤ U → U < 1 / √α →
+        (∃ x0 : ℕ, 1 ≤ x0 ∧ ∀ x : ℝ, (x0 : ℝ) ≤ x → (7 / 5) * √x ≤ AS_loc S x ∧ AS_loc S x ≤ U * √x) →
+        Budget61 U
+
+
+    have limit_of_budget {U : ℝ} (hc : α * U ^ 2 < 1) (hB : Budget61 U) : False := by
+      obtain ⟨C, x0, hX⟩ := hB
+      set c := α * U ^ 2
+      have hpos : 0 < 1 - c := by linarith
+      set X : ℕ := max x0 ⌈Real.exp (C / (1 - c) + 1)⌉₊
+      have h1 := hX X (le_max_left _ _)
+      have hXe : Real.exp (C / (1 - c) + 1) ≤ X := le_trans (Nat.le_ceil _)
+        (by exact_mod_cast le_max_right _ _)
+      have hlog : C / (1 - c) + 1 ≤ Real.log X := by
+        rw [← Real.log_exp (C / (1 - c) + 1)]
+        exact Real.log_le_log (Real.exp_pos _) hXe
+      have : (1 - c) * (C / (1 - c) + 1) ≤ (1 - c) * Real.log X :=
+        mul_le_mul_of_nonneg_left hlog hpos.le
+      have e : (1 - c) * (C / (1 - c) + 1) = C + (1 - c) := by field_simp
+      nlinarith
+
+    have sq_lt_of_lt_Cstar {V : ℝ} (hV0 : 0 ≤ V) (hV : V < 1 / √α) : α * V ^ 2 < 1 := by
+      have ha := alpha_pos
+      have hs := Real.sqrt_pos.mpr ha
+      have h1 : V * √α < 1 := by rwa [lt_div_iff₀ hs] at hV
+      have h2 : (V * √α) ^ 2 < 1 := by
+        have : 0 ≤ V * √α := mul_nonneg hV0 hs.le
+        nlinarith
+      rwa [mul_pow, Real.sq_sqrt ha.le, mul_comm] at h2
+
+
+    have erdos271_limsup_of (S : Set ℕ) [DecidablePred (· ∈ S)] (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z)
+        (h61 : H61 S) :
+        ∀ U : ℝ, U < 1 / √α → ¬ ∀ᶠ x : ℝ in atTop, AS_loc S x ≤ U * √x := by
+      intro U hU hev
+      set V := max U 1 with hVdef
+      have hV0 : 0 ≤ V := le_trans zero_le_one (le_max_right _ _)
+      have hV : V < 1 / √α := max_lt hU Cstar_gt_one
+      have hev' : ∀ᶠ x : ℝ in atTop, AS_loc S x ≤ V * √x := by
+        filter_upwards [hev] with x hx
+        exact le_trans hx (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.sqrt_nonneg _))
+      obtain ⟨M, hM⟩ := eventually_atTop.mp hev'
+      set x0 : ℕ := ⌈max (max M ((156 + 50 * (s : ℝ)) ^ 2)) 1⌉₊
+      have hx0 : max (max M ((156 + 50 * (s : ℝ)) ^ 2)) 1 ≤ x0 := Nat.le_ceil _
+      have hx01 : 1 ≤ x0 := by
+        have : (1 : ℝ) ≤ x0 := le_trans (le_max_right _ _) hx0
+        exact_mod_cast this
+      refine limit_of_budget (sq_lt_of_lt_Cstar hV0 hV) (h61 V hV0 hV ⟨x0, hx01, fun x hx => ?_⟩)
+      have hxM : M ≤ x := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) (le_trans hx0 hx)
+      have hxs : (156 + 50 * (s : ℝ)) ^ 2 ≤ x :=
+        le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) (le_trans hx0 hx)
+      exact ⟨lower_env S s hcov x hxs, hM x hxM⟩
+
+
+    have erdos271_limsup_ge_of (S : Set ℕ) [DecidablePred (· ∈ S)] (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z)
+        (h61 : H61 S) (hb : IsBoundedUnder (· ≤ ·) atTop (fun x => AS_loc S x / √x)) :
+        1 / √α ≤ limsup (fun x => AS_loc S x / √x) atTop := by
+      by_contra hlt
+      push Not at hlt
+      obtain ⟨U, h1, h2⟩ := exists_between hlt
+      exact erdos271_limsup_of S s hcov h61 U h2 (env_of_limsup S hb h1)
+
+    have erdos271_limsup : ∀ (S : Set ℕ) [DecidablePred (· ∈ S)], 0 ∈ S → ∀ (s : ℕ),
+        (∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) →
+        ∀ U : ℝ, U < 1 / √(Real.log (1 + √2) / (2 * √2)) → ¬ ∀ᶠ x : ℝ in atTop, AS_loc S x ≤ U * √x := by
+      intro S _ h0 s hcov U hU
+      classical
+      have hcov2 : ∀ z : ℕ, s < z → ¬ Membership.mem S z → ∃ a : ℕ, ∃ b : ℕ, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z := by
+        intro z h1 h2
+        obtain ⟨a, ha, b, hb, h⟩ := hcov z h1 h2
+        exact ⟨a, b, ha, hb, h⟩
+      have hspec : ∀ x : ℝ, AS_loc S x = (Set.ncard (S ∩ Set.Icc 1 (Nat.floor x)) : ℝ) := by
+        intro x
+        have e : S ∩ Set.Icc 1 ⌊x⌋₊ = ↑((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)) := by
+          ext n
+          simp only [Set.mem_inter_iff, Set.mem_Icc, Finset.coe_filter, Finset.mem_range, Set.mem_setOf_eq]
+          exact ⟨fun ⟨h1, h2, h3⟩ => ⟨by omega, h1, by omega⟩, fun ⟨h1, h2, h3⟩ => ⟨h2, by omega, by omega⟩⟩
+        rw [e, Set.ncard_coe_finset]
+      exact erdos271_limsup_of S s hcov (C8a S (AS_loc S) hspec h0 s hcov2) U hU
+    have count_eq (S : Set ℕ) [DecidablePred (· ∈ S)] (h0 : 0 ∈ S) (x : ℝ) :
+        Nat.count (· ∈ S) (⌊x⌋₊ + 1)
+          = ((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card + 1 := by
+      rw [Nat.count_eq_card_filter_range,
+        ← Finset.card_filter_add_card_filter_not (s := (range (⌊x⌋₊ + 1)).filter (· ∈ S))
+          (p := fun n => 0 < n), Finset.filter_filter, Finset.filter_filter]
+      congr 1
+      rw [Finset.card_eq_one]
+      refine ⟨0, ?_⟩
+      ext n
+      simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_singleton]
+      constructor
+      · rintro ⟨_, h⟩; omega
+      · rintro rfl; simp [h0]
+
+    have infinite_of_cover (S : Set ℕ) [DecidablePred (· ∈ S)] (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) : S.Infinite := by
+      intro hfin
+      obtain ⟨N, hN⟩ := hfin.bddAbove
+      set x : ℝ := max ((156 + 50 * (s : ℝ)) ^ 2) (((N : ℝ) + 1) ^ 2)
+      have hx := lower_env S s hcov x (le_max_left _ _)
+      have hAS : AS_loc S x ≤ N := by
+        unfold AS_loc
+        have : ((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)) ⊆ (Finset.Ioc 0 N) := by
+          intro n hn
+          simp only [Finset.mem_filter] at hn
+          rw [Finset.mem_Ioc]; exact ⟨hn.2.2, hN hn.2.1⟩
+        have := Finset.card_le_card this
+        simp only [Nat.card_Ioc, Nat.sub_zero] at this
+        exact_mod_cast this
+      have hsx : (N : ℝ) + 1 ≤ √x := by
+        apply Real.le_sqrt_of_sq_le; exact le_max_right _ _
+      have : (0 : ℝ) ≤ N := Nat.cast_nonneg _
+      generalize AS_loc S x = a at hx hAS
+      clear_value x
+      linarith only [hx, hAS, hsx, this]
+
+
+    have nth_AS_le (S : Set ℕ) [DecidablePred (· ∈ S)] (h0 : 0 ∈ S) (hinf : S.Infinite) {x : ℝ} (hx : 0 ≤ x) :
+        (Nat.nth (· ∈ S) ((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card : ℝ) ≤ x := by
+      have h := (Nat.lt_nth_iff_count_lt (p := (· ∈ S)) hinf
+        (a := ((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card) (b := ⌊x⌋₊ + 1)).mp
+        (by rw [count_eq S h0]; omega)
+      have h' : Nat.nth (· ∈ S) ((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card ≤ ⌊x⌋₊ := by
+        omega
+      calc (Nat.nth (· ∈ S) _ : ℝ) ≤ (⌊x⌋₊ : ℝ) := by exact_mod_cast h'
+        _ ≤ x := Nat.floor_le hx
+
+
+    have erdos271_ak (S : Set ℕ) [DecidablePred (· ∈ S)] (h0 : 0 ∈ S) (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) :
+        ∀ c : ℝ, Real.log (1 + √2) / (2 * √2) < c →
+          ¬ ∀ᶠ k : ℕ in atTop, c * (k : ℝ) ^ 2 ≤ Nat.nth (· ∈ S) k := by
+      intro c hc hev
+      have hinf := infinite_of_cover S s hcov
+      have ha := alpha_pos
+      change α < c at hc
+      have hc0 : 0 < c := lt_trans ha hc
+      obtain ⟨K, hK⟩ := eventually_atTop.mp hev
+
+      have hsc : √α < √c := Real.sqrt_lt_sqrt ha.le hc
+      have hsa := Real.sqrt_pos.mpr ha
+      have hscp := Real.sqrt_pos.mpr hc0
+      set U : ℝ := (1 / √c + 1 / √α) / 2 with hUdef
+      have h1 : 1 / √c < 1 / √α := one_div_lt_one_div_of_lt hsa hsc
+      have hUlt : U < 1 / √α := by rw [hUdef]; linarith
+      have hUgt : 1 / √c < U := by rw [hUdef]; linarith
+      have hUpos : 0 < U := lt_trans (by positivity) hUgt
+      apply erdos271_limsup S h0 s hcov U hUlt
+      filter_upwards [eventually_ge_atTop (((K : ℝ) / U) ^ 2)] with x hx
+      have hx0 : 0 ≤ x := le_trans (sq_nonneg _) hx
+      set n := ((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card with hn
+      show (n : ℝ) ≤ U * √x
+      have hsx : (K : ℝ) / U ≤ √x := Real.le_sqrt_of_sq_le hx
+      by_cases hnK : n < K
+      · have : (n : ℝ) ≤ K := by exact_mod_cast hnK.le
+        have : (K : ℝ) ≤ U * √x := by rwa [div_le_iff₀ hUpos, mul_comm] at hsx
+        linarith
+      · push Not at hnK
+        have hak := hK n hnK
+        have hle := nth_AS_le S h0 hinf hx0
+        rw [← hn] at hle
+        have hcn : c * (n : ℝ) ^ 2 ≤ x := le_trans hak hle
+
+        have hq : (√c * n) ^ 2 ≤ (√x) ^ 2 := by
+          rw [mul_pow, Real.sq_sqrt hc0.le, Real.sq_sqrt hx0]; exact hcn
+        have hq' : √c * n ≤ √x :=
+          (pow_le_pow_iff_left₀ (mul_nonneg (Real.sqrt_nonneg _) (Nat.cast_nonneg _)) (Real.sqrt_nonneg _) two_ne_zero).mp hq
+        have hUc : 1 ≤ U * √c := by
+          have := (div_lt_iff₀ hscp).mp hUgt; linarith
+        have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg _
+        calc (n : ℝ) ≤ U * √c * n := le_mul_of_one_le_left hn0 hUc
+          _ = U * (√c * n) := by ring
+          _ ≤ U * √x := mul_le_mul_of_nonneg_left hq' hUpos.le
+
+    intro S AS hAS h0 s hcov
+    classical
+    have hcov' : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z := by
+      intro z h1 h2
+      obtain ⟨a, b, ha, hb, h⟩ := hcov z h1 h2
+      exact ⟨a, ha, b, hb, h⟩
+    have hASe : AS = AS_loc S := by
+      funext x
+      rw [hAS x]
+      have e : S ∩ Set.Icc 1 ⌊x⌋₊ = ↑((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)) := by
+        ext n
+        simp only [Set.mem_inter_iff, Set.mem_Icc, Finset.coe_filter, Finset.mem_range, Set.mem_setOf_eq]
+        exact ⟨fun ⟨h1, h2, h3⟩ => ⟨by omega, h1, by omega⟩, fun ⟨h1, h2, h3⟩ => ⟨h2, by omega, by omega⟩⟩
+      rw [e, Set.ncard_coe_finset]
+    subst hASe
+    refine ⟨fun U hU hM => erdos271_limsup S h0 s hcov' U hU (Filter.eventually_atTop.2 hM),
+      fun c hc hK => erdos271_ak S h0 s hcov' c hc (Filter.eventually_atTop.2 hK)⟩)

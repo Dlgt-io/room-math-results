@@ -1,0 +1,36 @@
+{
+  "compiler": "Tectonic0.17.0",
+  "untrusted_mode": true,
+  "files": [
+    {
+      "source": "Erdos271_Weighted_Covering_Review_v2.6.tex",
+      "source_sha256": "72d9349c29a1361d9be2a27223377ac41feb1b9964b57d6f6a37b7380dd75229",
+      "pdf": "Erdos271_Weighted_Covering_Review_v2.6.pdf",
+      "pdf_sha256": "e7cdbe6f67dd8c27c44bdb19a59048402080560d00afb22f518761b0746036ef",
+      "pdf_bytes": 123389,
+      "exit_code": 0,
+      "pages": 11
+    },
+    {
+      "source": "Erdos271_Covering_Constructions_Review_v1.6.tex",
+      "source_sha256": "23a438bc740f3c13392b8cea61dd71cac50bd1a2ea83f3508e3e35e4f2d5ee04",
+      "pdf": "Erdos271_Covering_Constructions_Review_v1.6.pdf",
+      "pdf_sha256": "7942ea9772494213e991cf1523d521eae5bba4e1849b1680d177b11143f31715",
+      "pdf_bytes": 130396,
+      "exit_code": 0,
+      "pages": 12
+    },
+    {
+      "source": "Erdos271_Verification_Supplement_v1.2.tex",
+      "source_sha256": "4b0d7bf0a36540a6d6d00b0e71efd822e8cc35b9a10cad51afc6e4a5c6b98176",
+      "pdf": "Erdos271_Verification_Supplement_v1.2.pdf",
+      "pdf_sha256": "e0a2a46c08df657dc1b19fc56b9d9e1e818bdb42ab6cb01d38006e1ead3e4a8f",
+      "pdf_bytes": 74587,
+      "exit_code": 0,
+      "pages": 7
+    }
+  ],
+  "edition": "Cedar public archive edition, 2026-10-23",
+  "command": "tectonic --untrusted --outdir output DOCUMENT.tex",
+  "validation": "All pages rendered and visually inspected; no undefined references, missing-character or overfull-box warnings. Underfull-box warnings remain in long provenance lines. PDF metadata contains no author or private path."
+}

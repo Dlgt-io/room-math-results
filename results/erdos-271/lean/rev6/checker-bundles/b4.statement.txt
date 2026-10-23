@@ -1,0 +1,1 @@
+∃ A : Set Nat, (∀ n : Nat, 3 ≤ n → ∃ a : Nat, ∃ b : Nat, Membership.mem A a ∧ Membership.mem A b ∧ 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧ ∀ ε : Real, 0 < ε → ∀ N : Nat, ∃ n : Nat, N ≤ n ∧ (Set.ncard (Inter.inter A (Set.Iic n)) : Real) ≤ (53 * Real.sqrt 3 / 48 + ε) * Real.sqrt (n : Real)

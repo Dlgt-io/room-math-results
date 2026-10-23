@@ -1,0 +1,16 @@
+∀ K : Real → Real, ∀ h : Real → Real, ∀ L : Real, ∀ U : Real, ∀ t0 : Real, ∀ T : Real,
+∀ sq : Real → Real, ∀ d : Real → Real, ∀ mom : Real → Real, ∀ Kt : Real → Real → Real, ∀ G : Real → Real,
+(∀ v : Real, K v = Real.exp (-(3 * v / 2)) / (2 - Real.exp (-v)) ^ 3) →
+(∀ x : Real, sq x = h x ^ 2) →
+(∀ x : Real, d x = U - h x) →
+(∀ v : Real, mom v = v * K v) →
+(∀ t : Real, ∀ u : Real, Kt t u = K (t - u) * h u) →
+(∀ t : Real, G t = h t * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 t)) (Kt t)) →
+Measurable h → t0 ≤ T → 0 ≤ U →
+(∀ x : Real, Membership.mem (Set.Icc t0 T) x → L ≤ h x ∧ h x ≤ U) →
+0 ≤ MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ∧
+MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom ≤ 2 ∧
+(3 / 2) * intervalIntegral sq t0 T MeasureTheory.volume - 4 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioo t0 T)) G
+  ≤ (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U ^ 2 * (T - t0)
+    - (2 * (3 / 2 - 4 * (3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2))) * U - (3 / 2) * (U - L)) * intervalIntegral d t0 T MeasureTheory.volume
+    + 4 * U ^ 2 * MeasureTheory.integral (MeasureTheory.Measure.restrict MeasureTheory.volume (Set.Ioi 0)) mom

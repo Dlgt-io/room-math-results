@@ -1,0 +1,299 @@
+by
+  classical
+  open Finset Real in (
+    let Cov : Finset ℕ → ℕ → ℕ → Prop := fun T u v =>
+      ∀ n, u ≤ n → n ≤ v → ∃ a ∈ T, ∃ b ∈ T, 1 ≤ a ∧ a < b ∧ a + n = 2 * b
+    have cov_of : ∀ (c : List (ℕ × ℕ)) (Sl : List ℕ), c.all (fun p : ℕ × ℕ => Sl.contains p.2 && Sl.contains (2 * p.2 - p.1) && decide (1 ≤ 2 * p.2 - p.1) && decide (2 * p.2 - p.1 < p.2) && decide (p.2 < p.1)) = true →
+        c.map Prod.fst = List.range' 3 766 → Cov Sl.toFinset 3 768 := by
+      intro c Sl hall hmap n h1 h2
+      have hn : n ∈ c.map Prod.fst := by rw [hmap, List.mem_range'_1]; omega
+      obtain ⟨⟨n', b⟩, hp, rfl⟩ := List.mem_map.1 hn
+      have hrow := List.all_eq_true.1 hall _ hp
+      simp only [Bool.and_eq_true, List.contains_iff_mem, decide_eq_true_eq] at hrow
+      obtain ⟨⟨⟨⟨hb, ha⟩, ha1⟩, hab⟩, hbn⟩ := hrow
+      exact ⟨2 * b - n', List.mem_toFinset.2 ha, b, List.mem_toFinset.2 hb, ha1, hab, by omega⟩
+    obtain ⟨S768, hS⟩ : ∃ S : Finset ℕ, S = List.toFinset [1,2,3,4,5,8,9,12,13,16,21,24,33,36,41,44,45,48,53,56,77,80,85,88,129,132,137,140,161,164,169,172,253,256,261,264,271,301,304,309,312,340,345,348,353,356,377,380,385,388] := ⟨_, rfl⟩
+    have S768_cov : Cov S768 3 768 := by
+      rw [hS]; exact cov_of [(3,2), (4,3), (5,3), (6,4), (7,4), (8,5), (9,5), (10,9), (11,8), (12,8), (13,8), (14,8), (15,8), (16,9), (17,9), (18,13), (19,12), (20,12), (21,12), (22,12), (23,12), (24,13), (25,13), (26,21), (27,16), (28,16), (29,16), (30,16), (31,16), (32,24), (33,21), (34,21), (35,24), (36,24), (37,21), (38,21), (39,21), (40,21), (41,21), (42,33), (43,24), (44,24), (45,24), (46,24), (47,24), (48,36), (49,41), (50,33), (51,36), (52,44), (53,33), (54,33), (55,44), (56,36), (57,33), (58,33), (59,36), (60,36), (61,33), (62,33), (63,33), (64,33), (65,33), (66,41), (67,36), (68,36), (69,36), (70,36), (71,36), (72,44), (73,41), (74,41), (75,44), (76,44), (77,41), (78,41), (79,41), (80,41), (81,41), (82,45), (83,44), (84,44), (85,44), (86,44), (87,44), (88,45), (89,45), (90,53), (91,48), (92,48), (93,48), (94,48), (95,48), (96,56), (97,53), (98,53), (99,56), (100,56), (101,53), (102,53), (103,53), (104,53), (105,53), (106,77), (107,56), (108,56), (109,56), (110,56), (111,56), (112,80), (113,77), (114,85), (115,80), (116,80), (117,85), (118,77), (119,80), (120,88), (121,77), (122,85), (123,88), (124,80), (125,85), (126,85), (127,80), (128,88), (129,85), (130,77), (131,88), (132,88), (133,77), (134,85), (135,88), (136,80), (137,85), (138,77), (139,80), (140,88), (141,77), (142,77), (143,88), (144,80), (145,77), (146,77), (147,80), (148,80), (149,77), (150,77), (151,77), (152,77), (153,77), (154,85), (155,80), (156,80), (157,80), (158,80), (159,80), (160,88), (161,85), (162,85), (163,88), (164,88), (165,85), (166,85), (167,85), (168,85), (169,85), (170,129), (171,88), (172,88), (173,88), (174,88), (175,88), (176,132), (177,169), (178,129), (179,132), (180,172), (181,129), (182,161), (183,172), (184,132), (185,161), (186,137), (187,132), (188,164), (189,137), (190,161), (191,164), (192,140), (193,161), (194,137), (195,140), (196,164), (197,137), (198,169), (199,164), (200,140), (201,169), (202,129), (203,140), (204,172), (205,129), (206,169), (207,172), (208,132), (209,169), (210,129), (211,132), (212,172), (213,129), (214,129), (215,172), (216,132), (217,129), (218,137), (219,132), (220,132), (221,137), (222,129), (223,132), (224,140), (225,129), (226,137), (227,140), (228,132), (229,137), (230,137), (231,132), (232,140), (233,137), (234,129), (235,140), (236,140), (237,129), (238,137), (239,140), (240,132), (241,137), (242,129), (243,132), (244,140), (245,129), (246,129), (247,140), (248,132), (249,129), (250,129), (251,132), (252,132), (253,129), (254,129), (255,129), (256,129), (257,129), (258,137), (259,132), (260,132), (261,132), (262,132), (263,132), (264,140), (265,137), (266,137), (267,140), (268,140), (269,137), (270,137), (271,137), (272,137), (273,137), (274,161), (275,140), (276,140), (277,140), (278,140), (279,140), (280,164), (281,161), (282,169), (283,164), (284,164), (285,169), (286,161), (287,164), (288,172), (289,161), (290,169), (291,172), (292,164), (293,169), (294,169), (295,164), (296,172), (297,169), (298,161), (299,172), (300,172), (301,161), (302,169), (303,172), (304,164), (305,169), (306,161), (307,164), (308,172), (309,161), (310,161), (311,172), (312,164), (313,161), (314,161), (315,164), (316,164), (317,161), (318,161), (319,161), (320,161), (321,161), (322,169), (323,164), (324,164), (325,164), (326,164), (327,164), (328,172), (329,169), (330,169), (331,172), (332,172), (333,169), (334,169), (335,169), (336,169), (337,169), (338,301), (339,172), (340,172), (341,172), (342,172), (343,172), (344,304), (345,253), (346,301), (347,304), (348,256), (349,301), (350,261), (351,256), (352,304), (353,261), (354,309), (355,304), (356,264), (357,309), (358,261), (359,264), (360,312), (361,261), (362,309), (363,312), (364,264), (365,309), (366,253), (367,264), (368,312), (369,253), (370,271), (371,312), (372,256), (373,271), (374,253), (375,256), (376,340), (377,253), (378,271), (379,340), (380,256), (381,271), (382,261), (383,256), (384,348), (385,261), (386,345), (387,348), (388,264), (389,345), (390,261), (391,264), (392,348), (393,261), (394,353), (395,348), (396,264), (397,353), (398,377), (399,264), (400,356), (401,377), (402,271), (403,356), (404,380), (405,271), (406,377), (407,380), (408,356), (409,340), (410,271), (411,356), (412,380), (413,271), (414,377), (415,380), (416,340), (417,385), (418,253), (419,340), (420,380), (421,253), (422,385), (423,388), (424,256), (425,348), (426,253), (427,256), (428,388), (429,253), (430,301), (431,388), (432,256), (433,301), (434,261), (435,256), (436,304), (437,261), (438,301), (439,304), (440,264), (441,301), (442,261), (443,264), (444,304), (445,261), (446,309), (447,304), (448,264), (449,309), (450,253), (451,264), (452,312), (453,253), (454,271), (455,312), (456,256), (457,271), (458,253), (459,256), (460,312), (461,253), (462,253), (463,312), (464,256), (465,253), (466,261), (467,256), (468,256), (469,261), (470,253), (471,256), (472,264), (473,253), (474,261), (475,264), (476,256), (477,261), (478,261), (479,256), (480,264), (481,261), (482,253), (483,264), (484,264), (485,253), (486,261), (487,264), (488,256), (489,261), (490,253), (491,256), (492,264), (493,253), (494,253), (495,264), (496,256), (497,253), (498,253), (499,256), (500,256), (501,253), (502,253), (503,253), (504,253), (505,253), (506,261), (507,256), (508,256), (509,256), (510,256), (511,256), (512,264), (513,261), (514,261), (515,264), (516,264), (517,261), (518,261), (519,261), (520,261), (521,261), (522,301), (523,264), (524,264), (525,264), (526,264), (527,264), (528,304), (529,271), (530,271), (531,304), (532,348), (533,271), (534,271), (535,348), (536,312), (537,271), (538,271), (539,271), (540,271), (541,271), (542,353), (543,340), (544,312), (545,353), (546,301), (547,312), (548,340), (549,301), (550,345), (551,340), (552,304), (553,345), (554,301), (555,304), (556,348), (557,301), (558,301), (559,348), (560,304), (561,301), (562,309), (563,304), (564,304), (565,309), (566,301), (567,304), (568,312), (569,301), (570,309), (571,312), (572,304), (573,309), (574,309), (575,304), (576,312), (577,309), (578,301), (579,312), (580,312), (581,301), (582,309), (583,312), (584,304), (585,309), (586,301), (587,304), (588,312), (589,301), (590,301), (591,312), (592,304), (593,301), (594,301), (595,304), (596,304), (597,301), (598,301), (599,301), (600,301), (601,301), (602,309), (603,304), (604,304), (605,304), (606,304), (607,304), (608,312), (609,309), (610,309), (611,312), (612,312), (613,309), (614,309), (615,309), (616,309), (617,309), (618,353), (619,312), (620,312), (621,312), (622,312), (623,312), (624,340), (625,377), (626,353), (627,340), (628,380), (629,353), (630,385), (631,380), (632,340), (633,385), (634,345), (635,340), (636,340), (637,345), (638,385), (639,340), (640,348), (641,385), (642,345), (643,348), (644,340), (645,345), (646,345), (647,340), (648,348), (649,345), (650,353), (651,348), (652,348), (653,353), (654,345), (655,348), (656,340), (657,345), (658,353), (659,340), (660,348), (661,353), (662,353), (663,348), (664,340), (665,353), (666,345), (667,340), (668,340), (669,345), (670,353), (671,340), (672,340), (673,353), (674,345), (675,340), (676,340), (677,340), (678,340), (679,340), (680,348), (681,345), (682,345), (683,348), (684,348), (685,345), (686,345), (687,345), (688,345), (689,345), (690,353), (691,348), (692,348), (693,348), (694,348), (695,348), (696,356), (697,353), (698,353), (699,356), (700,356), (701,353), (702,353), (703,353), (704,353), (705,353), (706,377), (707,356), (708,356), (709,356), (710,356), (711,356), (712,380), (713,377), (714,385), (715,380), (716,380), (717,385), (718,377), (719,380), (720,388), (721,377), (722,385), (723,388), (724,380), (725,385), (726,385), (727,380), (728,388), (729,385), (730,377), (731,388), (732,388), (733,377), (734,385), (735,388), (736,380), (737,385), (738,377), (739,380), (740,388), (741,377), (742,377), (743,388), (744,380), (745,377), (746,377), (747,380), (748,380), (749,377), (750,377), (751,377), (752,377), (753,377), (754,385), (755,380), (756,380), (757,380), (758,380), (759,380), (760,388), (761,385), (762,385), (763,388), (764,388), (765,385), (766,385), (767,385), (768,385)] [1,2,3,4,5,8,9,12,13,16,21,24,33,36,41,44,45,48,53,56,77,80,85,88,129,132,137,140,161,164,169,172,253,256,261,264,271,301,304,309,312,340,345,348,353,356,377,380,385,388] (by decide +kernel) (by decide +kernel)
+    have S768_card : S768.card = 50 := by rw [hS]; decide +kernel
+    have S768_small : 1 ∈ S768 ∧ 2 ∈ S768 ∧ 3 ∈ S768 := by rw [hS]; decide +kernel
+    have S768_pos : ∀ x ∈ S768, 1 ≤ x := by rw [hS]; decide +kernel
+    obtain ⟨L, hL⟩ : ∃ L : Finset ℕ → Finset ℕ,
+        ∀ T, L T = T.image (fun t => 4 * t) ∪ T.image (fun t => 4 * t + 1) := ⟨_, fun _ => rfl⟩
+    have mem_L {T : Finset ℕ} {m : ℕ} : m ∈ L T ↔ ∃ t ∈ T, 4 * t = m ∨ 4 * t + 1 = m := by
+      simp only [hL, mem_union, mem_image]
+      constructor
+      · rintro (⟨t, ht, rfl⟩ | ⟨t, ht, rfl⟩)
+        · exact ⟨t, ht, Or.inl rfl⟩
+        · exact ⟨t, ht, Or.inr rfl⟩
+      · rintro ⟨t, ht, h | h⟩
+        · exact Or.inl ⟨t, ht, h⟩
+        · exact Or.inr ⟨t, ht, h⟩
+
+    have lift_cov {T : Finset ℕ} {Y : ℕ} (h : Cov T 3 Y) : Cov (L T) 11 (4 * Y + 2) := by
+      intro n' h1 h2
+      have hd := Nat.div_add_mod n' 4
+      have : n' % 4 = 0 ∨ n' % 4 = 1 ∨ n' % 4 = 2 ∨ n' % 4 = 3 := by omega
+      rcases this with hr | hr | hr | hr
+      · obtain ⟨a, ha, b, hb, ha1, hab, he⟩ := h (n' / 4) (by omega) (by omega)
+        exact ⟨4 * a, mem_L.2 ⟨a, ha, Or.inl rfl⟩, 4 * b, mem_L.2 ⟨b, hb, Or.inl rfl⟩,
+          by omega, by omega, by omega⟩
+      · obtain ⟨a, ha, b, hb, ha1, hab, he⟩ := h (n' / 4) (by omega) (by omega)
+        exact ⟨4 * a + 1, mem_L.2 ⟨a, ha, Or.inr rfl⟩, 4 * b + 1, mem_L.2 ⟨b, hb, Or.inr rfl⟩,
+          by omega, by omega, by omega⟩
+      · obtain ⟨a, ha, b, hb, ha1, hab, he⟩ := h (n' / 4) (by omega) (by omega)
+        exact ⟨4 * a, mem_L.2 ⟨a, ha, Or.inl rfl⟩, 4 * b + 1, mem_L.2 ⟨b, hb, Or.inr rfl⟩,
+          by omega, by omega, by omega⟩
+      · obtain ⟨a, ha, b, hb, ha1, hab, he⟩ := h (n' / 4 + 1) (by omega) (by omega)
+        exact ⟨4 * a + 1, mem_L.2 ⟨a, ha, Or.inr rfl⟩, 4 * b, mem_L.2 ⟨b, hb, Or.inl rfl⟩,
+          by omega, by omega, by omega⟩
+
+    have card_L (T : Finset ℕ) : (L T).card = 2 * T.card := by
+      have hdis : Disjoint (T.image (fun t => 4 * t)) (T.image (fun t => 4 * t + 1)) := by
+        rw [Finset.disjoint_left]
+        intro x hx1 hx2
+        simp only [mem_image] at hx1 hx2
+        obtain ⟨u, -, rfl⟩ := hx1
+        obtain ⟨v, -, hv⟩ := hx2
+        omega
+      rw [hL, Finset.card_union_of_disjoint hdis,
+        Finset.card_image_of_injective _ (fun x y h => by have h' : 4 * x = 4 * y := h; omega),
+        Finset.card_image_of_injective _ (fun x y h => by have h' : 4 * x + 1 = 4 * y + 1 := h; omega)]
+      ring
+
+    have L_ge4 {T : Finset ℕ} (hT : ∀ x ∈ T, 1 ≤ x) : ∀ m ∈ L T, 4 ≤ m := by
+      intro m hm
+      obtain ⟨t, ht, h | h⟩ := mem_L.1 hm <;> have := hT t ht <;> omega
+
+    obtain ⟨step, hstep⟩ : ∃ f : Finset ℕ → Finset ℕ, ∀ T, f T = L T ∪ {1, 2, 3} := ⟨_, fun _ => rfl⟩
+    have card_step {T : Finset ℕ} (hT : ∀ x ∈ T, 1 ≤ x) : (step T).card = 2 * T.card + 3 := by
+      have hdis : Disjoint (L T) ({1, 2, 3} : Finset ℕ) := by
+        rw [Finset.disjoint_left]
+        intro x hx hx'
+        have := L_ge4 hT x hx
+        simp only [mem_insert, mem_singleton] at hx'
+        omega
+      rw [hstep, Finset.card_union_of_disjoint hdis, card_L]
+      rfl
+
+    have step_pos {T : Finset ℕ} (hT : ∀ x ∈ T, 1 ≤ x) : ∀ x ∈ step T, 1 ≤ x := by
+      intro x hx
+      rw [hstep] at hx
+      rcases Finset.mem_union.1 hx with h | h
+      · have := L_ge4 hT x h; omega
+      · simp only [mem_insert, mem_singleton] at h; omega
+
+    have step_small (T : Finset ℕ) : 1 ∈ step T ∧ 2 ∈ step T ∧ 3 ∈ step T := by
+      simp [hstep]
+
+    have fix_cov {T : Finset ℕ} (h1 : 1 ∈ T) (h2 : 2 ∈ T) : Cov (step T) 3 10 := by
+      have m : ∀ x, x ∈ ({1, 2, 3} : Finset ℕ) → x ∈ step T := fun x hx => by rw [hstep]; exact Finset.mem_union_right _ hx
+      have l : ∀ x, x ∈ L T → x ∈ step T := fun x hx => by rw [hstep]; exact Finset.mem_union_left _ hx
+      have s1 : 1 ∈ step T := m 1 (by simp)
+      have s2 : 2 ∈ step T := m 2 (by simp)
+      have s3 : 3 ∈ step T := m 3 (by simp)
+      have s4 : 4 ∈ step T := l 4 (mem_L.2 ⟨1, h1, Or.inl rfl⟩)
+      have s5 : 5 ∈ step T := l 5 (mem_L.2 ⟨1, h1, Or.inr rfl⟩)
+      have s8 : 8 ∈ step T := l 8 (mem_L.2 ⟨2, h2, Or.inl rfl⟩)
+      have s9 : 9 ∈ step T := l 9 (mem_L.2 ⟨2, h2, Or.inr rfl⟩)
+      intro n hn1 hn2
+      interval_cases n
+      · exact ⟨1, s1, 2, s2, by omega, by omega, by omega⟩
+      · exact ⟨2, s2, 3, s3, by omega, by omega, by omega⟩
+      · exact ⟨1, s1, 3, s3, by omega, by omega, by omega⟩
+      · exact ⟨2, s2, 4, s4, by omega, by omega, by omega⟩
+      · exact ⟨1, s1, 4, s4, by omega, by omega, by omega⟩
+      · exact ⟨2, s2, 5, s5, by omega, by omega, by omega⟩
+      · exact ⟨1, s1, 5, s5, by omega, by omega, by omega⟩
+      · exact ⟨8, s8, 9, s9, by omega, by omega, by omega⟩
+
+    have step_cov {T : Finset ℕ} {Y : ℕ} (h : Cov T 3 Y) (_hY : 3 ≤ Y) (h1 : 1 ∈ T) (h2 : 2 ∈ T) :
+        Cov (step T) 3 (4 * Y) := by
+      intro n hn1 hn2
+      by_cases hn : n ≤ 10
+      · exact fix_cov h1 h2 n hn1 hn
+      · obtain ⟨a, ha, b, hb, hrest⟩ := lift_cov h n (by omega) (by omega)
+        rw [hstep]; exact ⟨a, Finset.mem_union_left _ ha, b, Finset.mem_union_left _ hb, hrest⟩
+
+    obtain ⟨iter, hi0, hiS⟩ : ∃ f : Finset ℕ → ℕ → Finset ℕ,
+        (∀ S, f S 0 = S) ∧ ∀ S j, f S (j + 1) = step (f S j) :=
+      ⟨fun S j => Nat.rec (motive := fun _ => Finset ℕ) S (fun _ T => step T) j,
+        fun _ => rfl, fun _ _ => rfl⟩
+    have iter_spec (S : Finset ℕ) (X : ℕ) (hX : 3 ≤ X) (hS : Cov S 3 X) (h1 : 1 ∈ S) (h2 : 2 ∈ S)
+        (hpos : ∀ x ∈ S, 1 ≤ x) (j : ℕ) :
+        Cov (iter S j) 3 (4 ^ j * X) ∧ 1 ∈ iter S j ∧ 2 ∈ iter S j ∧ (∀ x ∈ iter S j, 1 ≤ x) ∧
+          (iter S j).card + 3 = 2 ^ j * (S.card + 3) := by
+      induction j with
+      | zero => simpa [hi0] using ⟨hS, h1, h2, hpos⟩
+      | succ j ih =>
+        obtain ⟨hc, i1, i2, ip, hk⟩ := ih
+        rw [hiS]
+        refine ⟨?_, (step_small _).1, (step_small _).2.1, step_pos ip, ?_⟩
+        · have hY : 3 ≤ 4 ^ j * X := le_trans hX (Nat.le_mul_of_pos_left _ (by positivity))
+          have := step_cov hc hY i1 i2
+          have e : 4 ^ (j + 1) * X = 4 * (4 ^ j * X) := by ring
+          rw [e]; exact this
+        · rw [card_step ip, pow_succ]; nlinarith [hk]
+
+    have iter_card (S : Finset ℕ) (X : ℕ) (hX : 3 ≤ X) (hS : Cov S 3 X) (h1 : 1 ∈ S) (h2 : 2 ∈ S)
+        (hpos : ∀ x ∈ S, 1 ≤ x) (j : ℕ) : (iter S j).card = 2 ^ j * (S.card + 3) - 3 := by
+      have := (iter_spec S X hX hS h1 h2 hpos j).2.2.2.2
+      omega
+
+    obtain ⟨R, hR⟩ : ∃ f : ℕ → Finset ℕ, ∀ k, f k = iter S768 (k * k) := ⟨_, fun _ => rfl⟩
+    obtain ⟨Y, hY⟩ : ∃ f : ℕ → ℕ, ∀ k, f k = 4 ^ (k * k) * 768 := ⟨_, fun _ => rfl⟩
+    obtain ⟨t, ht0, htS⟩ : ∃ f : ℕ → ℕ, f 0 = 0 ∧ ∀ k, f (k + 1) = f k + Y k - 3 :=
+      ⟨fun k => Nat.rec (motive := fun _ => ℕ) 0 (fun k tk => tk + Y k - 3) k, rfl, fun _ => rfl⟩
+    obtain ⟨Aset, hA⟩ : ∃ A : Set ℕ, ∀ m, m ∈ A ↔ ∃ k, ∃ r ∈ R k, m = r + t k :=
+      ⟨{m | ∃ k, ∃ r ∈ R k, m = r + t k}, fun _ => Iff.rfl⟩
+    have R_spec (k : ℕ) :
+        Cov (R k) 3 (Y k) ∧ (∀ x ∈ R k, 1 ≤ x) ∧ (R k).card + 3 = 2 ^ (k * k) * 53 := by
+      obtain ⟨h1, -, -, h4, h5⟩ :=
+        iter_spec S768 768 (by norm_num) S768_cov S768_small.1 S768_small.2.1 S768_pos (k * k)
+      rw [hR, hY]; exact ⟨h1, h4, by rw [h5, S768_card]⟩
+
+    have Y_ge (k : ℕ) : 768 ≤ Y k := by rw [hY]; exact Nat.le_mul_of_pos_left _ (by positivity)
+
+    have le_Y (n : ℕ) : n ≤ Y n := by
+      have h1 : n < 4 ^ n := Nat.lt_pow_self (by norm_num)
+      have h2 : 4 ^ n ≤ 4 ^ (n * n) := Nat.pow_le_pow_right (by norm_num) (Nat.le_mul_self n)
+      have h3 : 4 ^ (n * n) ≤ 4 ^ (n * n) * 768 := Nat.le_mul_of_pos_right _ (by norm_num)
+      rw [hY]; omega
+
+    have t_succ (k : ℕ) : t (k + 1) + 3 = t k + Y k := by
+      have := Y_ge k
+      rw [htS]; omega
+
+    have t_mono : Monotone t :=
+      monotone_nat_of_le_succ fun k => by have := t_succ k; have := Y_ge k; omega
+
+    have stage_cov (k n : ℕ) (h1 : t k + 3 ≤ n) (h2 : n ≤ t k + Y k) :
+        ∃ a ∈ Aset, ∃ b ∈ Aset, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b := by
+      obtain ⟨a, ha, b, hb, ha1, hab, he⟩ := (R_spec k).1 (n - t k) (by omega) (by omega)
+      exact ⟨a + t k, (hA _).2 ⟨k, a, ha, rfl⟩, b + t k, (hA _).2 ⟨k, b, hb, rfl⟩, by omega, by omega, by omega,
+        by omega⟩
+
+    have covering : ∀ n, 3 ≤ n → ∃ a ∈ Aset, ∃ b ∈ Aset, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b := by
+      intro n hn
+      classical
+      have hex : ∃ k, n ≤ t k + Y k := ⟨n, by have := le_Y n; omega⟩
+      obtain ⟨k, hk, hmin⟩ : ∃ k, n ≤ t k + Y k ∧ ∀ i < k, ¬ n ≤ t i + Y i :=
+        ⟨Nat.find hex, Nat.find_spec hex, fun i hi => Nat.find_min hex hi⟩
+      cases k with
+      | zero => exact stage_cov 0 n (by rw [ht0]; omega) hk
+      | succ p =>
+        exact stage_cov (p + 1) n (by have := hmin p (by omega); have := t_succ p; omega) hk
+
+    obtain ⟨F, hF⟩ : ∃ f : ℕ → Finset ℕ, ∀ k, f k = ((range (k + 1)).biUnion fun i => (R i).image (· + t i)) ∪
+        ({1, 2, 3} : Finset ℕ).image (· + t (k + 1)) := ⟨_, fun _ => rfl⟩
+    have sub_F (k : ℕ) : Aset ∩ Set.Iic (t k + Y k) ⊆ ↑(F k) := by
+      rintro m ⟨hmA, hm⟩
+      obtain ⟨i, r, hr, rfl⟩ := (hA m).1 hmA
+      simp only [Set.mem_Iic] at hm
+      rw [Finset.mem_coe, hF]
+      have hr1 := (R_spec i).2.1 r hr
+      rcases lt_trichotomy i (k + 1) with h | h | h
+      · refine Finset.mem_union_left _ ?_
+        rw [mem_biUnion]
+        exact ⟨i, mem_range.2 h, mem_image.2 ⟨r, hr, rfl⟩⟩
+      · subst h
+        refine Finset.mem_union_right _ ?_
+        have := t_succ k
+        rw [mem_image]
+        refine ⟨r, ?_, rfl⟩
+        simp only [mem_insert, mem_singleton]
+        omega
+      · exfalso
+        have hm2 : t (k + 1 + 1) ≤ t i := t_mono (by omega)
+        have := t_succ (k + 1)
+        have := t_succ k
+        have := Y_ge (k + 1)
+        omega
+
+    have card_F (k : ℕ) : (F k).card ≤ (∑ i ∈ range (k + 1), (R i).card) + 3 := by
+      calc (F k).card ≤ ((range (k + 1)).biUnion fun i => (R i).image (· + t i)).card +
+            (({1, 2, 3} : Finset ℕ).image (· + t (k + 1))).card := by rw [hF]; exact card_union_le _ _
+        _ ≤ (∑ i ∈ range (k + 1), (R i).card) + 3 := by
+            apply add_le_add
+            · exact card_biUnion_le.trans (sum_le_sum fun i _ => card_image_le)
+            · exact card_image_le.trans (by decide)
+
+    obtain ⟨cnt, hcnt⟩ : ∃ f : ℕ → ℕ, ∀ n, f n = (Aset ∩ Set.Iic n).ncard := ⟨_, fun _ => rfl⟩
+    have cnt_le (k : ℕ) : cnt (t k + Y k) ≤ (F k).card := by
+      rw [hcnt]
+      rw [← Set.ncard_coe_finset]
+      exact Set.ncard_le_ncard (sub_F k) (Finset.finite_toSet _)
+
+    have geom (m : ℕ) : ∑ i ∈ range (m + 1), 2 ^ (i * i) < 2 ^ (m * m + 1) := by
+      induction m with
+      | zero => simp
+      | succ m ih =>
+        rw [sum_range_succ]
+        have h1 : 2 ^ (m * m + 1) ≤ 2 ^ ((m + 1) * (m + 1)) :=
+          Nat.pow_le_pow_right (by norm_num) (by nlinarith)
+        have h2 : 2 ^ ((m + 1) * (m + 1) + 1) = 2 * 2 ^ ((m + 1) * (m + 1)) := by ring
+        omega
+
+    have cnt_bound (m : ℕ) :
+        cnt (t (m + 1) + Y (m + 1)) ≤ 53 * 2 ^ ((m + 1) * (m + 1)) + 56 * 2 ^ (m * m + 1) := by
+      have h1 := cnt_le (m + 1)
+      have h2 := card_F (m + 1)
+      have h3 : ∑ i ∈ range (m + 1 + 1), (R i).card ≤ ∑ i ∈ range (m + 1 + 1), 53 * 2 ^ (i * i) :=
+        sum_le_sum fun i _ => by have := (R_spec i).2.2; omega
+      have h4 : ∑ i ∈ range (m + 1 + 1), 53 * 2 ^ (i * i) =
+          53 * (∑ i ∈ range (m + 1), 2 ^ (i * i)) + 53 * 2 ^ ((m + 1) * (m + 1)) := by
+        rw [sum_range_succ, mul_sum]
+      have h5 := geom m
+      have h6 : 1 ≤ 2 ^ (m * m + 1) := Nat.one_le_two_pow
+      omega
+
+    have pow_split (m : ℕ) : (2 : ℝ) ^ ((m + 1) * (m + 1)) = 2 ^ (m * m + 1) * 4 ^ m := by
+      rw [show (m + 1) * (m + 1) = (m * m + 1) + 2 * m by ring, pow_add, pow_mul]
+      norm_num
+
+    have liminf_construction :
+        ∃ A : Set ℕ, (∀ n, 3 ≤ n → ∃ a ∈ A, ∃ b ∈ A, 0 < a ∧ a < b ∧ b < n ∧ a + n = 2 * b) ∧
+          ∀ ε : ℝ, 0 < ε → ∀ N : ℕ, ∃ n ≥ N,
+            ((A ∩ Set.Iic n).ncard : ℝ) ≤ (53 * √3 / 48 + ε) * √(n : ℝ) := by
+      refine ⟨Aset, covering, ?_⟩
+      intro ε hε N
+      obtain ⟨m0, hm0⟩ : ∃ m0 : ℕ, 56 / ε < 4 ^ m0 := pow_unbounded_of_one_lt _ (by norm_num)
+      set m := max m0 N with hm
+      refine ⟨t (m + 1) + Y (m + 1), ?_, ?_⟩
+      · have := le_Y (m + 1); have := le_max_right m0 N; omega
+      · set P : ℝ := (2 : ℝ) ^ ((m + 1) * (m + 1)) with hP
+        set Q : ℝ := (2 : ℝ) ^ (m * m + 1) with hQ
+        have hc : ((cnt (t (m + 1) + Y (m + 1)) : ℕ) : ℝ) ≤ 53 * P + 56 * Q := by
+          have := cnt_bound m
+          rw [hP, hQ]; exact_mod_cast this
+        have hPQ : P = Q * 4 ^ m := pow_split m
+        have hQ0 : 0 < Q := by positivity
+        have h4 : (4 : ℝ) ^ m0 ≤ 4 ^ m := pow_le_pow_right₀ (by norm_num) (le_max_left _ _)
+        have h56 : 56 < ε * 4 ^ m := by
+          have := (div_lt_iff₀ hε).1 hm0
+          nlinarith
+        have hQP : 56 * Q ≤ ε * P := by rw [hPQ]; nlinarith
+        -- `√x ≥ 16√3·P`
+        have hx : (768 : ℝ) * P ^ 2 ≤ ((t (m + 1) + Y (m + 1) : ℕ) : ℝ) := by
+          have hn : 768 * (2 ^ ((m + 1) * (m + 1))) ^ 2 ≤ t (m + 1) + Y (m + 1) := by
+            have e : (2 ^ ((m + 1) * (m + 1))) ^ 2 = 4 ^ ((m + 1) * (m + 1)) := by
+              rw [← pow_mul, mul_comm _ 2, pow_mul]; norm_num
+            rw [e, hY]; omega
+          rw [hP]; exact_mod_cast hn
+        have s3 := Real.sq_sqrt (show (0 : ℝ) ≤ 3 by norm_num)
+        have s0 : 0 ≤ √3 := Real.sqrt_nonneg 3
+        have s1 : 1 ≤ √3 := by nlinarith
+        have hsq : 16 * √3 * P ≤ √((t (m + 1) + Y (m + 1) : ℕ) : ℝ) := by
+          apply Real.le_sqrt_of_sq_le
+          nlinarith
+        have hP0 : 0 < P := by positivity
+        calc ((Aset ∩ Set.Iic (t (m + 1) + Y (m + 1))).ncard : ℝ)
+            = ((cnt (t (m + 1) + Y (m + 1)) : ℕ) : ℝ) := by rw [hcnt]
+          _ ≤ 53 * P + ε * P := by linarith
+          _ ≤ (53 * √3 / 48 + ε) * (16 * √3 * P) := by nlinarith
+          _ ≤ (53 * √3 / 48 + ε) * √((t (m + 1) + Y (m + 1) : ℕ) : ℝ) :=
+            mul_le_mul_of_nonneg_left hsq (by positivity)
+
+    obtain ⟨A, h1, h2⟩ := liminf_construction
+    exact ⟨A, fun n hn => by obtain ⟨a, ha, b, hb, r⟩ := h1 n hn; exact ⟨a, b, ha, hb, r⟩,
+      fun ε hε N => by obtain ⟨n, hn, r⟩ := h2 ε hε N; exact ⟨n, hn, r⟩⟩)

@@ -1,0 +1,14 @@
+(
+∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+Membership.mem S 0 → ∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+∀ U : Real, 0 ≤ U → U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) →
+(∃ x0 : Nat, 1 ≤ x0 ∧ ∀ x : Real, (x0 : Real) ≤ x → (7 / 5) * Real.sqrt x ≤ AS x ∧ AS x ≤ U * Real.sqrt x) →
+∃ C : Real, ∃ x0 : Nat, ∀ X : Nat, x0 ≤ X → Real.log (X : Real) ≤ Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) * U ^ 2 * Real.log (X : Real) + C) →
+∀ S : Set Nat, ∀ AS : Real → Real,
+(∀ x : Real, AS x = (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) →
+Membership.mem S 0 → ∀ s : Nat,
+(∀ z : Nat, s < z → ¬ Membership.mem S z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ a < b ∧ 2 * b - a = z) →
+(∀ U : Real, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : Real, ∀ x : Real, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+(∀ c : Real, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : Nat, ∀ k : Nat, K ≤ k → c * (k : Real) ^ 2 ≤ (Nat.nth (Membership.mem S) k : Real))

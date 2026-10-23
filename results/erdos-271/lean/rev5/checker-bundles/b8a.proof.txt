@@ -1,0 +1,455 @@
+by
+  intro H1 H5 C7
+  open MeasureTheory Set Real Finset Filter in (
+    let pairs (P : Finset ℕ) : Finset (ℕ × ℕ) := (P ×ˢ P).filter (fun q => q.1 < q.2)
+
+    let tgt (q : ℕ × ℕ) : ℕ := 2 * q.2 - q.1
+
+    let W (P : Finset ℕ) : ℝ := ∑ q ∈ pairs P, ((tgt q : ℕ) : ℝ)⁻¹
+
+    let r (P : Finset ℕ) (z : ℕ) : ℕ := ((pairs P).filter (fun q => tgt q = z)).card
+
+    let Rex (P : Finset ℕ) (s X : ℕ) : ℝ :=
+      ∑ z ∈ Finset.Ioc s X, ((r P z - 1 : ℕ) : ℝ) * (z : ℝ)⁻¹
+
+    let Acnt (P : Finset ℕ) (t : ℕ) : ℕ := (P.filter (fun p => 0 < p ∧ p ≤ t)).card
+    let hfun (A : ℝ → ℝ) (t : ℝ) : ℝ := A (exp t) * exp (-(t / 2))
+    let Kker (v : ℝ) : ℝ := exp (-(3 * v / 2)) / (2 - exp (-v)) ^ 3
+    let Acount (P : Finset ℝ) (t : ℝ) : ℝ := ∑ p ∈ P, (Ici p).indicator (fun _ => (1:ℝ)) t
+    let upperIndicator (p t : Real) : Real :=
+      Set.indicator (Set.Ici p) (Function.const Real (1 : Real)) t
+
+    let positiveCount (P : Finset Real) (t : Real) : Real :=
+      P.sum (fun p => upperIndicator p t)
+
+    let squareIntegrand (P : Finset Real) (t : Real) : Real :=
+      positiveCount P t ^ 2 / t ^ 2
+
+    let doubleIntegrand (P : Finset Real) (t : Real) : Real :=
+      intervalIntegral
+        (fun u => positiveCount P u * positiveCount P t / (2 * t - u) ^ 3)
+        0 t MeasureTheory.volume
+
+    let squareIntegral (P : Finset Real) (X : Real) : Real :=
+      intervalIntegral (squareIntegrand P) 0 X MeasureTheory.volume
+
+    let doubleIntegral (P : Finset Real) (X : Real) : Real :=
+      intervalIntegral (doubleIntegrand P) 0 X MeasureTheory.volume
+
+    let forwardPairWeight (p q : Real) : Real :=
+      if p < q then 1 / (2 * q - p) else 0
+
+    let weightedPairs (P : Finset Real) : Real :=
+      P.sum (fun p => 1 / (2 * p)) +
+        P.sum (fun p => P.sum (fun q => forwardPairWeight p q))
+
+    let boundaryTerm (P : Finset Real) (X : Real) : Real :=
+      (P.card : Real) * P.sum (fun p => 1 / (2 * X - p)) -
+        (P.card : Real) ^ 2 / (2 * X)
+
+    have lemma2_full : ∀ (P : Finset ℕ) (U : ℝ) (s x0 X : ℕ), s ≤ x0 → x0 ≤ X → 0 < x0 → 0 ≤ U →
+        (∀ z ∈ Finset.Ioc s X, z ∉ P → ∃ a ∈ P, ∃ b ∈ P, a < b ∧ 2 * b - a = z) →
+        (∀ t : ℕ, x0 ≤ t → t ≤ X → (Acnt P t : ℝ) ≤ U * √(t : ℝ)) →
+        Real.log ((X : ℝ) + 1) - (harmonic s : ℝ)
+          - ∑ z ∈ (Finset.Ioc s x0).filter (fun z => z ∈ P), ((z : ℝ))⁻¹
+          - 2 * U / √(x0 : ℝ) + Rex P s X ≤ W P := by
+      intro P U s x0 X hsx hxX hx0 hU hcov henv
+      have key := H1 P U s x0 X (pairs P) (fun z => (pairs P).filter (fun q => tgt q = z))
+        (fun t => P.filter (fun p => 0 < p ∧ p ≤ t)) ((Finset.Ioc s x0).filter (fun z => z ∈ P))
+        (fun z => 1 / (z : ℝ)) (fun z => ((((pairs P).filter (fun q => tgt q = z)).card - 1 : ℕ) : ℝ) * (1 / (z : ℝ)))
+        (fun q => 1 / (((2 * q.2 - q.1 : ℕ) : ℕ) : ℝ))
+        (fun q => by simp only [pairs, Finset.mem_filter, Finset.mem_product]; tauto)
+        (fun z q => by simp only [Finset.mem_filter, tgt])
+        (fun t p => by simp only [Finset.mem_filter])
+        (fun z => by simp only [Finset.mem_filter, Finset.mem_Ioc]; tauto)
+        (fun z => rfl) (fun z => rfl) (fun q => rfl) hsx hxX hx0 hU
+        (fun z h1 h2 h3 => by
+          obtain ⟨a, ha, b, hb, h⟩ := hcov z (Finset.mem_Ioc.2 ⟨h1, h2⟩) h3
+          exact ⟨a, b, ha, hb, h⟩)
+        henv
+      simp only [one_div] at key
+      simpa only [Rex, W, r, tgt] using key
+    have finite_weighted_integral_identity : ∀ (P : Finset ℝ) (X : ℝ), 0 < X → (∀ p ∈ P, 0 < p ∧ p ≤ X) →
+        IntervalIntegrable (squareIntegrand P) MeasureTheory.volume 0 X ∧
+        IntervalIntegrable (doubleIntegrand P) MeasureTheory.volume 0 X ∧
+        weightedPairs P = (3 / 2) * squareIntegral P X -
+          4 * doubleIntegral P X + boundaryTerm P X ∧
+        0 ≤ boundaryTerm P X ∧
+        boundaryTerm P X ≤ (P.card : Real) ^ 2 / (2 * X) := by
+      intro P X hX hP
+      exact H5 P X (fun p => Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) (positiveCount P)
+        (squareIntegrand P) (fun t u => positiveCount P u * positiveCount P t / (2 * t - u) ^ 3)
+        (doubleIntegrand P) (fun p => 1 / (2 * p)) forwardPairWeight (fun p => 1 / (2 * X - p))
+        hX hP (fun p => rfl) (fun t => rfl) (fun t => rfl) (fun t u => rfl) (fun t => rfl)
+        (fun p => rfl) (fun p q => rfl) (fun p => rfl)
+    have log_window_bound : ∀ (P : Finset ℝ) {L U x0 X : ℝ}, (∀ p ∈ P, 1 ≤ p) →
+        1 ≤ x0 → x0 ≤ X → 0 ≤ U →
+        (∀ x ∈ Icc x0 X, L * √x ≤ Acount P x ∧ Acount P x ≤ U * √x) →
+        let β : ℝ := 3 / 8 - Real.log (1 + Real.sqrt 2) / (8 * Real.sqrt 2)
+        let η : ℝ := ∫ v in Ioi 0, v * Kker v
+        0 ≤ η ∧ η ≤ 2 ∧
+        (3 / 2) * squareIntegral P X - 4 * doubleIntegral P X
+          ≤ (3 / 2) * (∫ x in Ioo 1 x0, Acount P x ^ 2 / x ^ 2)
+            + (3 / 2 - 4 * β) * U ^ 2 * (log X - log x0)
+            - (2 * (3 / 2 - 4 * β) * U - (3 / 2) * (U - L))
+                * (∫ t in (log x0)..(log X), (U - hfun (Acount P) t))
+            + 4 * U ^ 2 * η := by
+      intro P L U x0 X hP hx0 hxX hU henv
+      exact C7 P L U x0 X (fun p => Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) (Acount P)
+        (fun t => Acount P t ^ 2 / t ^ 2) (fun t u => Acount P u * Acount P t / (2 * t - u) ^ 3)
+        (doubleIntegrand P) (hfun (Acount P)) (fun t => U - hfun (Acount P) t) Kker (fun v => v * Kker v)
+        (fun p => rfl) (fun t => rfl) (fun t => rfl) (fun t u => rfl) (fun t => rfl) (fun t => rfl)
+        (fun t => rfl) (fun v => rfl) (fun v => rfl) hP hx0 hxX hU henv
+    have hfun_env (P : Finset ℝ) {L U x0 X : ℝ} (hx0 : 0 < x0) (hxX : x0 ≤ X)
+        (henv : ∀ x ∈ Icc x0 X, L * √x ≤ Acount P x ∧ Acount P x ≤ U * √x) :
+        ∀ t ∈ Icc (log x0) (log X), L ≤ hfun (Acount P) t ∧ hfun (Acount P) t ≤ U := by
+      intro t ht
+      have hX : 0 < X := lt_of_lt_of_le hx0 hxX
+      have hx : exp t ∈ Icc x0 X := by
+        constructor
+        · rw [← exp_log hx0]; exact exp_le_exp.mpr ht.1
+        · rw [← exp_log hX]; exact exp_le_exp.mpr ht.2
+      obtain ⟨h1, h2⟩ := henv _ hx
+      rw [← exp_half] at h1 h2
+      have he : exp (t / 2) * exp (-(t / 2)) = 1 := by rw [← exp_add]; simp
+      have hp := exp_pos (-(t / 2))
+      unfold hfun
+      constructor
+      · have := mul_le_mul_of_nonneg_right h1 hp.le
+        rw [mul_assoc, he, mul_one] at this; exact this
+      · have := mul_le_mul_of_nonneg_right h2 hp.le
+        rw [mul_assoc, he, mul_one] at this; exact this
+
+
+    let α : ℝ := Real.log (1 + √2) / (2 * √2)
+
+    have sqrt2_sq : (√2 : ℝ) ^ 2 = 2 := Real.sq_sqrt (by norm_num)
+
+    have log_one_add_sqrt2_ge :
+        (√2 / 2) * (1 + 1/6 + 1/20 + 1/56 + 1/144) ≤ Real.log (1 + √2) := by
+      set y : ℝ := √2 / 2 with hy
+      have hs0 : 0 < √2 := by positivity
+      have hs1 : √2 < 2 := by nlinarith [sqrt2_sq]
+      have hy0 : 0 < y := by positivity
+      have hy1 : |y| < 1 := by rw [abs_of_pos hy0]; linarith
+      have hy2 : y ^ 2 = 1 / 2 := by rw [hy, div_pow, sqrt2_sq]; norm_num
+      have hH := hasSum_log_sub_log_of_abs_lt_one hy1
+      have hS := sum_le_hasSum (Finset.range 5)
+        (fun i _ => by positivity) hH
+      have hpow : ∀ k : ℕ, y ^ (2 * k + 1) = y * (1 / 2) ^ k := by
+        intro k; rw [pow_succ, pow_mul, hy2, mul_comm]
+      simp only [hpow, Finset.sum_range_succ, Finset.sum_range_zero] at hS
+
+      have h1 : 0 < 1 - y := by linarith
+      have hq : (1 + y) / (1 - y) = (1 + √2) ^ 2 := by
+        rw [div_eq_iff h1.ne']
+        rw [hy]; ring_nf; rw [show (√2 : ℝ) ^ 3 = √2 ^ 2 * √2 by ring, sqrt2_sq]; ring
+      have hl : Real.log (1 + y) - Real.log (1 - y) = 2 * Real.log (1 + √2) := by
+        rw [← Real.log_div (by linarith) h1.ne', hq, Real.log_pow]; push_cast; ring
+      rw [hl] at hS
+      norm_num at hS
+      linarith
+
+    have alpha_gt : (25 : ℝ) / 81 < α := by
+      have h := log_one_add_sqrt2_ge
+      have hs0 : 0 < √2 := by positivity
+      unfold α
+      rw [lt_div_iff₀ (by positivity)]
+      nlinarith
+
+    have alpha_gt_three_tenths : (3 : ℝ) / 10 < α := by
+      have := alpha_gt; linarith
+
+    have alpha_pos : 0 < α := by
+      have := alpha_gt; linarith
+
+
+    have Cstar_lt : 1 / √α < 9 / 5 := by
+      have ha := alpha_gt
+      have hsa : 5 / 9 < √α := by
+        rw [show (5 : ℝ) / 9 = √(25 / 81) by
+          rw [show (25 : ℝ) / 81 = (5 / 9) ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
+        exact Real.sqrt_lt_sqrt (by norm_num) ha
+      rw [div_lt_iff₀ (by linarith)]
+      linarith
+
+    let Pr (P : Finset ℕ) : Finset ℝ := (P.filter (fun n => 0 < n)).image (fun n : ℕ => (n : ℝ))
+
+    have cast_injOn (s : Finset ℕ) : Set.InjOn (fun n : ℕ => (n : ℝ)) (s : Set ℕ) :=
+      fun _ _ _ _ h => Nat.cast_injective h
+
+    have Pr_mem (P : Finset ℕ) {X : ℕ} (hPX : ∀ p ∈ P, p ≤ X) :
+        ∀ p ∈ Pr P, 1 ≤ p ∧ p ≤ (X : ℝ) := by
+      intro p hp
+      simp only [Pr, Finset.mem_image, Finset.mem_filter] at hp
+      obtain ⟨n, ⟨hn, hn0⟩, rfl⟩ := hp
+      exact ⟨by exact_mod_cast hn0, by exact_mod_cast hPX n hn⟩
+
+    have Acount_Pr (P : Finset ℕ) (t : ℕ) :
+        Acount (Pr P) (t : ℝ) = (Acnt P t : ℝ) := by
+      unfold Acount Pr Acnt
+      rw [Finset.sum_image (cast_injOn _)]
+      simp only [Set.indicator, Set.mem_Ici, Nat.cast_le]
+      rw [Finset.sum_boole, Finset.filter_filter]
+
+    have card_Pr (P : Finset ℕ) {X : ℕ} (hPX : ∀ p ∈ P, p ≤ X) :
+        ((Pr P).card : ℝ) = (Acnt P X : ℝ) := by
+      unfold Pr Acnt
+      rw [Finset.card_image_of_injOn (cast_injOn _)]
+      congr 2
+      apply Finset.filter_congr
+      intro n hn
+      simp [hPX n hn]
+
+    have W_eq_weightedPairs (P : Finset ℕ) (h0 : 0 ∈ P) :
+        W P = weightedPairs (Pr P) := by
+      classical
+      set Pp := P.filter (fun n => 0 < n) with hPp
+      have hW : W P
+          = ∑ a ∈ P, ∑ b ∈ P, if a < b then (((2 * b - a : ℕ) : ℝ))⁻¹ else 0 := by
+        unfold W pairs tgt
+        rw [Finset.sum_filter, Finset.sum_product]
+      have hzero : P.filter (fun n => ¬ 0 < n) = {0} := by
+        ext n; simp only [Finset.mem_filter, Finset.mem_singleton]
+        constructor
+        · rintro ⟨_, h⟩; omega
+        · rintro rfl; exact ⟨h0, lt_irrefl 0⟩
+      rw [hW, ← Finset.sum_filter_add_sum_filter_not P (fun n => 0 < n), hzero,
+        Finset.sum_singleton]
+      unfold weightedPairs Pr
+      rw [Finset.sum_image (cast_injOn _), Finset.sum_image (cast_injOn _), add_comm]
+      congr 1
+      · 
+        rw [← Finset.sum_filter_add_sum_filter_not P (fun n => 0 < n), hzero, Finset.sum_singleton]
+        simp only [lt_irrefl, if_false, add_zero]
+        rw [← hPp]
+        refine Finset.sum_congr rfl (fun b hb => ?_)
+        have hb0 : 0 < b := (Finset.mem_filter.mp hb).2
+        simp only [hb0, if_true, Nat.sub_zero]
+        push_cast; ring
+      · refine Finset.sum_congr rfl (fun a ha => ?_)
+        have ha0 : 0 < a := (Finset.mem_filter.mp ha).2
+        rw [Finset.sum_image (cast_injOn _),
+          ← Finset.sum_filter_add_sum_filter_not P (fun n => 0 < n), hzero, Finset.sum_singleton]
+        have : ¬ a < 0 := by omega
+        simp only [this, if_false, add_zero]
+        rw [← hPp]
+        refine Finset.sum_congr rfl (fun b _ => ?_)
+        unfold forwardPairWeight
+        by_cases hab : a < b
+        · have hab' : (a : ℝ) < b := by exact_mod_cast hab
+          rw [if_pos hab, if_pos hab', Nat.cast_sub (by omega)]
+          push_cast; ring
+        · have hab' : ¬ (a : ℝ) < b := by exact_mod_cast hab
+          rw [if_neg hab, if_neg hab']
+
+
+    have env_nat (P : Finset ℕ) {L U : ℝ} {x0 X : ℕ}
+        (henv : ∀ x ∈ Icc (x0 : ℝ) X, L * √x ≤ Acount (Pr P) x ∧ Acount (Pr P) x ≤ U * √x) :
+        ∀ t : ℕ, x0 ≤ t → t ≤ X → (Acnt P t : ℝ) ≤ U * √(t : ℝ) := by
+      intro t h1 h2
+      rw [← Acount_Pr]
+      exact (henv t ⟨by exact_mod_cast h1, by exact_mod_cast h2⟩).2
+
+    let Pfin (S : Set ℕ) [DecidablePred (· ∈ S)] (X : ℕ) : Finset ℕ := (range (X + 1)).filter (· ∈ S)
+
+
+    let AS_loc (S : Set ℕ) [DecidablePred (· ∈ S)] (x : ℝ) : ℝ :=
+      (((range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card : ℝ)
+
+    have AS_nonneg (S : Set ℕ) [DecidablePred (· ∈ S)] (x : ℝ) : 0 ≤ AS_loc S x := Nat.cast_nonneg _
+
+    have AS_floor (S : Set ℕ) [DecidablePred (· ∈ S)] (x : ℝ) : AS_loc S x = AS_loc S (⌊x⌋₊ : ℝ) := by
+      unfold AS_loc; rw [Nat.floor_natCast]
+
+    have Acount_Pfin (S : Set ℕ) [DecidablePred (· ∈ S)] {X : ℕ} {x : ℝ} (hx : 0 ≤ x) (hxX : x ≤ X) :
+        Acount (Pr (Pfin S X)) x = AS_loc S x := by
+      unfold Acount Pr AS_loc
+      rw [Finset.sum_image (cast_injOn _)]
+      simp only [Set.indicator, Set.mem_Ici]
+      rw [Finset.sum_boole]
+      congr 2
+      have hfl : ⌊x⌋₊ ≤ X := Nat.floor_le_of_le hxX
+      have key : ∀ n : ℕ, (n : ℝ) ≤ x ↔ n ≤ ⌊x⌋₊ := fun n => (Nat.le_floor_iff hx).symm
+      ext n
+      simp only [Pfin, Finset.mem_filter, Finset.mem_range, key]
+      constructor
+      · rintro ⟨⟨⟨_, h1⟩, h2⟩, h3⟩; exact ⟨by omega, h1, h2⟩
+      · rintro ⟨h1, h2, h3⟩; exact ⟨⟨⟨by omega, h2⟩, h3⟩, by omega⟩
+
+
+    have Acnt_Pfin (S : Set ℕ) [DecidablePred (· ∈ S)] {X t : ℕ} (htX : t ≤ X) :
+        (Acnt (Pfin S X) t : ℝ) = AS_loc S t := by
+      rw [← Acount_Pr, Acount_Pfin S (Nat.cast_nonneg _) (by exact_mod_cast htX)]
+
+    have Pfin_card (S : Set ℕ) [DecidablePred (· ∈ S)] {X : ℕ} :
+        (((Pr (Pfin S X)).card : ℕ) : ℝ) = AS_loc S X := by
+      rw [card_Pr (X := X)]
+      · exact Acnt_Pfin S le_rfl
+      · intro p hp; have := (Finset.mem_filter.mp hp).1; rw [Finset.mem_range] at this; omega
+
+    have I0_indep (S : Set ℕ) [DecidablePred (· ∈ S)] {x0 : ℝ} {X : ℕ} (hX : x0 ≤ X) :
+        ∫ x in Ioo 1 x0, Acount (Pr (Pfin S X)) x ^ 2 / x ^ 2
+          = ∫ x in Ioo 1 x0, AS_loc S x ^ 2 / x ^ 2 := by
+      refine setIntegral_congr_fun measurableSet_Ioo (fun x hx => ?_)
+      rw [Acount_Pfin S (by linarith [hx.1]) (by linarith [hx.2])]
+
+    have members_indep (S : Set ℕ) [DecidablePred (· ∈ S)] {s x0 X : ℕ} (hX : x0 ≤ X) :
+        ∑ z ∈ (Finset.Ioc s x0).filter (fun z => z ∈ Pfin S X), ((z : ℝ))⁻¹
+          = ∑ z ∈ (Finset.Ioc s x0).filter (fun z => z ∈ S), ((z : ℝ))⁻¹ := by
+      congr 1
+      apply Finset.filter_congr
+      intro z hz
+      rw [Finset.mem_Ioc] at hz
+      simp only [Pfin, Finset.mem_filter, Finset.mem_range]
+      constructor
+      · exact fun h => h.2
+      · exact fun h => ⟨by omega, h⟩
+
+    have D_nonneg {h : ℝ → ℝ} {a b U : ℝ} (hab : a ≤ b) (hb : ∀ t ∈ Icc a b, h t ≤ U) :
+        0 ≤ ∫ t in a..b, (U - h t) :=
+      intervalIntegral.integral_nonneg hab (fun t ht => sub_nonneg.mpr (hb t ht))
+
+    have E_le (P : Finset ℝ) {X U : ℝ} (hX : 0 < X)
+        (hcard : (P.card : ℝ) ≤ U * √X) (hE : boundaryTerm P X ≤ (P.card : ℝ) ^ 2 / (2 * X)) :
+        boundaryTerm P X ≤ U ^ 2 / 2 := by
+      have h2 : (P.card : ℝ) ^ 2 ≤ U ^ 2 * X := by
+        have := pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2
+        rwa [mul_pow, Real.sq_sqrt hX.le] at this
+      calc boundaryTerm P X ≤ (P.card : ℝ) ^ 2 / (2 * X) := hE
+        _ ≤ U ^ 2 * X / (2 * X) := div_le_div_of_nonneg_right h2 (by positivity)
+        _ = U ^ 2 / 2 := by field_simp
+
+
+    have beta_eq : (3 : ℝ) / 2 - 4 * (3 / 8 - Real.log (1 + √2) / (8 * √2)) = α := by
+      unfold α
+      have : (0 : ℝ) < √2 := by positivity
+      field_simp; ring
+
+    have kappa_pos {U : ℝ} (hU : 0 ≤ U) (hU2 : U < 9 / 5) :
+        0 < 2 * α * U - (3 / 2) * (U - 7 / 5) := by
+      have := alpha_gt_three_tenths
+      have hp : 0 ≤ (α - 3 / 10) * U := mul_nonneg (by linarith) hU
+      nlinarith
+
+    have alpha_lt_one : α < 1 := by
+      unfold α
+      have hs : (1 : ℝ) < √2 := by
+        rw [show (1 : ℝ) = √1 by simp]; exact Real.sqrt_lt_sqrt (by norm_num) (by norm_num)
+      have hl : Real.log (1 + √2) ≤ √2 := by
+        have := Real.log_le_sub_one_of_pos (by positivity : (0 : ℝ) < 1 + √2); linarith
+      rw [div_lt_one (by positivity)]
+      linarith
+
+    have Cstar_gt_one : 1 < 1 / √α := by
+      have h0 := alpha_pos
+      have h1 := alpha_lt_one
+      have hs : √α < 1 := by
+        rw [show (1 : ℝ) = √1 by simp]; exact Real.sqrt_lt_sqrt h0.le h1
+      rw [lt_div_iff₀ (Real.sqrt_pos.mpr h0)]; linarith
+
+    let Budget61 (U : ℝ) : Prop :=
+      ∃ C : ℝ, ∃ x0 : ℕ, ∀ X : ℕ, x0 ≤ X → Real.log X ≤ α * U ^ 2 * Real.log X + C
+
+
+    let H61 (S : Set ℕ) [DecidablePred (· ∈ S)] : Prop :=
+      ∀ U : ℝ, 0 ≤ U → U < 1 / √α →
+        (∃ x0 : ℕ, 1 ≤ x0 ∧ ∀ x : ℝ, (x0 : ℝ) ≤ x → (7 / 5) * √x ≤ AS_loc S x ∧ AS_loc S x ≤ U * √x) →
+        Budget61 U
+
+
+    have h61_holds (S : Set ℕ) [DecidablePred (· ∈ S)] (h0 : 0 ∈ S) (s : ℕ)
+        (hcov : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z) : H61 S := by
+      intro U hU hUC ⟨x0, hx01, henv⟩
+      have hU95 : U < 9 / 5 := lt_trans hUC Cstar_lt
+      set y0 : ℕ := max x0 s with hy0
+      have hy0x : x0 ≤ y0 := le_max_left _ _
+      have hsy : s ≤ y0 := le_max_right _ _
+      have hy01 : 1 ≤ y0 := le_trans hx01 hy0x
+      have hy0r : (1 : ℝ) ≤ y0 := by exact_mod_cast hy01
+      have henv' : ∀ x : ℝ, (y0 : ℝ) ≤ x → (7 / 5) * √x ≤ AS_loc S x ∧ AS_loc S x ≤ U * √x :=
+        fun x hx => henv x (le_trans (by exact_mod_cast hy0x) hx)
+
+      set c1 : ℝ := ∑ z ∈ (Finset.Ioc s y0).filter (fun z => z ∈ S), ((z : ℝ))⁻¹
+      set c2 : ℝ := ∫ x in Ioo 1 (y0 : ℝ), AS_loc S x ^ 2 / x ^ 2
+      refine ⟨(harmonic s : ℝ) + c1 + 2 * U / √(y0 : ℝ) + (3 / 2) * c2
+          - α * U ^ 2 * Real.log y0 + 8 * U ^ 2 + U ^ 2 / 2, y0, fun X hX => ?_⟩
+      set P := Pfin S X with hPdef
+      have hXr : (y0 : ℝ) ≤ X := by exact_mod_cast hX
+      have hX0 : (0 : ℝ) < X := by linarith
+
+      have hcovP : ∀ z ∈ Finset.Ioc s X, z ∉ P → ∃ a ∈ P, ∃ b ∈ P, a < b ∧ 2 * b - a = z := by
+        intro z hz hzP
+        rw [Finset.mem_Ioc] at hz
+        have hzS : z ∉ S := fun h => hzP (by
+          simp only [hPdef, Pfin, Finset.mem_filter, Finset.mem_range]; exact ⟨by omega, h⟩)
+        obtain ⟨a, ha, b, hb, hab, he⟩ := hcov z hz.1 hzS
+        refine ⟨a, ?_, b, ?_, hab, he⟩ <;>
+          simp only [hPdef, Pfin, Finset.mem_filter, Finset.mem_range] <;>
+          refine ⟨by omega, by assumption⟩
+      have henvN : ∀ t : ℕ, y0 ≤ t → t ≤ X →
+          (Acnt P t : ℝ) ≤ U * √(t : ℝ) := by
+        intro t h1 h2
+        rw [hPdef, Acnt_Pfin S h2]
+        exact (henv' t (by exact_mod_cast h1)).2
+      have L2 := lemma2_full P U s y0 X hsy hX (by omega) hU hcovP henvN
+      rw [hPdef, members_indep S hX] at L2
+
+      have h0P : 0 ∈ P := by
+        simp only [hPdef, Pfin, Finset.mem_filter, Finset.mem_range]; exact ⟨by omega, h0⟩
+      have hW := W_eq_weightedPairs P h0P
+
+      have hPX : ∀ p ∈ P, p ≤ X := by
+        intro p hp
+        simp only [hPdef, Pfin, Finset.mem_filter, Finset.mem_range] at hp; omega
+      have hPr := Pr_mem P hPX
+      obtain ⟨_, _, hId, _, hE⟩ := finite_weighted_integral_identity (Pr P) X hX0
+        (fun p hp => ⟨by linarith [(hPr p hp).1], (hPr p hp).2⟩)
+
+      have henvR : ∀ x ∈ Icc (y0 : ℝ) X, (7 / 5) * √x ≤ Acount (Pr P) x ∧
+          Acount (Pr P) x ≤ U * √x := by
+        intro x hx
+        rw [hPdef, Acount_Pfin S (by linarith [hx.1]) hx.2]
+        exact henv' x hx.1
+      have LW := log_window_bound (Pr P) (fun p hp => (hPr p hp).1)
+        hy0r hXr hU henvR
+      simp only at LW
+      obtain ⟨hη0, hη2, hmain⟩ := LW
+      rw [beta_eq, hPdef, I0_indep S hXr] at hmain
+
+      have hlog : Real.log y0 ≤ Real.log X := Real.log_le_log (by linarith) hXr
+      have hD := D_nonneg (h := hfun (Acount (Pr (Pfin S X)))) hlog
+        (fun t ht => (hfun_env (Pr (Pfin S X)) (by linarith) hXr
+          (by rw [← hPdef]; exact henvR) t ht).2)
+      have hκ := kappa_pos hU hU95
+      have hκD := mul_nonneg hκ.le hD
+
+      have hcard : ((Pr P).card : ℝ) ≤ U * √(X : ℝ) := by
+        rw [hPdef, Pfin_card S]; exact (henv' X hXr).2
+      have hE2 := E_le (Pr P) hX0 hcard hE
+
+      have hR : 0 ≤ Rex (Pfin S X) s X :=
+        Finset.sum_nonneg (fun z _ => mul_nonneg (Nat.cast_nonneg _) (inv_nonneg.mpr (Nat.cast_nonneg _)))
+
+      have hlX : Real.log X ≤ Real.log ((X : ℝ) + 1) := Real.log_le_log hX0 (by linarith)
+      have hη : 4 * U ^ 2 * (∫ v in Ioi 0, v * Kker v) ≤ 8 * U ^ 2 := by nlinarith [sq_nonneg U]
+      rw [hPdef] at hW hId hE2
+      linarith
+
+
+    intro S AS hAS h0 s hcov
+    classical
+    have hcov' : ∀ z, s < z → z ∉ S → ∃ a ∈ S, ∃ b ∈ S, a < b ∧ 2 * b - a = z := by
+      intro z h1 h2
+      obtain ⟨a, b, ha, hb, h⟩ := hcov z h1 h2
+      exact ⟨a, ha, b, hb, h⟩
+    have hASe : AS = AS_loc S := by
+      funext x
+      rw [hAS x]
+      have e : S ∩ Set.Icc 1 ⌊x⌋₊ = ↑((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)) := by
+        ext n
+        simp only [Set.mem_inter_iff, Set.mem_Icc, Finset.coe_filter, Finset.mem_range, Set.mem_setOf_eq]
+        exact ⟨fun ⟨h1, h2, h3⟩ => ⟨by omega, h1, by omega⟩, fun ⟨h1, h2, h3⟩ => ⟨h2, by omega, by omega⟩⟩
+      rw [e, Set.ncard_coe_finset]
+    subst hASe
+    exact h61_holds S h0 s hcov')

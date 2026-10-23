@@ -1,0 +1,119 @@
+by
+  intro C8
+  have hany : ∀ S : Set ℕ, ∀ AS : ℝ → ℝ,
+      (∀ x : ℝ, AS x = (Set.ncard (S ∩ Set.Icc 1 ⌊x⌋₊) : ℝ)) → ∀ s : ℕ,
+      (∀ z : ℕ, s < z → z ∉ S → ∃ a : ℕ, ∃ b : ℕ, a ∈ S ∧ b ∈ S ∧ a < b ∧ 2 * b - a = z) →
+      (∀ U : ℝ, U < 1 / Real.sqrt (Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2)) → ¬ ∃ M : ℝ, ∀ x : ℝ, M ≤ x → AS x ≤ U * Real.sqrt x) ∧
+      (∀ c : ℝ, Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) < c → ¬ ∃ K : ℕ, ∀ k : ℕ, K ≤ k → c * (k : ℝ) ^ 2 ≤ (Nat.nth (· ∈ S) k : ℝ)) := by
+    intro S AS hAS s hcov
+    classical
+    have hAS0 : ∀ x : ℝ, AS x = (Set.ncard (insert 0 S ∩ Set.Icc 1 ⌊x⌋₊) : ℝ) := by
+      intro x
+      rw [hAS x, Set.insert_inter_of_notMem (by simp)]
+    have hcov0 : ∀ z : ℕ, s < z → z ∉ insert 0 S → ∃ a : ℕ, ∃ b : ℕ, a ∈ insert 0 S ∧ b ∈ insert 0 S ∧ a < b ∧ 2 * b - a = z := by
+      intro z hz hzS
+      obtain ⟨a, b, ha, hb, h⟩ := hcov z hz (fun h => hzS (Set.mem_insert_of_mem 0 h))
+      exact ⟨a, b, Set.mem_insert_of_mem 0 ha, Set.mem_insert_of_mem 0 hb, h⟩
+    have hl := (C8 (insert 0 S) AS hAS0 (Set.mem_insert 0 S) s hcov0).1
+    refine ⟨hl, ?_⟩
+    have hcnt : ∀ x : ℝ, AS x = (((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card : ℝ) := by
+      intro x
+      rw [hAS x]
+      have e : S ∩ Set.Icc 1 ⌊x⌋₊ = ↑((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)) := by
+        ext n
+        simp only [Set.mem_inter_iff, Set.mem_Icc, Finset.coe_filter, Finset.mem_range, Set.mem_setOf_eq]
+        exact ⟨fun ⟨h1, h2, h3⟩ => ⟨by omega, h1, by omega⟩, fun ⟨h1, h2, h3⟩ => ⟨h2, by omega, by omega⟩⟩
+      rw [e, Set.ncard_coe_finset]
+    set α : ℝ := Real.log (1 + Real.sqrt 2) / (2 * Real.sqrt 2) with hαdef
+    have ha : 0 < α := by
+      rw [hαdef]
+      have h2 : (1 : ℝ) < 1 + Real.sqrt 2 := by have := Real.sqrt_pos.mpr (show (0:ℝ) < 2 by norm_num); linarith
+      exact div_pos (Real.log_pos h2) (by positivity)
+    have hsa := Real.sqrt_pos.mpr ha
+    -- S is infinite
+    have hinf : S.Infinite := by
+      intro hfin
+      set N : ℝ := (hfin.toFinset.card : ℝ) with hN
+      set U0 : ℝ := 1 / Real.sqrt α / 2 with hU0
+      have hU0p : 0 < U0 := by rw [hU0]; positivity
+      have hU0lt : U0 < 1 / Real.sqrt α := by
+        have : 0 < 1 / Real.sqrt α := by positivity
+        rw [hU0]; linarith
+      apply hl U0 hU0lt
+      refine ⟨(N / U0) ^ 2, fun x hx => ?_⟩
+      have hx0 : 0 ≤ x := le_trans (sq_nonneg _) hx
+      have hsx : N / U0 ≤ Real.sqrt x := Real.le_sqrt_of_sq_le hx
+      have hle : AS x ≤ N := by
+        rw [hcnt x, hN]
+        exact_mod_cast Finset.card_le_card (fun n hn => by
+          simp only [Finset.mem_filter] at hn; exact hfin.mem_toFinset.mpr hn.2.1)
+      have : N ≤ U0 * Real.sqrt x := by rwa [div_le_iff₀ hU0p, mul_comm] at hsx
+      linarith
+    have nth_pred_le : ∀ {x : ℝ}, 0 ≤ x → 1 ≤ ((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card →
+        (Nat.nth (· ∈ S) (((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card - 1) : ℝ) ≤ x := by
+      intro x hx hn
+      have hsub : ((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card
+          ≤ Nat.count (· ∈ S) (⌊x⌋₊ + 1) := by
+        rw [Nat.count_eq_card_filter_range]
+        apply Finset.card_le_card
+        intro n hn; simp only [Finset.mem_filter] at hn ⊢; exact ⟨hn.1, hn.2.1⟩
+      have h := (Nat.lt_nth_iff_count_lt (p := (· ∈ S)) hinf
+        (a := ((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card - 1)
+        (b := ⌊x⌋₊ + 1)).mp (by omega)
+      have h' : Nat.nth (· ∈ S)
+          (((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card - 1) ≤ ⌊x⌋₊ := by omega
+      calc (Nat.nth (· ∈ S) _ : ℝ) ≤ (⌊x⌋₊ : ℝ) := by exact_mod_cast h'
+        _ ≤ x := Nat.floor_le hx
+    intro c hc ⟨K, hK⟩
+    have hc0 : 0 < c := lt_trans ha hc
+    have hsc : Real.sqrt α < Real.sqrt c := Real.sqrt_lt_sqrt ha.le hc
+    have hscp := Real.sqrt_pos.mpr hc0
+    set U : ℝ := (1 / Real.sqrt c + 1 / Real.sqrt α) / 2 with hUdef
+    have h1 : 1 / Real.sqrt c < 1 / Real.sqrt α := one_div_lt_one_div_of_lt hsa hsc
+    have hUlt : U < 1 / Real.sqrt α := by rw [hUdef]; linarith
+    have hUgt : 1 / Real.sqrt c < U := by rw [hUdef]; linarith
+    have hUpos : 0 < U := lt_trans (by positivity) hUgt
+    set δ : ℝ := U - 1 / Real.sqrt c with hδ
+    have hδ0 : 0 < δ := by rw [hδ]; linarith
+    apply hl U hUlt
+    refine ⟨max ((((K : ℝ) + 1) / U) ^ 2) ((1 / δ) ^ 2), fun x hxm => ?_⟩
+    have hx : (((K : ℝ) + 1) / U) ^ 2 ≤ x := le_trans (le_max_left _ _) hxm
+    have hx' : (1 / δ) ^ 2 ≤ x := le_trans (le_max_right _ _) hxm
+    have hx0 : 0 ≤ x := le_trans (sq_nonneg _) hx
+    rw [hcnt x]
+    set n := ((Finset.range (⌊x⌋₊ + 1)).filter (fun n => n ∈ S ∧ 0 < n)).card with hn
+    have hsx : ((K : ℝ) + 1) / U ≤ Real.sqrt x := Real.le_sqrt_of_sq_le hx
+    have hsx' : 1 / δ ≤ Real.sqrt x := Real.le_sqrt_of_sq_le hx'
+    by_cases hnK : n ≤ K + 1
+    · have : (n : ℝ) ≤ K + 1 := by exact_mod_cast hnK
+      have : (K : ℝ) + 1 ≤ U * Real.sqrt x := by rwa [div_le_iff₀ hUpos, mul_comm] at hsx
+      linarith
+    · push_neg at hnK
+      have hak := hK (n - 1) (by omega)
+      have hle := nth_pred_le hx0 (by rw [← hn]; omega)
+      rw [← hn] at hle
+      have hcast : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
+        rw [Nat.cast_sub (by omega)]; simp
+      rw [hcast] at hak
+      have hcn : c * ((n : ℝ) - 1) ^ 2 ≤ x := le_trans hak hle
+      have hn1 : (0 : ℝ) ≤ (n : ℝ) - 1 := by
+        have : (1 : ℝ) ≤ n := by exact_mod_cast (by omega : 1 ≤ n)
+        linarith
+      have hq : (Real.sqrt c * ((n : ℝ) - 1)) ^ 2 ≤ (Real.sqrt x) ^ 2 := by
+        rw [mul_pow, Real.sq_sqrt hc0.le, Real.sq_sqrt hx0]; exact hcn
+      have hq' : Real.sqrt c * ((n : ℝ) - 1) ≤ Real.sqrt x :=
+        (pow_le_pow_iff_left₀ (mul_nonneg (Real.sqrt_nonneg _) hn1) (Real.sqrt_nonneg _) two_ne_zero).mp hq
+      have hA : (n : ℝ) - 1 ≤ 1 / Real.sqrt c * Real.sqrt x := by
+        rw [div_mul_eq_mul_div, one_mul, le_div_iff₀ hscp]; linarith
+      have hB : 1 ≤ δ * Real.sqrt x := by
+        rw [div_le_iff₀ hδ0] at hsx'; linarith
+      have : U * Real.sqrt x = 1 / Real.sqrt c * Real.sqrt x + δ * Real.sqrt x := by rw [hδ]; ring
+      linarith
+  refine ⟨hany, ?_⟩
+  intro A m St AS hAS hle hgt
+  apply hany St AS hAS m
+  intro z hz hzS
+  have h := (not_congr (hgt z hz)).mp hzS
+  push_neg at h
+  obtain ⟨b, hbz, a, hab, ha, hb, he⟩ := h
+  exact ⟨a, b, ha, hb, hab, by omega⟩

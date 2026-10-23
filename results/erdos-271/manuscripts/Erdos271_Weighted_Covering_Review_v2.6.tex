@@ -1,0 +1,566 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[a4paper,margin=27mm]{geometry}
+\usepackage{microtype,booktabs,array,fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small A weighted covering bound}
+\fancyhead[R]{\small Public review draft v2.6}
+\fancyfoot[L]{\footnotesize 23 October 2026 \;\textperiodcentered\; Public archive edition \;\textperiodcentered\; Not submitted}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\newcommand{\N}{\mathbb N_0}
+\newcommand{\al}{\alpha}
+\newcommand{\Cs}{C_*}
+\newcommand{\RR}{\mathcal R}
+\newcommand{\dd}{\,\mathrm d}
+\DeclareMathOperator{\arsinh}{arsinh}
+\title{A weighted covering bound for\protect\\Stanley sequences and weak $AP_3$-coverings}
+\author{}
+\date{Public review draft, revision 2.6 (public archive edition), 23 October 2026}
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\begin{abstract}
+Let $S\subseteq\N$ have the property that every sufficiently large integer outside $S$ is $2b-a$ for some $a<b$ in $S$. We prove that its counting function satisfies
+\[
+\limsup_{x\to\infty}\frac{|S\cap[0,x]|}{\sqrt x}
+\ge \sqrt{\frac{2\sqrt2}{\log(1+\sqrt2)}}=1.791399633\ldots.
+\]
+In particular, the result applies to every Stanley sequence and improves the Dai--Chen bound. The argument weights covered integers by their reciprocals, expresses the resulting pair sum by an exact finite integral identity, and controls the associated positive convolution kernel in logarithmic coordinates. A quantitative inequality also records the loss caused by redundant coverage and departures from a constant normalized counting profile. The main theorem has a Lean formalization with an independently reproduced full-project build; the proof below is written independently of the formalization.
+\end{abstract}
+
+\section{Statement and scope}
+A nonempty finite set $A_0\subseteq\N$ containing no nontrivial three-term arithmetic progression generates a \emph{Stanley sequence}: start with the elements of $A_0$ in increasing order and repeatedly append the least larger integer that preserves this property. In particular, $S(0,n)$ denotes the seed $\{0,n\}$, for $n\ge1$.
+
+\begin{definition}
+A set $S\subseteq\N$ is \emph{weakly $AP_3$-covering beyond $s$} if, for every integer $z>s$ outside $S$, there exist $a,b\in S$ such that
+\[
+0\le a<b<z,\qquad z=2b-a.
+\]
+A strong $AP_3$-covering requires this representation for every $z>s$, including members of $S$.
+\end{definition}
+The strong covering class was studied by Kiss, S\'andor and Yang~\cite{KSY}; the weak terminology is used by Chen~\cite{Chen}. The distinction matters: an infinite three-term-progression-free set cannot strongly cover its own large members. Every Stanley sequence is weakly covering beyond $\max A_0$, because a rejected candidate must complete a progression with two earlier chosen terms.
+
+Write
+\[
+A_S(x)=|S\cap(0,x]|,\qquad F_S(x)=|S\cap[0,x]|.
+\]
+Thus $F_S(x)=A_S(x)+\mathbf1_{\{0\in S\}}$ for $x\ge0$. Define
+\begin{equation}\label{eq:constants}
+\al=\frac{\log(1+\sqrt2)}{2\sqrt2}=0.311612620070115\ldots,
+\qquad \Cs=\al^{-1/2}=1.791399633498318\ldots.
+\end{equation}
+
+\begin{theorem}\label{thm:main}
+Let $S\subseteq\N$ be weakly $AP_3$-covering beyond some integer $s\ge0$. For every $U<\Cs$ and every $N>0$, there exists $x\ge N$ such that
+\[
+A_S(x)>U\sqrt x.
+\]
+Consequently, with limsup understood in the extended real sense,
+\[
+\limsup_{x\to\infty}\frac{F_S(x)}{\sqrt x}\ge\Cs.
+\]
+The set $S$ is infinite, and its increasing enumeration $(a_k)_{k\ge0}$ satisfies
+\[
+\liminf_{k\to\infty}\frac{a_k}{k^2}\le\al.
+\]
+\end{theorem}
+
+Dai and Chen~\cite{DC} state the rounded bound $\limsup F_S(x)/\sqrt x\ge1.77$ in their abstract. Their Theorem~1 gives the stronger exact bound $\limsup F_S(x)/\sqrt x\ge C_{\rm DC}>1.77$, where $C_{\rm DC}\approx1.774153391$. Section~\ref{sec:comparison} compares the exact constants. The elementary lower-envelope estimate has antecedents in Gerver--Ramsey~\cite{GR}; Moy~\cite{Moy} treats arbitrary finite progression-free seeds. These are infinitely-often improvements: we do not prove a new eventual growth exponent, nor an explicit description of an irregular Stanley sequence.
+
+\paragraph{Origins and structured sequences.}
+The greedy construction and the associated growth heuristics originate in
+Odlyzko and Stanley~\cite{OS}. Rolnick~\cite{Rol} developed structural notions
+of independent and regular Stanley sequences; Rolnick and
+Venkataramana~\cite{RV} studied the scaling factors of structured sequences.
+Moy and Rolnick~\cite{MR} introduced modular and basic Stanley sequences,
+connecting the greedy rule to modular constraints and digit-based descriptions.
+These results concern the structure of special families. Our argument instead
+uses only eventual forward covering, without assuming regularity or a digit
+representation.
+
+\paragraph{Related work and the direction of covering.}
+Greedy progression-free sequences and their density questions form part of the
+program of Erd\H{o}s, Lev, Rauzy, S\'andor and S\'ark\"ozy~\cite{ELRSS}.
+Recent computations by Sothanaphan~\cite{Soth} question the usual
+$\Theta(n^2/\log n)$ heuristic for the irregular example $S(0,4)$; these are
+numerical evidence, not an asymptotic classification theorem. Our result neither
+settles that heuristic nor improves an eventual growth exponent.
+Related saturation questions in finite groups, and also in the integers,
+are studied by Csajb\'ok--Nagy~\cite{CN24,CN26}. In particular,
+\cite[Theorem 4.13]{CN24} gives an integer digit-block construction for unordered
+$(2,-1)$-saturation. The new point may be the smallest term of a progression,
+whereas our witnesses require $a<b<z$. For that integer construction,
+a prefix pair count already leaves infinitely many non-members without forward
+witnesses; the elementary calculation is recorded in the companion supplement.
+Thus its smaller density constants do not contradict the ordered-covering
+bounds considered here.
+
+\paragraph{How to read the proof.}
+The argument has four main steps. First a pair-counting estimate supplies the elementary lower envelope in Section~2. Next, reciprocal weights turn weak covering into a lower bound on a finite pair sum (Section~2). An exact integral identity (Section~3) rewrites that sum in terms of the counting function. Finally, the positive kernel in logarithmic coordinates (Section~4) yields an upper budget under a hypothetical small eventual counting function; its contradiction and the threshold rigidity deduction are in Sections~5--6. The limiting rigidity deduction in Corollary~\ref{cor:rigidity} and the exact and numerical Dai--Chen comparison in Section~\ref{sec:comparison} are paper deductions outside the completed Lean formalization. The matching Lean modules and declarations are listed in Appendix~A; reading them is not required to follow this proof.
+
+\paragraph{Why reciprocal weights?}
+Unweighted pair counting gives the square-root lower envelope but loses how
+coverage is distributed across scales. Weighting a target $z$ by $1/z$ makes
+each multiplicative interval contribute a comparable amount: the required
+coverage has harmonic mass of order $\log X$. At the critical scale
+$A(x)\approx c\sqrt x$, the integral $\int_1^X A(x)^2x^{-2}\dd x$ is also of
+order $c^2\log X$. This motivates the exact weighted identity below.
+Writing $x=e^t$ then turns multiplicative scales into translations and the
+normalized count into $h(t)=A(e^t)e^{-t/2}$. The argument does not assume that
+$h$ converges; the positive-kernel estimate controls its possible oscillations.
+
+\paragraph{Notation.}
+All logarithms are natural, and all integrals are Lebesgue integrals.
+We write $y_+=\max(y,0)$ and use $\mathbf1_E$ for the indicator of $E$.
+The following conventions recur in the proof.
+\begin{center}\small
+\begin{tabular}{@{}p{0.24\textwidth}p{0.69\textwidth}@{}}
+\toprule
+Notation & Meaning\\
+\midrule
+$A_S(x)$, $F_S(x)$ & Counts in $(0,x]$ and $[0,x]$, respectively. We abbreviate $A_S$ by $A$; adjoining zero leaves this count unchanged.\\
+$P$, $A_P(t)$ & A finite positive prefix and its own counting function.\\
+$x_0$, $X$ & A fixed starting cutoff and the growing upper cutoff.\\
+$t_0$, $T$, $\tau$ & $\log x_0$, $\log X$, and $T-t_0$.\\
+$W(X)$, $\RR(X)$ & Weighted pair mass and weighted excess representation count, defined in Section~2.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Covering estimates}
+Adjoining zero preserves weak covering and leaves $A_S$ unchanged. We may therefore assume $0\in S$ during the proof and write $A=A_S$.
+
+\begin{lemma}[Elementary lower envelope]\label{lem:lower}
+For every weakly covering $S$, one has
+\[
+\liminf_{x\to\infty}\frac{A(x)}{\sqrt x}\ge\sqrt2.
+\]
+\end{lemma}
+\begin{proof}
+For $x\ge s$, at least $\lfloor x\rfloor-s-A(x)$ integers in $(s,x]$ lie outside $S$. Distinct such integers need distinct witness pairs among the $A(x)+1$ elements of $S\cap[0,x]$. Thus
+\[
+\lfloor x\rfloor-s-A(x)\le\binom{A(x)+1}{2},
+\]
+which gives $2\lfloor x\rfloor\le A(x)^2+3A(x)+2s$. Taking the positive quadratic root and dividing by $\sqrt x$ proves the claim. In particular, $S$ is infinite. Alternatively, a finite $S$ cannot cover any $z>2\max S$.
+\end{proof}
+For $X>0$, set
+\begin{align}
+W(X)&=\sum_{\substack{a,b\in S\\0\le a<b\le X}}\frac1{2b-a},\label{eq:W}\\
+r(z)&=\#\{(a,b)\in S^2:a<b,\ 2b-a=z\},\nonumber\\
+\RR(X)&=\sum_{s<z\le X}\frac{(r(z)-1)_+}{z}.\label{eq:R}
+\end{align}
+Here and below sums in $z$ are over integers. The function $r(z)$ is finite, since every witness has $b<z$.
+
+\begin{lemma}[Weighted lower bound]\label{lem:weightedlower}
+Suppose $x_0\ge\max(1,s)$ and $A(t)\le U\sqrt t$ for every $t\ge x_0$, where $U\ge0$. Then, for $X\ge x_0$,
+\begin{equation}\label{eq:weightedlower}
+W(X)\ge\log X-B+\RR(X),
+\end{equation}
+where the constant
+\[
+B=H_s+\sum_{\substack{a\in S\\s<a\le x_0}}\frac1a+\frac{2U}{\sqrt{x_0}},
+\qquad H_s=\sum_{j=1}^s\frac1j,
+\]
+is independent of $X$.
+\end{lemma}
+\begin{proof}
+All pairs representing $z\le X$ occur in $W(X)$. Weak covering gives
+\[
+\frac{\mathbf1_{\{z\notin S\}}+(r(z)-1)_+}{z}\le\frac{r(z)}z
+\qquad(z>s).
+\]
+Therefore
+\[
+W(X)\ge H_{\lfloor X\rfloor}-H_s-
+\sum_{\substack{a\in S\\s<a\le X}}\frac1a+\RR(X).
+\]
+The harmonic sum is at least $\log X$. Summation by parts gives
+\begin{align*}
+\sum_{\substack{a\in S\\x_0<a\le X}}\frac1a
+&=\frac{A(X)}X-\frac{A(x_0)}{x_0}
+  +\int_{x_0}^X\frac{A(t)}{t^2}\dd t\\
+&\le\frac{U}{\sqrt X}+U\int_{x_0}^X t^{-3/2}\dd t
+\le\frac{2U}{\sqrt{x_0}}.
+\end{align*}
+Splitting the members' sum at $x_0$ proves~\eqref{eq:weightedlower}.
+\end{proof}
+
+\section{An exact finite identity}
+For a finite set $P\subset(0,X]$, let $A_P(t)=\sum_{p\in P}\mathbf1_{[p,\infty)}(t)$ and $m=|P|$. Define
+\begin{align*}
+I_P(X)&=\int_0^X\frac{A_P(t)^2}{t^2}\dd t,\\
+J_P(X)&=\int_0^X\int_0^t\frac{A_P(u)A_P(t)}{(2t-u)^3}\dd u\dd t,\\
+W_P&=\sum_{p\in P}\frac1{2p}
+       +\sum_{\substack{p,q\in P\\p<q}}\frac1{2q-p},\\
+E_P(X)&=m\sum_{p\in P}\frac1{2X-p}-\frac{m^2}{2X}.
+\end{align*}
+For nonempty $P$, the integrands vanish near zero and are bounded on the remaining integration regions. For empty $P$, all quantities vanish. Thus the displayed integrals are genuine finite integrals.
+
+\begin{lemma}[Finite weighted identity]\label{lem:identity}
+For every finite $P\subset(0,X]$,
+\begin{equation}\label{eq:identity}
+W_P=\frac32I_P(X)-4J_P(X)+E_P(X),
+\qquad 0\le E_P(X)\le\frac{m^2}{2X}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+For each ordered pair $p,q\in P$, put $M=\max(p,q)$. Expansion of the indicators gives its contribution to $I_P$ as
+\[
+\int_M^X\frac{\dd t}{t^2}=\frac1M-\frac1X,
+\]
+and its contribution to $J_P$ as
+\begin{equation}\label{eq:nested}
+\int_M^X\int_p^t\frac{\dd u\dd t}{(2t-u)^3}
+=\frac1{2M}-\frac1{2X}
+ +\frac1{4(2X-p)}-\frac1{4(2M-p)}.
+\end{equation}
+All expansions are finite. Substituting these evaluations into the right-hand side of~\eqref{eq:identity} leaves
+\[
+\sum_{p,q\in P}\left(\frac1{2\max(p,q)-p}-\frac1{2\max(p,q)}\right).
+\]
+A diagonal term equals $1/(2p)$. For $p<q$, the two off-diagonal terms sum to $1/(2q-p)$. This is exactly $W_P$. Finally,
+\[
+\frac1{2X}\le\frac1{2X-p}\le\frac1X \qquad(0<p\le X),
+\]
+which proves both bounds on $E_P$.
+\end{proof}
+For $P=S\cap(0,X]$, write $I(X),J(X),E(X)$ for these quantities. Because $0\in S$, $W_P=W(X)$: the first sum accounts precisely for pairs $(0,p)$.
+
+\section{The logarithmic kernel}
+Set
+\[
+h(t)=A(e^t)e^{-t/2},\qquad
+K(v)=\frac{e^{-3v/2}}{(2-e^{-v})^3}\quad(v\ge0).
+\]
+Since positive elements of $S$ are at least $1$, $h(t)=0$ for $t<0$. The substitutions $x=e^t$, $y=e^u$ give, for $T\ge0$,
+\begin{equation}\label{eq:logsub}
+I(e^T)=\int_0^T h(t)^2\dd t,\qquad
+J(e^T)=Q_T(h):=\int_0^T\int_0^t K(t-u)h(t)h(u)\dd u\dd t.
+\end{equation}
+These substitutions can be performed on finite indicator sums, so no continuity of the counting function is needed.
+
+\begin{lemma}[Kernel data]\label{lem:kernel}
+The kernel is nonnegative and has mass and first moment
+\[
+\beta:=\int_0^\infty K(v)\dd v=\frac38-\frac\al4,
+\qquad
+0\le\eta:=\int_0^\infty vK(v)\dd v\le2.
+\]
+In particular, $\frac32-4\beta=\al$.
+\end{lemma}
+\begin{proof}
+For $v\ge0$, the denominator is at least $1$, so $0\le K(v)\le e^{-3v/2}$. This implies integrability and, in fact, $\eta\le4/9<2$. With $y=e^{-v/2}$,
+\[
+\beta=\int_0^1\frac{2y^2}{(2-y^2)^3}\dd y.
+\]
+An antiderivative is
+\[
+\frac{y}{2(2-y^2)^2}-\frac{y}{8(2-y^2)}
+ -\frac1{16\sqrt2}\log\frac{\sqrt2+y}{\sqrt2-y}.
+\]
+Evaluation at $0$ and $1$, using $(\sqrt2-1)(\sqrt2+1)=1$, yields the claimed mass. We use only the weaker moment bound $\eta\le2$ below, matching the formalized estimate.
+\end{proof}
+
+\begin{lemma}[Positive-kernel estimate]\label{lem:positivity}
+Let $\tau\ge0$, and let $K:[0,\infty)\to[0,\infty)$ be measurable, with
+finite mass $\beta=\int_0^\infty K(v)\dd v$ and first moment
+$\eta=\int_0^\infty vK(v)\dd v$. Define $Q_\tau$ using this kernel as in
+\eqref{eq:logsub}, and set $\al=3/2-4\beta$. Suppose $0\le L\le U$ and
+$h:[0,\tau]\to\mathbb R$ is measurable with $L\le h(t)\le U$ throughout
+$[0,\tau]$. Put
+\[
+D=\int_0^\tau(U-h(t))\dd t,
+\qquad \kappa=2\al U-\frac32(U-L).
+\]
+Then
+\begin{equation}\label{eq:positivity}
+\frac32\int_0^\tau h(t)^2\dd t-4Q_\tau(h)
+\le\al U^2\tau-\kappa D+4U^2\eta.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write $d=U-h$, so $0\le d\le U-L$. Then
+\[
+\int_0^\tau h^2\le U^2\tau-(U+L)D.
+\]
+Expanding the product in $Q_\tau(U-d)$ and retaining $Q_\tau(d)\ge0$ gives
+\[
+Q_\tau(h)\ge U^2Q_\tau(1)-2\beta UD.
+\]
+Indeed, each of the two mixed terms is at most $\beta D$, by nonnegativity and the mass bound. Also
+\[
+Q_\tau(1)=\int_0^\tau(\tau-v)K(v)\dd v\ge\beta\tau-\eta.
+\]
+For the last inequality, use
+$\tau\int_\tau^\infty K(v)\dd v\le\int_\tau^\infty vK(v)\dd v$
+and split the kernel mass at $\tau$.
+Combining the last three inequalities proves~\eqref{eq:positivity}. Boundedness of $h$ and finiteness of the kernel mass justify all integral operations.
+\end{proof}
+
+\section{The defect inequality and the main theorem}
+The elementary expansion
+\[
+\al=\frac14\sum_{j=0}^\infty\frac{2^{-j}}{2j+1}
+\]
+shows, by its first five terms, that $\al>25/81>3/10$. On the other hand, $\log(1+\sqrt2)<\sqrt2$ gives $\al<1/2$. Consequently
+\begin{equation}\label{eq:bounds}
+\sqrt2<\Cs<\frac95.
+\end{equation}
+Suppose, contrary to Theorem~\ref{thm:main}, that some $U<\Cs$ is an eventual upper envelope for $A(x)/\sqrt x$. We may enlarge $U$ so that $7/5<U<\Cs$. Lemma~\ref{lem:lower} supplies an integer $x_0\ge\max(1,s)$ such that
+\begin{equation}\label{eq:envelope}
+L\sqrt x\le A(x)\le U\sqrt x\qquad(x\ge x_0),\qquad L=\frac75.
+\end{equation}
+The upper inequality in~\eqref{eq:envelope} is the contrary hypothesis; the lower one follows from Lemma~\ref{lem:lower}. This choice of $x_0$ is fixed before $X$ is allowed to grow.
+
+Let $t_0=\log x_0$, $T=\log X$, and $\tau=T-t_0$. In~\eqref{eq:identity}, drop from $J(X)$ the interactions outside the triangle $t_0<u<t<T$. Their integrands are nonnegative and their coefficient is $-4$, so this gives an upper bound. The initial square integral contributes $\frac32 I(x_0)$. Translation of Lemma~\ref{lem:positivity} therefore gives
+\begin{equation}\label{eq:Wupper}
+W(X)\le\frac32 I(x_0)+\al U^2\tau-\kappa D(X)+\frac{17}{2}U^2,
+\end{equation}
+where
+\[
+D(X)=\int_{t_0}^T(U-h(t))\dd t\ge0.
+\]
+Here $4U^2\eta\le8U^2$ and $E(X)\le A(X)^2/(2X)\le U^2/2$ were used. Moreover,
+\begin{equation}\label{eq:kappa}
+\kappa=\frac{21}{10}-\left(\frac32-2\al\right)U
+>\frac{21}{10}-\frac9{10}\frac95=\frac{12}{25}>0.
+\end{equation}
+Combining~\eqref{eq:weightedlower} and~\eqref{eq:Wupper}, and dropping the nonpositive term $-t_0$, yields
+\begin{equation}\label{eq:defect}
+\boxed{\RR(X)+\kappa D(X)
+\le(\al U^2-1)\log(X/x_0)+C_0,}
+\end{equation}
+where
+\[
+C_0=B+\frac32 I(x_0)+\frac{17}{2}U^2
+\]
+is independent of $X$. The left-hand side of~\eqref{eq:defect} is nonnegative, whereas the right-hand side tends to $-\infty$ because $\al U^2<1$. This contradiction proves the counting-function assertion.
+
+To obtain the enumeration assertion without any zero-index ambiguity, let $c>\al$ and choose $U$ with $1/\sqrt c<U<\Cs$. At arbitrarily large $x$, we have $F_S(x)>U\sqrt x$. Put $k=F_S(x)-1$. Then $a_k\le x<(k+1)^2/U^2$. The indices $k$ tend to infinity by Lemma~\ref{lem:lower}, and $1/U^2<c$, so $a_k<ck^2$ for arbitrarily large $k$. This proves Theorem~\ref{thm:main}.
+
+\begin{remark}[What is and is not used]
+Only weak covering is required. Three-term-progression-freeness is used to obtain that property for Stanley sequences, not in the analytic proof. The constant $\Cs$ is not proved optimal for actual integer sets, and the theorem does not imply $A(x)/\sqrt x\to\infty$.
+\end{remark}
+
+\section{A rigidity consequence at the threshold}\label{sec:rigidity}
+The retained nonnegative terms in~\eqref{eq:defect} give more than the numerical lower bound.
+
+\begin{corollary}\label{cor:rigidity}
+Assume $S$ is weakly covering and
+$\limsup_{x\to\infty}A_S(x)/\sqrt x=\Cs$.
+For the representation count of $S\cup\{0\}$, one has
+\[
+\RR(X)=o(\log X),
+\qquad
+\frac1{\log X}\int_1^X
+\left|\frac{A_S(x)}{\sqrt x}-\Cs\right|^2\frac{\dd x}{x}\longrightarrow0.
+\]
+The redundant-coverage conclusion also holds for $S$ itself.
+\end{corollary}
+\begin{proof}
+Choose $U=\Cs+\varepsilon<9/5$. An eventual envelope~\eqref{eq:envelope} again holds, and~\eqref{eq:defect} remains valid with $\kappa(U)>0$. Here $x_0=x_0(\varepsilon)$ and $C_0=C_0(\varepsilon)$ may depend on $\varepsilon$, but not on $T$. Fix $\varepsilon$ first, divide by $T=\log X$, and then let $T\to\infty$. We obtain
+\[
+\limsup\frac{\RR(e^T)}T\le\al U^2-1,
+\qquad
+\limsup\frac1T\int_{t_0}^T(U-h)\dd t
+\le\frac{\al U^2-1}{\kappa(U)}.
+\]
+Now let $\varepsilon\downarrow0$. The first bound gives $\RR(X)=o(\log X)$. Since $h\le U$ eventually,
+$|h-\Cs|\le U-h+\varepsilon$, so the logarithmic mean of $|h-\Cs|$ tends to zero. The function $h$ is bounded on the tail, so the same is true of $|h-\Cs|^2$. The initial finite interval makes no contribution after division by $T$. Substituting $x=e^t$ proves the integral assertion. Adjoining zero can only increase representation counts, so the original redundant-coverage sum is no larger.
+\end{proof}
+This is convergence in logarithmic mean, not pointwise convergence. The corollary is included as a mathematical deduction; it is not claimed to have a separate completed Lean formalization.
+
+\section{Comparison with Dai--Chen}\label{sec:comparison}
+Theorem~1 of Dai--Chen~\cite{DC} gives $C_{\rm DC}=\tau^{-1/2}$, where
+\begin{align*}
+\tau&=\max_{1/\sqrt2\le t\le1}\phi(t),\\
+\phi(t)&=\frac{t}{2\sqrt2}\log\left(\sqrt{2t^2-1}+\sqrt2\,t\right)
+ +\frac{t^2}{2}\left(1-\sqrt{2t^2-1}\right).
+\end{align*}
+The following calculation is an independent evaluation of that published formula. Put $r=\sqrt{2t^2-1}$. Then
+\[
+\psi(r):=\phi\left(\sqrt{(1+r^2)/2}\right)
+=\frac{\sqrt{1+r^2}\,\arsinh r+(1+r^2)(1-r)}4,
+\quad 0\le r\le1,
+\]
+and
+\[
+\psi'(r)=\frac r4\,g(r),\qquad
+g(r)=\frac{\arsinh r}{\sqrt{1+r^2}}+2-3r.
+\]
+On $(0,1]$, $g'(r)<-2$, while $g(0)>0$ and $g(1)<0$. Thus there is exactly one interior maximizer. Numerical evaluation gives
+\begin{align*}
+r_*&=0.863863641081699\ldots,&t_*&=0.934414359474139\ldots,\\
+\tau&=0.317700331960741\ldots,&C_{\rm DC}&=1.774153391146106\ldots.
+\end{align*}
+Also $\psi(1)=\al$ exactly, and $\psi'(1)<0$, hence $\tau>\al$. Therefore $\Cs>C_{\rm DC}$ is a strict improvement independent of numerical rounding. Its relative size is approximately $0.97208\%$.
+
+The gain is not a finer optimization of the same scalar maximum. The weighted argument retains information across logarithmic scales: nonconstant profiles incur the nonnegative deficit term in~\eqref{eq:defect}, rather than an uncontrolled loss in the universal constant. This identifies the mathematical point of the improvement without claiming a complete classification of profiles.
+
+\clearpage
+\appendix
+\section{Formalization and reproducibility}\label{app:formal}
+The main theorem is formalized in Lean 4.35.0 using a pinned Mathlib release.
+The complete 38-module project has been independently rebuilt from its frozen
+source files. All 24 designated declarations passed the transitive axiom audit,
+using only \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound}.
+The source checks exclude \texttt{sorry}, added axioms, \texttt{native\_decide},
+and unsafe declarations. The replay rebuilt the project, not Lean or Mathlib;
+its dependencies came from a verified, pinned cache.
+
+The accompanying \emph{Formal verification and reproducibility supplement}
+records the source manifest, the Lean and Mathlib pins, the replay command, the
+principal checker job identifiers and hashes, and the location of the archived
+logs; the checker inputs and full dependency pins are in the release archive.
+It separates the complete-project replay
+from earlier standalone checker submissions. The mathematical proof above is
+self-contained and does not require familiarity with Lean.
+
+\paragraph{Reproducible release.}
+These claims refer to the frozen rev~5 source tree, with Mathlib commit
+\par\noindent\path{56a005855ea17e0b0958f73ec801ae140b0a1679}\par
+and release-manifest (\path{SHA256SUMS}) SHA-256
+\par\noindent\path{2d4f22165d1e3b60461315f8cd4e2d8e70d0498aaf1add86e4bd459ff4f090ef}.\par
+The exact list of 24 audited declarations is in \path{scripts/Headline.lean};
+\path{scripts/check_axioms.py} enforces that list. The accompanying supplement
+records the tested commands and archived evidence.
+The public rev~5 source tree is
+\url{https://github.com/Dlgt-io/room-math-results/tree/main/results/erdos-271/lean/rev5}.
+Cedar also independently replayed the rev~6 extension on 23 October 2026:
+39 project modules and all 26 designated declarations passed, with the original
+24 statement/axiom reports unchanged. Its manifest SHA-256 is
+\par\noindent\path{78291fa4ca02d51370c4b2c56073ef58bb5f98d7553a7fa77c5fc156d2219c03}.\par
+The public rev~6 source tree is
+\url{https://github.com/Dlgt-io/room-math-results/tree/main/results/erdos-271/lean/rev6}.
+The two source identities are preserved separately.
+
+\paragraph{The statement proved.}
+The unconditional formal conclusion is the arbitrarily-large-witness assertion
+of Theorem~\ref{thm:main}. A separate real-valued \texttt{Filter.limsup} wrapper
+assumes eventual boundedness; without that assumption, the paper uses the
+extended-real limsup, which may be $+\infty$. The formal count omits zero and
+therefore differs from $F_S$ by at most one. The enumeration uses
+zero-indexed \texttt{Nat.nth}; infinitude is derived from covering.
+The ordinary Stanley-sequence wrappers impose the cutoff $\max A_0$, not an
+arbitrary larger frozen prefix. These conventions are also recorded in
+Section~1 of the supplement (``Paper 1: detailed formalization record'').
+
+Correspondence between the conventional theorems and the Lean statements was
+established by manual source review, supported by four separately checked
+bridge lemmas. Lean checks those lemmas and the formal statements; it does not
+machine-check the translation of this prose into Lean.
+
+The general eventual-envelope theorem is
+\par\noindent\path{Erdos271.Final.erdos271_limsup_any}\par
+in \path{Audit/General.lean}; its bounded real-limsup wrapper is
+\par\noindent\path{Erdos271.Final.erdos271_limsup_ge_any}.\par
+The separately written witness-form assembly (sharing the analytic layer) is
+\par\noindent\path{Erdos271.IndependentEndgame.arbitrarily_large_witnesses}.\par
+The standard-seed specializations include
+\par\noindent\path{Erdos271.Stanley.stanley_std_limsup}\par
+and \path{Erdos271.Stanley.two_seed_limsup}.
+
+\paragraph{Guide to the source.}
+The principal modules are listed below. General finite identities and analytic
+estimates are separated from the final asymptotic argument.
+\begin{center}\small
+\begin{tabular}{@{}p{0.35\textwidth}p{0.59\textwidth}@{}}
+\toprule
+Mathematical step & Lean source or declaration\\
+\midrule
+Covering and lower envelope & \path{Audit/WCover.lean}, \path{Audit/Moy.lean}\\
+Weighted lower bound & \path{Audit/MemberTail.lean}\\
+Finite integral identity & \path{WeightedIdentity.lean}: \path{finite_weighted_integral_identity}\\
+Kernel and logarithmic estimates & \path{Audit/KMChecked.lean}, \path{Audit/Glue4K.lean}, \path{Audit/Glue5.lean}, \path{Audit/Glue6.lean}\\
+Contradiction and general covering theorem & \path{Audit/Final.lean}: \path{limit_of_budget}; \path{Audit/General.lean}: \path{erdos271_limsup_any}\\
+Alternative final assembly & \path{IndependentEndgame.lean}: \path{arbitrarily_large_witnesses}, \path{fixed_error_budget}\\
+Enumeration and ordinary seeds & \path{Audit/AkForm.lean}, \path{Audit/Stanley.lean}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The two final assemblies share analytic lemmas; they are not independent
+reconstructions of every dependency. The finite defect inequality is formalized.
+The limiting rigidity deduction in Corollary~\ref{cor:rigidity} and the
+Dai--Chen comparison in Section~\ref{sec:comparison} remain conventional paper
+proofs, not separately completed Lean theorems. Reproducibility establishes
+formal correctness for the checked statements; it does not establish literature
+priority. This manuscript remains a review draft pending specialist review and
+a permanent public source release.
+
+\begin{thebibliography}{99}\small
+\bibitem{Moy}
+R. A. Moy, \emph{On the growth of the counting function of Stanley sequences}, Discrete Mathematics \textbf{311} (2011), 560--562. \href{https://doi.org/10.1016/j.disc.2010.12.019}{doi:10.1016/j.disc.2010.12.019}. Preprint: \href{https://arxiv.org/abs/1101.0022}{arXiv:1101.0022}.
+\bibitem{DC}
+L.-X. Dai and Y.-G. Chen, \emph{On the counting function of Stanley sequences}, Publicationes Mathematicae Debrecen \textbf{82} (2013), 91--95. \href{https://doi.org/10.5486/PMD.2013.5286}{doi:10.5486/PMD.2013.5286}.
+\href{https://publi.math.unideb.hu/paper/1750}{Publisher record}.
+\bibitem{KSY}
+S. Z. Kiss, Cs. S\'andor and Q.-H. Yang, \emph{On generalized Stanley sequences}, Acta Mathematica Hungarica \textbf{154} (2018), 501--510. \href{https://doi.org/10.1007/s10474-018-0791-1}{doi:10.1007/s10474-018-0791-1}. Preprint: \href{https://arxiv.org/abs/1710.01939}{arXiv:1710.01939}.
+\bibitem{Chen}
+Y.-G. Chen, \emph{On $AP_3$-covering sequences}, Comptes Rendus Math\'ematique \textbf{356} (2018), 121--124. \href{https://doi.org/10.1016/j.crma.2017.12.013}{doi:10.1016/j.crma.2017.12.013}. Preprint: \href{https://arxiv.org/abs/1711.00172}{arXiv:1711.00172}.
+
+\bibitem{ELRSS}
+P. Erd\H{o}s, V. Lev, G. Rauzy, C. S\'andor and A. S\'ark\"ozy,
+\emph{Greedy algorithm, arithmetic progressions, subset sums and divisibility},
+Discrete Math. \textbf{200} (1999), 119--135.
+\href{https://doi.org/10.1016/S0012-365X(98)00385-9}{doi:10.1016/S0012-365X(98)00385-9}.
+
+\bibitem{CN24}
+B. Csajb\'ok and Z. L. Nagy,
+\emph{Complete $3$-term arithmetic progression free sets of small size in vector spaces and other abelian groups},
+arXiv:2401.06283v4 (2024; revised 27 September 2025).
+\href{https://arxiv.org/abs/2401.06283v4}{arXiv:2401.06283v4}.
+
+\bibitem{CN26}
+B. Csajb\'ok and Z. L. Nagy,
+\emph{Small complete 3-term progression free sets in cyclic groups and vector spaces},
+arXiv:2606.30186v1 (2026).
+\href{https://arxiv.org/abs/2606.30186v1}{arXiv:2606.30186v1}.
+
+\bibitem{GR}
+J. L. Gerver and L. T. Ramsey,
+\emph{Sets of integers with no long arithmetic progressions generated by the greedy algorithm},
+Math. Comp. \textbf{33} (1979), 1353--1359.
+
+\bibitem{Soth}
+N. Sothanaphan,
+\emph{Irregular Stanley sequences plausibly do not have growth $\Theta(n^2/\log n)$},
+arXiv:2512.11983v1 (2025).
+\href{https://arxiv.org/abs/2512.11983v1}{arXiv:2512.11983v1}.
+
+\bibitem{OS}
+A. M. Odlyzko and R. P. Stanley,
+\emph{Some curious sequences constructed with the greedy algorithm},
+unpublished manuscript, January 1978.
+\href{https://www.dtc.umn.edu/~odlyzko/unpublished/greedy.sequence.pdf}{Author-archived manuscript}.
+
+\bibitem{Rol}
+D. Rolnick, \emph{On the classification of Stanley sequences},
+arXiv:1408.1940 (2014).
+\href{https://arxiv.org/abs/1408.1940}{arXiv:1408.1940}.
+
+\bibitem{RV}
+D. Rolnick and P. S. Venkataramana,
+\emph{On the growth of Stanley sequences},
+arXiv:1408.4710 (2014).
+\href{https://arxiv.org/abs/1408.4710}{arXiv:1408.4710}.
+
+\bibitem{MR}
+R. A. Moy and D. Rolnick, \emph{Novel structures in Stanley sequences},
+Discrete Math. \textbf{339}(2) (2016), 689--698. Preprint: arXiv:1502.06013 (2015).
+\href{https://arxiv.org/abs/1502.06013}{arXiv:1502.06013}.
+\end{thebibliography}
+\end{document}

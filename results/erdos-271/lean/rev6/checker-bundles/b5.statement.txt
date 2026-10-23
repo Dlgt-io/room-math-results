@@ -1,0 +1,15 @@
+∀ P : Finset Real, ∀ X : Real, ∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ f : Real → Real,
+∀ K : Real → Real → Real, ∀ B : Real → Real, ∀ Z : Real → Real, ∀ W : Real → Real → Real, ∀ D : Real → Real,
+0 < X → (∀ p : Real, Membership.mem P p → 0 < p ∧ p ≤ X) →
+(∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) →
+(∀ t : Real, A t = Finset.sum P (Function.swap H t)) →
+(∀ t : Real, f t = A t ^ 2 / t ^ 2) →
+(∀ t : Real, ∀ u : Real, K t u = A u * A t / (2 * t - u) ^ 3) →
+(∀ t : Real, B t = intervalIntegral (K t) 0 t MeasureTheory.volume) →
+(∀ p : Real, Z p = 1 / (2 * p)) →
+(∀ p : Real, ∀ q : Real, W p q = ite (p < q) (1 / (2 * q - p)) 0) →
+(∀ p : Real, D p = 1 / (2 * X - p)) →
+IntervalIntegrable f MeasureTheory.volume 0 X ∧ IntervalIntegrable B MeasureTheory.volume 0 X ∧
+Finset.sum P Z + Finset.sum P (Function.comp (Finset.sum P) W) = (3 / 2) * intervalIntegral f 0 X MeasureTheory.volume - 4 * intervalIntegral B 0 X MeasureTheory.volume + ((Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X)) ∧
+0 ≤ (Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ∧
+(Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ≤ (Finset.card P : Real) ^ 2 / (2 * X)
