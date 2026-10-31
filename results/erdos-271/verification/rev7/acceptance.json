@@ -1,0 +1,144 @@
+{
+  "status": "PASS",
+  "expected_count": 27,
+  "parsed_count": 27,
+  "unique_count": 27,
+  "problems": [],
+  "axioms": {
+    "Erdos271.Final.erdos271_limsup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Final.erdos271_ak": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Final.erdos271_limsup_any": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Final.erdos271_limsup_ge_any": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Final.erdos271_ak_any": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Stanley.stanley_limsup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Stanley.stanley_ak": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Stanley.stanley_std_limsup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Stanley.stanley_std_ak": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Stanley.two_seed_limsup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Stanley.two_seed_ak": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.IndependentEndgame.arbitrarily_large_witnesses": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.IndependentEndgame.fixed_error_budget": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Liminf.StaticCert.liminf_of_cert": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Liminf.liminf_construction_1889": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Liminf.liminf_construction_1894": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Liminf.liminf_construction_1912": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Liminf.liminf_construction": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.B16.B16_main": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.B16.B16_exists": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.B16.mem_iff_blocks": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.B16.B16_limsup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.B16.S16_limsup": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "ComposedC9.composed": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.FiniteIntegrals.finite_weighted_integral_identity": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.Liminf1675.liminf_construction_1675": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "Erdos271.main_result": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "erdos271-rev7-editorial-provenance-v1",
+  "date": "2026-11-01",
+  "base_commit": "59fe96c938d1f24777ccdc71e601ec4fdf9b5c52",
+  "scope": "Same mathematical bound; direct inclusive ENNReal statement, Challenge/Solution validation, and clear entry points.",
+  "inputs_and_outputs": [
+    {
+      "input": "Erdos271_Weighted_Covering_Review_v2.6.tex",
+      "input_sha256": "72d9349c29a1361d9be2a27223377ac41feb1b9964b57d6f6a37b7380dd75229",
+      "output": "Erdos271_Weighted_Covering_Review_v2.7.tex",
+      "output_sha256": "c4b5cbb57a1967a8c8ee454693dd1374192b9fd7de581811ce37ec3530a8242a"
+    },
+    {
+      "input": "Erdos271_Verification_Supplement_v1.2.tex",
+      "input_sha256": "4b0d7bf0a36540a6d6d00b0e71efd822e8cc35b9a10cad51afc6e4a5c6b98176",
+      "output": "Erdos271_Verification_Supplement_v1.3.tex",
+      "output_sha256": "ae16798c90d4ad32d0dc9095bf4f840f0a552cebcbdb0a8ccba06f5d910b07cd"
+    }
+  ],
+  "formal_sources": "../lean/rev7/",
+  "formal_manifest_sha256": "034a7b22416c2bca96c2d4d997c6d41ce34af74f943402dcbc51993614d3b8b8",
+  "pdf_build_manifest": "pdf-build-manifest-rev7.json",
+  "historical_scope": "Original manuscripts, rev5/rev6 source trees, manifests, and verification evidence are preserved.",
+  "submission_scope": "Prepared for the GitHub archive only; no external submission or research-room adoption is claimed."
+}

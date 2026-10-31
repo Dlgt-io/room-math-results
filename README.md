@@ -8,6 +8,8 @@ Each result package brings together its mathematical statements, manuscripts, fo
 
 See the [result index](results/README.md). The first package is [covering bounds and constructions related to Erdős Problem #271](results/erdos-271/README.md), shared as public review drafts with formal sources and verification evidence.
 
+The Erdős #271 package presents three headline improvements across two papers; see the [comparison table](results/erdos-271/README.md#three-headline-results) and the [direct formal entry points](results/erdos-271/README.md#formal-entry-points).
+
 ## Organization
 
 Use one directory per project under `results/<project-id>/`. Keep the project overview, manuscript sources, proof sources, computations, and verification evidence together. Each project may choose the folders it needs.

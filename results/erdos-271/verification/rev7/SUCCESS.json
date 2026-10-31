@@ -1,0 +1,19 @@
+{
+  "status": "SUCCESS",
+  "sha256sums": "034a7b22416c2bca96c2d4d997c6d41ce34af74f943402dcbc51993614d3b8b8",
+  "utc": "2026-10-31T23:18:55+00:00",
+  "theorems": 27,
+  "unique": 27,
+  "axioms_allowed": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "comparator": "PASS",
+  "comparator_theorems": [
+    "Erdos271.main_result"
+  ],
+  "sandbox": true,
+  "external_kernel": "nanoda",
+  "negative_controls": "PASS"
+}

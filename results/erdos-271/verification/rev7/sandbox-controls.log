@@ -1,0 +1,1 @@
+PASS: non-root, zero capabilities, no-new-privileges, read-only evidence, writable .lake, no external route

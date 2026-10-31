@@ -1,0 +1,179 @@
+{
+  "project_modules": 43,
+  "matching_outputs": 43,
+  "trusted_challenge": "Challenge",
+  "modules": [
+    {
+      "module": "Abstract",
+      "sha256": "c6a5cb75bad104d30eba10c81ca651f1d6da26301456125f9050fa1e7b9808bb"
+    },
+    {
+      "module": "Audit.AkForm",
+      "sha256": "43cc389ce105f80671de67c01495f2887739635e72b4be72174c1d5764b992ae"
+    },
+    {
+      "module": "Audit.Alpha",
+      "sha256": "d5fd28af7320eb78bfd32d861730a4341005b8116aca340e08880f9a4c2f0d89"
+    },
+    {
+      "module": "Audit.Bridge",
+      "sha256": "9122318918c711cbfd365d85a0e6133b41ce0ff54003c699b41a88cc5a8e2a3a"
+    },
+    {
+      "module": "Audit.Final",
+      "sha256": "4f156a5377e81f087b55ab15cfe7eb2338fa7e47dc5b8f997f0f1631d53d87e3"
+    },
+    {
+      "module": "Audit.Final61",
+      "sha256": "7fdddacbf503c8b924442a64a6f579c3cee13979c3a3bd35f2da501f5fed7db2"
+    },
+    {
+      "module": "Audit.General",
+      "sha256": "e89d67dbab9de0c2b35dda35faf444f166a0f792ccc5db2432e5d2fa988ecf55"
+    },
+    {
+      "module": "Audit.Glue4",
+      "sha256": "929136cdf1511379c423e210f65635d80cd8374752157aa41992e10be67b3ed3"
+    },
+    {
+      "module": "Audit.Glue4K",
+      "sha256": "7c22aca843220ea4fb3f37546d4d08f0980be911cf817f48de803ad18e9b30b1"
+    },
+    {
+      "module": "Audit.Glue5",
+      "sha256": "7c514b6a2dd6b5526ee994b409de45589327aeedfec35d9bf7e5f58066accabc"
+    },
+    {
+      "module": "Audit.Glue6",
+      "sha256": "37191e2ba6ff4b8bf354530afae6c4b27b975774adc1779c21bd69d6aee85a76"
+    },
+    {
+      "module": "Audit.KMChecked",
+      "sha256": "5a0c43f171e6d6ce34c6da3788b35af9a4619a4b1ff0670810a78bcb6e5a99e7"
+    },
+    {
+      "module": "Audit.Lemma4",
+      "sha256": "9e426e3f748513653c8f2c3183625eedb05d48437fa15a3daf08dec8ba714faa"
+    },
+    {
+      "module": "Audit.LogSub",
+      "sha256": "13025515b9e1793266b2c970ff11e9d728482269455cfd543ca5b8cee606bf46"
+    },
+    {
+      "module": "Audit.MemberTail",
+      "sha256": "35dbcd61295864ee44aeb1516b697217a214e37856019bf6a5a9f6a0571d71fe"
+    },
+    {
+      "module": "Audit.Moment0",
+      "sha256": "6658bf41c77920d1578a8fa4f7a3c12ed05c39af69c03ea4ee701698700c8b85"
+    },
+    {
+      "module": "Audit.Moy",
+      "sha256": "53515aee035836206f03e92cf6290c3201e8474738dd7be96acfeb7fdaac2f45"
+    },
+    {
+      "module": "Audit.Side",
+      "sha256": "70a47bd3e8be513bef859f69d50dba96d20cbaefe6eb3618e1d4aec86929a78d"
+    },
+    {
+      "module": "Audit.Stanley",
+      "sha256": "ea986b47028d559073e22066e7b424240e86934adc763831f5309dc5da4c3d91"
+    },
+    {
+      "module": "Audit.TriFubini",
+      "sha256": "f58c0908c9a994ba4617ebdfad7cfc626b180a09e299362e53ce18aa643cde53"
+    },
+    {
+      "module": "Audit.WCover",
+      "sha256": "aca2a07e481dd8437f44f6c5071030f8f37e1b6e69bb2db3502b2b58a4ce176b"
+    },
+    {
+      "module": "B16",
+      "sha256": "8a2285a80509cf490c70bb968db6c35968c2167b1d035cf1d731cc2a133f79d2"
+    },
+    {
+      "module": "B16Limsup",
+      "sha256": "e45628c8ecbe7de09015e76da095f5e3e3fe7eaee867295e9b3f604f9be2295a"
+    },
+    {
+      "module": "Challenge",
+      "sha256": "edfba62220caf4976f5cb976a0ac970d50901fc257961af262afdb0963518428"
+    },
+    {
+      "module": "Composed",
+      "sha256": "d9f521cefa1e4015cd6c3b5e7cf7757bdbe94c0024fb5bf223408d3384bc50a4"
+    },
+    {
+      "module": "DefectBudget",
+      "sha256": "f063aefc274a7ae5f4f70c7b15be92792ca3c731b541de5b649117af46a363fd"
+    },
+    {
+      "module": "FinitePrefix",
+      "sha256": "1d99cc742accde0649e3805e6de5422d75e1d2d9baa8143ce77803d3d1fa7788"
+    },
+    {
+      "module": "IndependentEndgame",
+      "sha256": "85fd71a669b468ca1e937e383d81f9e22d6fc5afc716ce6ddeb904f1afa31940"
+    },
+    {
+      "module": "JCounting",
+      "sha256": "3efa276d11508991ac78bfb60448c2ab4416c69e763ae5adbf6258b1b4944f70"
+    },
+    {
+      "module": "Liminf",
+      "sha256": "c936b44f5c38816892bcc16d66b93f5cb76bc6840952c2396a7eac279b9cc257"
+    },
+    {
+      "module": "Liminf1675",
+      "sha256": "d91dd5b71787443134e278ce816c725acdff154f3acc2993a1c72410c5df1f18"
+    },
+    {
+      "module": "LiminfCert3072",
+      "sha256": "3c3f659153eeffef03b11360917a70ec2736d07569490f9607b6df7654322f9b"
+    },
+    {
+      "module": "LiminfCert49152",
+      "sha256": "7306529ade04ce5658e72248fd436e36a240324888ec82d8b3ac01d47e6d541f"
+    },
+    {
+      "module": "LiminfCheck",
+      "sha256": "1d0e39c165168d228f2933f203364ebfc586c68834a9f585f8f5060803e92fda"
+    },
+    {
+      "module": "LiminfCore",
+      "sha256": "1993f41303ec32923006134821945707ca9d315b1b50ce9454e3d4f296bb6f45"
+    },
+    {
+      "module": "LiminfFinal",
+      "sha256": "1cef37d1e4d3ec0349a9c59cc95c6f4bf2801aad759bbaf3fa26759656e35df2"
+    },
+    {
+      "module": "LiminfGen",
+      "sha256": "de8d1f91d0ca4d22d17435d15fca6d12b3b4f6954cedb0c5ca375495e449d14f"
+    },
+    {
+      "module": "LogEscape",
+      "sha256": "eecd048fdb167b4defd02f323c345e9f00521a376320ee7098660cdb633d90e3"
+    },
+    {
+      "module": "PairLedger",
+      "sha256": "dcd8f0c7199d28ed50548824831679da37255415c4a10b86cd7cb2b4c84e85f0"
+    },
+    {
+      "module": "Solution",
+      "sha256": "83f8e67dadc2687c2f315511e8b009b7e32d3e223b2ef25ce502bf7874f46772"
+    },
+    {
+      "module": "Statement",
+      "sha256": "b3b407be0361a7ba8ece3e8fe80f796d3509d4c0c13ae70fcb248b7aaf84c195"
+    },
+    {
+      "module": "WeightedIdentity",
+      "sha256": "c6a70c3d7931d51e52b425bbad370c2c6e059172f6b13980371be843b2132a24"
+    },
+    {
+      "module": "ZeroAdjoin",
+      "sha256": "141a62e36fb8bc5b10f31c8b0b98a7dfa40c4fba330114faba01d580eb791aa8"
+    }
+  ]
+}

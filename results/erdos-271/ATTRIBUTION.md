@@ -10,3 +10,5 @@ These materials developed in the Delegate room “Erdős Problem #271 — Stanle
 These are contribution labels from the collaboration, not a settled academic author list or verified legal identities. The manuscript author fields remain blank. A human publication author list and acknowledgments remain to be agreed before a submission edition.
 
 The archive preserves existing source notices and attribution. No blanket license has been added or inferred for the manuscripts, code, data, or third-party material.
+
+The GitHub-only rev7 update adds the abstract-matching formal statement, counting/constant bridges, Challenge/Solution comparator validation, and corresponding documentation. A Small Matter of Proof coordinated implementation and an independent automated source review. This records agent work, not human authorship or a new research-room adoption.

@@ -1,0 +1,229 @@
+Resolving dependencies
+Building Challenge
+✔ [2175/2177] Built Statement (6.2s)
+⚠ [2176/2177] Built Challenge (2.4s)
+warning: Challenge.lean:17:8: declaration uses `sorry`
+Build completed successfully (2177 jobs).
+Exporting #[Quot, Quot.mk, Quot.lift, Quot.ind, Erdos271.main_result, propext, Quot.sound, Classical.choice, Nat.add, Nat.sub, Nat.mul, Nat.pow, Nat.gcd, Nat.div, Nat.mod, Nat.beq, Nat.ble, Nat.land, Nat.lor, Nat.xor, Nat.shiftLeft, Nat.shiftRight, String.ofList, Char.ofNat, List, eagerReduce, Nat, String, String.mk, Char, optParam, autoParam, semiOutParam, outParam] from Challenge
+Building Solution
+⚠ [9047/9055] Built Audit.Moment0 (92s)
+warning: Audit/Moment0.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Audit/Moment0.lean:68:0: 'Erdos271.RoundTwo.FirstMoment_checked' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9048/9055] Built Audit.KMChecked (94s)
+warning: Audit/KMChecked.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Audit/KMChecked.lean:27:70: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: Audit/KMChecked.lean:24:8: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Audit/KMChecked.lean:48:59: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Audit/KMChecked.lean:73:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Audit/KMChecked.lean:24:8: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Audit/KMChecked.lean:27:66: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Audit/KMChecked.lean:27:70: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Audit/KMChecked.lean:48:59: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Audit/KMChecked.lean:73:4: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+info: Audit/KMChecked.lean:122:0: 'Erdos271.KernelMass.kernel_formula' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9049/9057] Built Audit.Lemma4 (63s)
+warning: Audit/Lemma4.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Audit/Lemma4.lean:202:0: 'Erdos271.Lemma4.sq_integral_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Lemma4.lean:203:0: 'Erdos271.Lemma4.Q_lower' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Lemma4.lean:204:0: 'Erdos271.Lemma4.lemma4_of_kernel_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9050/9057] Built Audit.LogSub (64s)
+warning: Audit/LogSub.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Audit/LogSub.lean:108:0: 'I_integrable' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/LogSub.lean:109:0: 'h_sq_integrable' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/LogSub.lean:111:0: 'I_logsub' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/LogSub.lean:112:0: 'J_logsub' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9051/9060] Built Audit.TriFubini (62s)
+warning: Audit/TriFubini.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Audit/TriFubini.lean:284:0: 'Erdos271.Lemma4.tri_iter' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:285:0: 'Erdos271.Lemma4.tri_iter_swap' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:286:0: 'Erdos271.Lemma4.C1_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:287:0: 'Erdos271.Lemma4.C2_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:288:0: 'Erdos271.Lemma4.lemma4_reduced' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:289:0: 'Erdos271.Lemma4.lemma4_from_mass' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:290:0: 'Erdos271.Lemma4.Q1_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:291:0: 'Erdos271.Lemma4.Q1_ge' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/TriFubini.lean:292:0: 'Erdos271.Lemma4.lemma4_integral' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9052/9060] Built FinitePrefix (62s)
+warning: FinitePrefix.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: FinitePrefix.lean:26:47: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: FinitePrefix.lean:59:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: FinitePrefix.lean:26:47: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: FinitePrefix.lean:59:4: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: FinitePrefix.lean:90:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: FinitePrefix.lean:120:2: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: FinitePrefix.lean:90:4: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: FinitePrefix.lean:120:2: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: FinitePrefix.lean:206:46: This simp argument is unused:
+  max_le_iff
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, base, Set.indicator, hpt, hqt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: FinitePrefix.lean:178:47: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: FinitePrefix.lean:178:47: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+⚠ [9053/9060] Built JCounting (58s)
+warning: JCounting.lean:79:20: This simp argument is unused:
+  Set.indicator
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, R, max_le_iff, hpt, hqt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: JCounting.lean:79:35: This simp argument is unused:
+  max_le_iff
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, R, Set.indicator, hpt, hqt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: JCounting.lean:100:17: This simp argument is unused:
+  Set.indicator
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, max_le_iff, hpt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: JCounting.lean:100:32: This simp argument is unused:
+  max_le_iff
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, Set.indicator, hpt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: JCounting.lean:111:17: This simp argument is unused:
+  Set.indicator
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, max_le_iff, hqt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: JCounting.lean:111:32: This simp argument is unused:
+  max_le_iff
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [V, Set.indicator, hqt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [9054/9063] Built PairLedger (58s)
+warning: PairLedger.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+ℹ [9055/9063] Built Audit.Glue4 (56s)
+info: Audit/Glue4.lean:114:0: 'Erdos271.Lemma4.Kker_measurable' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Glue4.lean:115:0: 'Erdos271.Lemma4.Kker_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Glue4.lean:116:0: 'Erdos271.Lemma4.Q_eq_iter' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Glue4.lean:117:0: 'Erdos271.Lemma4.shift_Ioo' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Glue4.lean:118:0: 'Erdos271.Lemma4.iter_shift' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Glue4.lean:119:0: 'Erdos271.Lemma4.lemma4_window' depends on axioms: [propext, Classical.choice, Quot.sound]
+✔ [9056/9063] Built WeightedIdentity (56s)
+ℹ [9057/9065] Built Audit.Glue4K (42s)
+info: Audit/Glue4K.lean:39:0: 'Erdos271.Lemma4.lemma4_concrete' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9058/9065] Built Audit.WCover (42s)
+warning: Audit/WCover.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Audit/WCover.lean:112:0: 'Erdos271.WeightedCover.fiber_le_W' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/WCover.lean:113:0: 'Erdos271.WeightedCover.weighted_covering' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/WCover.lean:114:0: 'Erdos271.WeightedCover.harmonic_window' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/WCover.lean:115:0: 'Erdos271.WeightedCover.lemma2_finite' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [9060/9072] Built Audit.Moy (12s)
+warning: Audit/Moy.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Audit/Moy.lean:136:0: 'Erdos271.Moy.card_pairs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Moy.lean:137:0: 'Erdos271.Moy.omitted_le_pairs' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Moy.lean:138:0: 'Erdos271.Moy.moy_finite' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Moy.lean:139:0: 'Erdos271.Moy.moy_set' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: Audit/Moy.lean:140:0: 'Erdos271.Moy.moy_sqrt' depends on axioms: [propext, Classical.choice, Quot.sound]
+✔ [9061/9072] Built Audit.Glue5 (13s)
+⚠ [9062/9072] Built Audit.MemberTail (9.9s)
+warning: Audit/MemberTail.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [9063/9072] Built Audit.Alpha (9.2s)
+warning: Audit/Alpha.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [9064/9072] Built Audit.Glue6 (6.9s)
+⚠ [9065/9072] Built Audit.Bridge (6.2s)
+warning: Audit/Bridge.lean:69:26: `if_false` has been deprecated: Use `ite_false` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵f̵a̵l̵s̵e̵i̲t̲e̲_̲f̲a̲l̲s̲e̲
+warning: Audit/Bridge.lean:73:20: `if_true` has been deprecated: Use `ite_true` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵t̵r̵u̵e̵i̲t̲e̲_̲t̲r̲u̲e̲
+warning: Audit/Bridge.lean:80:21: `if_false` has been deprecated: Use `ite_false` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵f̵a̵l̵s̵e̵i̲t̲e̲_̲f̲a̲l̲s̲e̲
+warning: Audit/Bridge.lean:86:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Audit/Bridge.lean:86:22: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Audit/Bridge.lean:89:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Audit/Bridge.lean:89:22: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+✔ [9066/9072] Built Audit.Side (7.3s)
+✔ [9067/9072] Built Audit.Final (6.3s)
+✔ [9068/9072] Built Audit.Final61 (11s)
+✔ [9069/9072] Built Audit.AkForm (7.3s)
+⚠ [9070/9072] Built Audit.General (7.8s)
+warning: Audit/General.lean:31:0: automatically included section variable(s) unused in theorem `Erdos271.Final.cover_insert0`:
+  [DecidablePred fun x => x ∈ S]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidablePred fun x => x ∈ S] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: Audit/General.lean:161:33: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵S̲e̲t̲.̲m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+✔ [9071/9072] Built Abstract (6.1s)
+✔ [9072/9072] Built Solution (5.7s)
+Build completed successfully (9072 jobs).
+Exporting #[Quot, Quot.mk, Quot.lift, Quot.ind, Erdos271.main_result, propext, Quot.sound, Classical.choice, Nat.add, Nat.sub, Nat.mul, Nat.pow, Nat.gcd, Nat.div, Nat.mod, Nat.beq, Nat.ble, Nat.land, Nat.lor, Nat.xor, Nat.shiftLeft, Nat.shiftRight, String.ofList, Char.ofNat, List, eagerReduce, Nat, String, String.mk, Char, optParam, autoParam, semiOutParam, outParam] from Solution
+Running nanoda kernel on solution
+nanoda kernel accepts the solution
+Running Lean default kernel on solution
+Lean default kernel accepts the solution
+Your solution is okay!

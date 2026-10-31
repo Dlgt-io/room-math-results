@@ -1,0 +1,5 @@
+∀ S : Set Nat,
+(∀ n : Nat, Membership.mem S n ↔ (n = 0 ∨ n = 2 ∨ n = 3 ∨ n = 5 ∨ n = 7 ∨ n = 10 ∨ n = 12 ∨ n = 14 ∨ n = 21 ∨ n = 23 ∨ n = 25 ∨ n = 28 ∨ (16 ≤ n ∧ (Nat.mod n 16 = 8 ∨ Nat.mod n 16 = 11 ∨ Nat.mod n 16 = 12 ∨ Nat.mod n 16 = 15) ∧ 0 < n / 16 ∧ Membership.mem S (n / 16)))) →
+(∀ z : Nat, 88 < z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z) ∧
+(∀ x : Real, 1 ≤ x → (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real) + 1 ≤ 17 / 6 * Real.sqrt x) ∧
+(∀ U : Real, U < 17 / 6 → ∀ M : Real, ∃ x : Real, M ≤ x ∧ U * Real.sqrt x < (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real))

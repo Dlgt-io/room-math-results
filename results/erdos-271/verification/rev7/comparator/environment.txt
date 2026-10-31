@@ -1,0 +1,21 @@
+UTC 2026-10-31T23:01:06Z
+Lean (version 4.35.0, x86_64-unknown-linux-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)
+Lake version 5.0.0-src+eb6cafb (Lean version 4.35.0)
+1001
+bubblewrap 0.9.0
+4755 root root
+COMPARATOR_BWRAP=/usr/bin/bwrap
+<toolchain>/bin/nanoda_bin
+e318903862396f96de3df57264e0158682b952fd3fb53ac23d876413e7b30f71  /usr/bin/bwrap
+cbf13950fc4a48f635a0beceeb5ed32dd82568b870cfd081b6391c1f2cf02ba5  <toolchain>/bin/nanoda_bin
+bf8d54e4714cc4b03d3f6bb34c83b7202b87e49c8bfcbff6895c085bb90ceb38  <toolchain>/bin/lean
+8ba83c98f76562d03b8dbc33f1057151ba6cbb121679dde76b2260ccc90495e1  <toolchain>/bin/lake
+f6a6483d518a11b323c28b9bac176d2220df0e9fc3230833815db9586669c074  <toolchain>/bin/leanexport
+12c38901cdbfab178f1bf6145dd30012e9a3b2c11ca695292a5884fa3cbaddb6  <toolchain>/bin/leanchecker
+ca5f1f601d34c49079e38d7e7041eb0f2a9c227fbc1df0f404820069a052330c  lean-toolchain
+30fb3c1746f69c10ed59b3028d75e0efaff9a25eecf2056649466b5f836eb93d  lake-manifest.json
+0f791d253bf3597eb8b76a05adbc8489ec51dbc564c7cb7dd3597b56b4934862  comparator.json
+033add522f86d812755b242ace39a772f224dafad6c88855f2afb30fbbe6ed57  Challenge.lean
+b2e713e924fa8eaf5940d4fab20f3fecce0c33fac6527ee752dd481341a80150  Solution.lean
+b363042b8902dc477e6bea16717f35cbd0c6cff0547db632bc7934ad7a130307  Statement.lean
+79c343d9cb508726c2cedf1faa6fb5725ed4f410ef96013f9a914907df897a21  Abstract.lean

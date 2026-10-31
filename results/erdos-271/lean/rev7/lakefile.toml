@@ -1,0 +1,59 @@
+name = "erdos271"
+defaultTargets = ["Erdos271"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.35.0"   # pinned to commit 56a005855ea17e0b0958f73ec801ae140b0a1679 by lake-manifest.json
+
+# The preserved 39 proof modules plus the rev7 statement, bridges, and solution.
+[[lean_lib]]
+name = "Erdos271"
+globs = [
+  "Statement",
+  "Abstract",
+  "Solution",
+  "Audit.AkForm",
+  "B16",
+  "B16Limsup",
+  "Composed",
+  "Liminf1675",
+  "Audit.Alpha",
+  "Audit.Bridge",
+  "Audit.Final",
+  "Audit.Final61",
+  "Audit.General",
+  "Audit.Glue4",
+  "Audit.Glue4K",
+  "Audit.Glue5",
+  "Audit.Glue6",
+  "Audit.KMChecked",
+  "Audit.Lemma4",
+  "Audit.LogSub",
+  "Audit.MemberTail",
+  "Audit.Moment0",
+  "Audit.Moy",
+  "Audit.Side",
+  "Audit.Stanley",
+  "Audit.TriFubini",
+  "Audit.WCover",
+  "DefectBudget",
+  "FinitePrefix",
+  "IndependentEndgame",
+  "JCounting",
+  "Liminf",
+  "LiminfCert3072",
+  "LiminfCert49152",
+  "LiminfCheck",
+  "LiminfCore",
+  "LiminfFinal",
+  "LiminfGen",
+  "LogEscape",
+  "PairLedger",
+  "WeightedIdentity",
+  "ZeroAdjoin"
+]
+
+# The trusted challenge is built separately by comparator, never imported by Solution.
+[[lean_lib]]
+name = "Challenge"

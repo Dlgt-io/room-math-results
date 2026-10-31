@@ -1,0 +1,517 @@
+by
+  classical
+  (
+    have reciprocal_integrals :
+    (∀ a : Real, ∀ b : Real, ∀ f : Real → Real, 0 < a → a ≤ b → (∀ t : Real, f t = 1 / t ^ 2) → IntervalIntegrable f MeasureTheory.volume a b ∧ intervalIntegral f a b MeasureTheory.volume = 1 / a - 1 / b) ∧ (∀ p : Real, ∀ t : Real, ∀ f : Real → Real, 0 < p → p ≤ t → (∀ u : Real, f u = 1 / (2 * t - u) ^ 3) → IntervalIntegrable f MeasureTheory.volume p t ∧ intervalIntegral f p t MeasureTheory.volume = 1 / (2 * t ^ 2) - 1 / (2 * (2 * t - p) ^ 2)) :=
+    by
+      constructor
+      · intro a b f ha hab hf
+        have hf' : f = (fun t : Real => 1 / t ^ 2) := funext hf
+        subst f
+        have hpos : ∀ t ∈ Set.uIcc a b, 0 < t := by
+          intro t ht
+          rw [Set.uIcc_of_le hab] at ht
+          exact lt_of_lt_of_le ha ht.1
+        have hc : ContinuousOn (fun t : Real => 1 / t ^ 2) (Set.uIcc a b) := by
+          apply ContinuousOn.div continuousOn_const (continuousOn_id.pow 2)
+          intro t ht
+          exact pow_ne_zero 2 (ne_of_gt (hpos t ht))
+        refine ⟨hc.intervalIntegrable, ?_⟩
+        have hn : (0 : Real) ∉ Set.uIcc a b := by
+          intro hh
+          exact (lt_irrefl 0) (hpos 0 hh)
+        have hz := integral_zpow (a := a) (b := b) (n := (-2 : Int))
+          (Or.inr ⟨by norm_num, hn⟩)
+        norm_num [zpow_neg, one_div] at hz
+        convert hz using 1 <;> simp only [one_div] <;> ring
+      · intro p t f hp hpt hf
+        have hf' : f = (fun u : Real => 1 / (2 * t - u) ^ 3) := funext hf
+        subst f
+        have hpos : ∀ u ∈ Set.uIcc p t, 0 < 2 * t - u := by
+          intro u hu
+          rw [Set.uIcc_of_le hpt] at hu
+          linarith [hu.2]
+        have hc : ContinuousOn (fun u : Real => 1 / (2 * t - u) ^ 3) (Set.uIcc p t) := by
+          apply ContinuousOn.div continuousOn_const
+            ((continuousOn_const.sub continuousOn_id).pow 3)
+          intro u hu
+          exact pow_ne_zero 3 (ne_of_gt (hpos u hu))
+        refine ⟨hc.intervalIntegrable, ?_⟩
+        have ht : 0 < t := lt_of_lt_of_le hp hpt
+        have hn : (0 : Real) ∉ Set.uIcc t (2 * t - p) := by
+          rw [Set.uIcc_of_le (by linarith : t ≤ 2 * t - p)]
+          intro hh
+          linarith [hh.1]
+        have hz := integral_zpow (a := t) (b := 2 * t - p) (n := (-3 : Int))
+          (Or.inr ⟨by norm_num, hn⟩)
+        norm_num [zpow_neg, one_div] at hz
+        have hs := intervalIntegral.integral_comp_sub_left
+          (a := p) (b := t) (fun u : Real => 1 / u ^ 3) (2 * t)
+        rw [show 2 * t - t = t by ring] at hs
+        rw [hs]
+        have hpower : (fun u : Real => 1 / u ^ 3) = (fun u : Real => (u ^ 3)⁻¹) := by
+          funext u
+          rw [one_div]
+        rw [hpower]
+        rw [hz]
+        simp only [one_div, mul_inv_rev]
+        norm_num
+        <;> ring
+
+    have nested_pair_integral :
+    ∀ p : Real, ∀ M : Real, ∀ X : Real, ∀ K : Real → Real → Real, ∀ F : Real → Real, 0 < p → p ≤ M → M ≤ X → (∀ t : Real, ∀ u : Real, K t u = 1 / (2 * t - u) ^ 3) → (∀ t : Real, F t = intervalIntegral (K t) p t MeasureTheory.volume) → IntervalIntegrable F MeasureTheory.volume M X ∧ intervalIntegral F M X MeasureTheory.volume = 1 / (2 * M) - 1 / (2 * X) + 1 / (4 * (2 * X - p)) - 1 / (4 * (2 * M - p)) := by
+      have basic := reciprocal_integrals
+      intro p M X K F hp hpM hMX hK hF
+      let g : Real → Real := fun t => (1 / 2 : Real) * (1 / t ^ 2) -
+        (1 / 2 : Real) * (1 / (2 * t - p) ^ 2)
+      have hpos : ∀ t ∈ Set.uIcc M X, 0 < t ∧ 0 < 2 * t - p := by
+        intro t ht
+        rw [Set.uIcc_of_le hMX] at ht
+        constructor <;> linarith [ht.1]
+      have hi1 := (basic.1 M X (fun t : Real => 1 / t ^ 2)
+        (lt_of_lt_of_le hp hpM) hMX (fun t => rfl)).1
+      have hc2 : ContinuousOn (fun t : Real => 1 / (2 * t - p) ^ 2) (Set.uIcc M X) := by
+        apply ContinuousOn.div continuousOn_const
+          (((continuousOn_const.mul continuousOn_id).sub continuousOn_const).pow 2)
+        intro t ht
+        exact pow_ne_zero 2 (ne_of_gt (hpos t ht).2)
+      have hi2 : IntervalIntegrable (fun t : Real => 1 / (2 * t - p) ^ 2) MeasureTheory.volume M X := hc2.intervalIntegrable
+      have hig : IntervalIntegrable g MeasureTheory.volume M X :=
+        (hi1.const_mul (1 / 2 : Real)).sub (hi2.const_mul (1 / 2 : Real))
+      have heq : Set.EqOn F g (Set.uIcc M X) := by
+        intro t ht
+        have hpt : p ≤ t := by
+          rw [Set.uIcc_of_le hMX] at ht
+          exact hpM.trans ht.1
+        rw [hF t, (basic.2 p t (K t) hp hpt (hK t)).2]
+        dsimp [g]
+        simp only [one_div, mul_inv_rev]
+        norm_num
+        <;> ring
+      have hiF : IntervalIntegrable F MeasureTheory.volume M X := by
+        apply IntervalIntegrable.congr _ hig
+        intro t ht
+        have ht' : t ∈ Set.uIcc M X := by
+          rw [Set.uIcc_of_le hMX]
+          rw [Set.uIoc_of_le hMX] at ht
+          exact ⟨ht.1.le, ht.2⟩
+        exact (heq ht').symm
+      refine ⟨hiF, ?_⟩
+      rw [intervalIntegral.integral_congr heq]
+      have hval1 := (basic.1 M X (fun t : Real => 1 / t ^ 2)
+        (lt_of_lt_of_le hp hpM) hMX (fun t => rfl)).2
+      have hval2 : intervalIntegral (fun t : Real => 1 / (2 * t - p) ^ 2)
+          M X MeasureTheory.volume =
+          (1 / 2 : Real) * (1 / (2 * M - p) - 1 / (2 * X - p)) := by
+        have hs := intervalIntegral.integral_comp_mul_sub
+          (a := M) (b := X) (fun u : Real => 1 / u ^ 2)
+          (by norm_num : (2 : Real) ≠ 0) p
+        have hv := (basic.1 (2 * M - p) (2 * X - p)
+          (fun u : Real => 1 / u ^ 2) (by linarith) (by linarith) (fun u => rfl)).2
+        rw [hv] at hs
+        simpa only [smul_eq_mul, one_div] using hs
+      dsimp [g]
+      rw [intervalIntegral.integral_sub (hi1.const_mul (1 / 2 : Real))
+          (hi2.const_mul (1 / 2 : Real))]
+      rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul]
+      rw [hval1, hval2]
+      simp only [one_div, mul_inv_rev]
+      norm_num
+      <;> ring
+
+    have counting_square_integral :
+    ∀ P : Finset Real, ∀ X : Real, ∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ f : Real → Real, ∀ G : Real → Real → Real, 0 < X → (∀ p : Real, Membership.mem P p → 0 < p ∧ p ≤ X) → (∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) → (∀ t : Real, A t = Finset.sum P (Function.swap H t)) → (∀ t : Real, f t = A t ^ 2 / t ^ 2) → (∀ p : Real, ∀ q : Real, G p q = 1 / max p q - 1 / X) → IntervalIntegrable f MeasureTheory.volume 0 X ∧ intervalIntegral f 0 X MeasureTheory.volume = Finset.sum P (Function.comp (Finset.sum P) G) :=
+    by
+      have cutoff : ∀ a : Real, ∀ b : Real, ∀ f : Real → Real, 0 < a → a ≤ b → IntervalIntegrable f MeasureTheory.volume a b → IntervalIntegrable (Set.indicator (Set.Ici a) f) MeasureTheory.volume 0 b ∧ intervalIntegral (Set.indicator (Set.Ici a) f) 0 b MeasureTheory.volume = intervalIntegral f a b MeasureTheory.volume := by
+        intro a b f ha hab hi
+        have hb : 0 ≤ b := le_trans ha.le hab
+        have hinter : Set.Ici a ∩ Set.Icc (0 : Real) b = Set.Icc a b := by
+          ext x
+          simp only [Set.mem_inter_iff, Set.mem_Ici, Set.mem_Icc]
+          constructor
+          · rintro ⟨hax, h0x, hxb⟩
+            exact ⟨hax, hxb⟩
+          · rintro ⟨hax, hxb⟩
+            exact ⟨hax, ha.le.trans hax, hxb⟩
+        have hi' : MeasureTheory.IntegrableOn f (Set.Icc a b) MeasureTheory.volume :=
+          (intervalIntegrable_iff_integrableOn_Icc_of_le hab).mp hi
+        have hcut : IntervalIntegrable (Set.indicator (Set.Ici a) f) MeasureTheory.volume 0 b := by
+          rw [intervalIntegrable_iff_integrableOn_Icc_of_le hb]
+          rw [MeasureTheory.integrableOn_indicator_iff measurableSet_Ici.nullMeasurableSet, hinter]
+          exact hi'
+        refine ⟨hcut, ?_⟩
+        rw [intervalIntegral.integral_of_le hb, intervalIntegral.integral_of_le hab]
+        rw [MeasureTheory.setIntegral_indicator measurableSet_Ici]
+        have hinter' : Set.Ioc (0 : Real) b ∩ Set.Ici a = Set.Icc a b := by
+          ext x
+          simp only [Set.mem_inter_iff, Set.mem_Ioc, Set.mem_Ici, Set.mem_Icc]
+          constructor
+          · rintro ⟨⟨h0x, hxb⟩, hax⟩
+            exact ⟨hax, hxb⟩
+          · rintro ⟨hax, hxb⟩
+            exact ⟨⟨ha.trans_le hax, hxb⟩, hax⟩
+        rw [hinter', MeasureTheory.integral_Icc_eq_integral_Ioc]
+      have square : ∀ a : Real, ∀ b : Real, ∀ f : Real → Real, 0 < a → a ≤ b → (∀ t : Real, f t = 1 / t ^ 2) → IntervalIntegrable f MeasureTheory.volume a b ∧ intervalIntegral f a b MeasureTheory.volume = 1 / a - 1 / b := by
+        intro a b f ha hab hf
+        have hf' : f = (fun t : Real => 1 / t ^ 2) := funext hf
+        subst f
+        have hpos : ∀ t ∈ Set.uIcc a b, 0 < t := by
+          intro t ht
+          rw [Set.uIcc_of_le hab] at ht
+          exact lt_of_lt_of_le ha ht.1
+        have hc : ContinuousOn (fun t : Real => 1 / t ^ 2) (Set.uIcc a b) := by
+          apply ContinuousOn.div continuousOn_const (continuousOn_id.pow 2)
+          intro t ht
+          exact pow_ne_zero 2 (ne_of_gt (hpos t ht))
+        refine ⟨hc.intervalIntegrable, ?_⟩
+        have hn : (0 : Real) ∉ Set.uIcc a b := by
+          intro hh
+          exact (lt_irrefl 0) (hpos 0 hh)
+        have hz := integral_zpow (a := a) (b := b) (n := (-2 : Int))
+          (Or.inr ⟨by norm_num, hn⟩)
+        norm_num [zpow_neg, one_div] at hz
+        convert hz using 1 <;> simp only [one_div] <;> ring
+      classical
+      intro P X H A f G hX hP hH hA hf hG
+      let base : Real → Real := fun t => 1 / t ^ 2
+      let V : Real → Real → Real → Real :=
+        fun p q => Set.indicator (Set.Ici (max p q)) base
+      have hV : ∀ p ∈ P, ∀ q ∈ P,
+          IntervalIntegrable (V p q) MeasureTheory.volume 0 X ∧
+          intervalIntegral (V p q) 0 X MeasureTheory.volume =
+            1 / max p q - 1 / X := by
+        intro p hp q hq
+        have hm0 : 0 < max p q := lt_of_lt_of_le (hP p hp).1 (le_max_left p q)
+        have hmX : max p q ≤ X := max_le (hP p hp).2 (hP q hq).2
+        have hb := square (max p q) X base hm0 hmX (fun t => rfl)
+        have hc := cutoff (max p q) X base hm0 hmX hb.1
+        exact ⟨hc.1, hc.2.trans hb.2⟩
+      have hfun : f = fun t => P.sum (fun p => P.sum (fun q => V p q t)) := by
+        funext t
+        rw [hf t, hA t, pow_two]
+        change (P.sum (fun p => H p t) * P.sum (fun q => H q t)) / t ^ 2 = _
+        rw [Finset.sum_mul]
+        simp_rw [Finset.mul_sum, Finset.sum_div]
+        apply Finset.sum_congr rfl
+        intro p hp
+        apply Finset.sum_congr rfl
+        intro q hq
+        rw [hH p, hH q]
+        by_cases hpt : p ≤ t <;> by_cases hqt : q ≤ t <;>
+          simp [V, base, Set.indicator, hpt, hqt, max_le_iff]
+      have hrow : ∀ p ∈ P, IntervalIntegrable
+          (fun t => P.sum (fun q => V p q t)) MeasureTheory.volume 0 X := by
+        intro p hp
+        simpa only [Finset.sum_fn] using
+          (IntervalIntegrable.sum P (fun q hq => (hV p hp q hq).1))
+      have hsum : IntervalIntegrable
+          (fun t => P.sum (fun p => P.sum (fun q => V p q t)))
+          MeasureTheory.volume 0 X := by
+        simpa only [Finset.sum_fn] using (IntervalIntegrable.sum P hrow)
+      rw [hfun]
+      refine ⟨hsum, ?_⟩
+      rw [intervalIntegral.integral_finsetSum hrow]
+      change P.sum (fun p => intervalIntegral
+        (fun t => P.sum (fun q => V p q t)) 0 X MeasureTheory.volume) =
+          P.sum (fun p => P.sum (fun q => G p q))
+      apply Finset.sum_congr rfl
+      intro p hp
+      rw [intervalIntegral.integral_finsetSum (fun q hq => (hV p hp q hq).1)]
+      apply Finset.sum_congr rfl
+      intro q hq
+      rw [(hV p hp q hq).2, hG p q]
+
+    have cutoff_indicator :
+    ∀ a : Real, ∀ b : Real, ∀ f : Real → Real, 0 < a → a ≤ b → IntervalIntegrable f MeasureTheory.volume a b → IntervalIntegrable (Set.indicator (Set.Ici a) f) MeasureTheory.volume 0 b ∧ intervalIntegral (Set.indicator (Set.Ici a) f) 0 b MeasureTheory.volume = intervalIntegral f a b MeasureTheory.volume := by
+      intro a b f ha hab hi
+      have hb : 0 ≤ b := le_trans ha.le hab
+      have hinter : Set.Ici a ∩ Set.Icc (0 : Real) b = Set.Icc a b := by
+        ext x
+        simp only [Set.mem_inter_iff, Set.mem_Ici, Set.mem_Icc]
+        constructor
+        · rintro ⟨hax, h0x, hxb⟩
+          exact ⟨hax, hxb⟩
+        · rintro ⟨hax, hxb⟩
+          exact ⟨hax, ha.le.trans hax, hxb⟩
+      have hi' : MeasureTheory.IntegrableOn f (Set.Icc a b) MeasureTheory.volume :=
+        (intervalIntegrable_iff_integrableOn_Icc_of_le hab).mp hi
+      have hcut : IntervalIntegrable (Set.indicator (Set.Ici a) f) MeasureTheory.volume 0 b := by
+        rw [intervalIntegrable_iff_integrableOn_Icc_of_le hb]
+        rw [MeasureTheory.integrableOn_indicator_iff measurableSet_Ici.nullMeasurableSet, hinter]
+        exact hi'
+      refine ⟨hcut, ?_⟩
+      rw [intervalIntegral.integral_of_le hb, intervalIntegral.integral_of_le hab]
+      rw [MeasureTheory.setIntegral_indicator measurableSet_Ici]
+      have hinter' : Set.Ioc (0 : Real) b ∩ Set.Ici a = Set.Icc a b := by
+        ext x
+        simp only [Set.mem_inter_iff, Set.mem_Ioc, Set.mem_Ici, Set.mem_Icc]
+        constructor
+        · rintro ⟨⟨h0x, hxb⟩, hax⟩
+          exact ⟨hax, hxb⟩
+        · rintro ⟨hax, hxb⟩
+          exact ⟨⟨ha.trans_le hax, hxb⟩, hax⟩
+      rw [hinter', MeasureTheory.integral_Icc_eq_integral_Ioc]
+
+    have counting_double_integral :
+    ∀ P : Finset Real, ∀ X : Real, ∀ H : Real → Real → Real, ∀ A : Real → Real, ∀ K : Real → Real → Real, ∀ B : Real → Real, ∀ G : Real → Real → Real, 0 < X → (∀ p : Real, Membership.mem P p → 0 < p ∧ p ≤ X) → (∀ p : Real, H p = Set.indicator (Set.Ici p) (Function.const Real (1 : Real))) → (∀ t : Real, A t = Finset.sum P (Function.swap H t)) → (∀ t : Real, ∀ u : Real, K t u = A u * A t / (2 * t - u) ^ 3) → (∀ t : Real, B t = intervalIntegral (K t) 0 t MeasureTheory.volume) → (∀ p : Real, ∀ q : Real, G p q = 1 / (2 * max p q) - 1 / (2 * X) + 1 / (4 * (2 * X - p)) - 1 / (4 * (2 * max p q - p))) → IntervalIntegrable B MeasureTheory.volume 0 X ∧ intervalIntegral B 0 X MeasureTheory.volume = Finset.sum P (Function.comp (Finset.sum P) G) := by
+      have basic := reciprocal_integrals
+      have nested := nested_pair_integral
+      have cutoff := cutoff_indicator
+      classical
+      intro P X H A K B G hX hP hH hA hK hB hG
+      let c : Real → Real → Real := fun t u => 1 / (2 * t - u) ^ 3
+      let R : Real → Real → Real := fun p t => intervalIntegral (c t) p t MeasureTheory.volume
+      let V : Real → Real → Real → Real :=
+        fun p q => Set.indicator (Set.Ici (max p q)) (R p)
+      have hV : ∀ p ∈ P, ∀ q ∈ P,
+          IntervalIntegrable (V p q) MeasureTheory.volume 0 X ∧
+          intervalIntegral (V p q) 0 X MeasureTheory.volume = G p q := by
+        intro p hp q hq
+        have hm0 : 0 < max p q := lt_of_lt_of_le (hP p hp).1 (le_max_left p q)
+        have hmX : max p q ≤ X := max_le (hP p hp).2 (hP q hq).2
+        have hn := nested p (max p q) X c (R p) (hP p hp).1
+          (le_max_left p q) hmX (fun t u => rfl) (fun t => rfl)
+        have hc := cutoff (max p q) X (R p) hm0 hmX hn.1
+        refine ⟨hc.1, ?_⟩
+        rw [hc.2, hn.2, hG p q]
+      have hpair : ∀ p ∈ P, ∀ q ∈ P, ∀ t : Real, 0 ≤ t →
+          IntervalIntegrable (fun u => H p u * H q t / (2 * t - u) ^ 3)
+            MeasureTheory.volume 0 t ∧
+          intervalIntegral (fun u => H p u * H q t / (2 * t - u) ^ 3)
+            0 t MeasureTheory.volume = V p q t := by
+        intro p hp q hq t ht
+        by_cases hqt : q ≤ t
+        · have hqv : H q t = 1 := by
+            rw [hH q]
+            simp [Set.indicator, hqt]
+          by_cases hpt : p ≤ t
+          · have hi := (basic.2 p t (c t) (hP p hp).1 hpt (fun u => rfl)).1
+            have hc := cutoff p t (c t) (hP p hp).1 hpt hi
+            have heq : (fun u => H p u * H q t / (2 * t - u) ^ 3) =
+                Set.indicator (Set.Ici p) (c t) := by
+              funext u
+              rw [hqv, hH p]
+              by_cases hpu : p ≤ u <;> simp [c, Set.indicator, hpu]
+            rw [heq]
+            refine ⟨hc.1, ?_⟩
+            rw [hc.2]
+            simp [V, R, Set.indicator, max_le_iff, hpt, hqt]
+          · have hz : Set.EqOn
+                (fun u => H p u * H q t / (2 * t - u) ^ 3)
+                (fun _ : Real => (0 : Real)) (Set.uIcc 0 t) := by
+              intro u hu
+              rw [Set.uIcc_of_le ht] at hu
+              have hpu : ¬ p ≤ u := by linarith [hu.2]
+              rw [hH p]
+              simp [Set.indicator, hpu]
+            have hi : IntervalIntegrable (fun u => H p u * H q t / (2 * t - u) ^ 3)
+                MeasureTheory.volume 0 t := by
+              apply IntervalIntegrable.congr _
+                (intervalIntegrable_const : IntervalIntegrable (fun _ : Real => (0 : Real)) MeasureTheory.volume 0 t)
+              intro u hu
+              have hu' : u ∈ Set.uIcc 0 t := by
+                rw [Set.uIcc_of_le ht]
+                rw [Set.uIoc_of_le ht] at hu
+                exact ⟨hu.1.le, hu.2⟩
+              exact (hz hu').symm
+            refine ⟨hi, ?_⟩
+            rw [intervalIntegral.integral_congr hz]
+            simp [V, Set.indicator, max_le_iff, hpt]
+        · have hqv : H q t = 0 := by
+            rw [hH q]
+            simp [Set.indicator, hqt]
+          have heq : (fun u => H p u * H q t / (2 * t - u) ^ 3) =
+              (fun _ : Real => (0 : Real)) := by
+            funext u
+            simp [hqv]
+          rw [heq]
+          constructor
+          · exact intervalIntegrable_const
+          · simp [V, Set.indicator, max_le_iff, hqt]
+      have hKfun (t : Real) : K t = fun u => P.sum (fun p => P.sum
+          (fun q => H p u * H q t / (2 * t - u) ^ 3)) := by
+        funext u
+        rw [hK t u, hA u, hA t]
+        change (P.sum (fun p => H p u) * P.sum (fun q => H q t)) / (2 * t - u) ^ 3 = _
+        rw [Finset.sum_mul]
+        simp_rw [Finset.mul_sum, Finset.sum_div]
+      have hBval : ∀ t : Real, 0 ≤ t →
+          B t = P.sum (fun p => P.sum (fun q => V p q t)) := by
+        intro t ht
+        have hrow : ∀ p ∈ P, IntervalIntegrable
+            (fun u => P.sum (fun q => H p u * H q t / (2 * t - u) ^ 3))
+            MeasureTheory.volume 0 t := by
+          intro p hp
+          simpa only [Finset.sum_fn] using
+            (IntervalIntegrable.sum P (fun q hq => (hpair p hp q hq t ht).1))
+        rw [hB t, hKfun t, intervalIntegral.integral_finsetSum hrow]
+        apply Finset.sum_congr rfl
+        intro p hp
+        rw [intervalIntegral.integral_finsetSum (fun q hq => (hpair p hp q hq t ht).1)]
+        apply Finset.sum_congr rfl
+        intro q hq
+        exact (hpair p hp q hq t ht).2
+      have hrow : ∀ p ∈ P, IntervalIntegrable
+          (fun t => P.sum (fun q => V p q t)) MeasureTheory.volume 0 X := by
+        intro p hp
+        simpa only [Finset.sum_fn] using
+          (IntervalIntegrable.sum P (fun q hq => (hV p hp q hq).1))
+      have hsum : IntervalIntegrable
+          (fun t => P.sum (fun p => P.sum (fun q => V p q t)))
+          MeasureTheory.volume 0 X := by
+        simpa only [Finset.sum_fn] using (IntervalIntegrable.sum P hrow)
+      have hBeq : Set.EqOn B (fun t => P.sum (fun p => P.sum (fun q => V p q t)))
+          (Set.uIcc 0 X) := by
+        intro t ht
+        rw [Set.uIcc_of_le hX.le] at ht
+        exact hBval t ht.1
+      have hiB : IntervalIntegrable B MeasureTheory.volume 0 X := by
+        apply IntervalIntegrable.congr _ hsum
+        intro t ht
+        have ht' : t ∈ Set.uIcc 0 X := by
+          rw [Set.uIcc_of_le hX.le]
+          rw [Set.uIoc_of_le hX.le] at ht
+          exact ⟨ht.1.le, ht.2⟩
+        exact (hBeq ht').symm
+      refine ⟨hiB, ?_⟩
+      rw [intervalIntegral.integral_congr hBeq, intervalIntegral.integral_finsetSum hrow]
+      change P.sum (fun p => intervalIntegral
+        (fun t => P.sum (fun q => V p q t)) 0 X MeasureTheory.volume) =
+          P.sum (fun p => P.sum (fun q => G p q))
+      apply Finset.sum_congr rfl
+      intro p hp
+      rw [intervalIntegral.integral_finsetSum (fun q hq => (hV p hp q hq).1)]
+      apply Finset.sum_congr rfl
+      intro q hq
+      exact (hV p hp q hq).2
+
+    have finite_pair_ledger :
+    ∀ P : Finset Real, ∀ X : Real, ∀ I : Real → Real → Real, ∀ J : Real → Real → Real, ∀ D : Real → Real, ∀ Z : Real → Real, ∀ W : Real → Real → Real, 0 < X → (∀ p : Real, Membership.mem P p → 0 < p ∧ p ≤ X) → (∀ p : Real, ∀ q : Real, I p q = 1 / max p q - 1 / X) → (∀ p : Real, ∀ q : Real, J p q = 1 / (2 * max p q) - 1 / (2 * X) + 1 / (4 * (2 * X - p)) - 1 / (4 * (2 * max p q - p))) → (∀ p : Real, D p = 1 / (2 * X - p)) → (∀ p : Real, Z p = 1 / (2 * p)) → (∀ p : Real, ∀ q : Real, W p q = ite (p < q) (1 / (2 * q - p)) 0) → Finset.sum P Z + Finset.sum P (Function.comp (Finset.sum P) W) = (3 / 2) * Finset.sum P (Function.comp (Finset.sum P) I) - 4 * Finset.sum P (Function.comp (Finset.sum P) J) + ((Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X)) ∧ 0 ≤ (Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ∧ (Finset.card P : Real) * Finset.sum P D - (Finset.card P : Real) ^ 2 / (2 * X) ≤ (Finset.card P : Real) ^ 2 / (2 * X) := by
+      classical
+      intro P X I J D Z W hX hP hI hJ hD hZ hW
+      let C : Real → Real → Real := fun p q =>
+        1 / (2 * max p q - p) - 1 / (2 * max p q)
+      let T : Real → Real → Real := fun p q =>
+        (if q = p then Z p else 0) + W p q
+      have hcdiag (p : Real) : C p p = Z p := by
+        rw [hZ p]
+        dsimp [C]
+        rw [max_self, show 2 * p - p = p by ring]
+        simp only [one_div, mul_inv_rev]
+        norm_num
+        ring
+      have hcoff (p q : Real) (hpq : p < q) : C p q + C q p = 1 / (2 * q - p) := by
+        dsimp [C]
+        rw [max_eq_right hpq.le, max_eq_left hpq.le]
+        rw [show 2 * q - q = q by ring]
+        simp only [one_div, mul_inv_rev]
+        norm_num
+        ring
+      have htdiag (p : Real) : T p p = Z p := by simp [T, hW]
+      have htoff (p q : Real) (hpq : p < q) : T p q + T q p = 1 / (2 * q - p) := by
+        simp [T, hW, hpq, hpq.ne, hpq.ne', not_lt_of_ge hpq.le]
+      have hpair (p q : Real) : C p q + C q p = T p q + T q p := by
+        rcases lt_trichotomy p q with h | h | h
+        · rw [hcoff p q h, htoff p q h]
+        · subst q
+          rw [hcdiag, htdiag]
+        · rw [add_comm (C p q), add_comm (T p q), hcoff q p h, htoff q p h]
+      have hs : (P.sum fun p => P.sum fun q => C p q) =
+          (P.sum fun p => P.sum fun q => T p q) := by
+        have hh : (P.sum fun p => P.sum fun q => C p q + C q p) =
+            (P.sum fun p => P.sum fun q => T p q + T q p) := by
+          apply Finset.sum_congr rfl
+          intro p hp
+          apply Finset.sum_congr rfl
+          intro q hq
+          exact hpair p q
+        simp only [Finset.sum_add_distrib] at hh
+        have hC : (P.sum fun p => P.sum fun q => C q p) =
+            (P.sum fun p => P.sum fun q => C p q) := Finset.sum_comm
+        have hT : (P.sum fun p => P.sum fun q => T q p) =
+            (P.sum fun p => P.sum fun q => T p q) := Finset.sum_comm
+        rw [hC, hT] at hh
+        linarith
+      have htSum : (P.sum fun p => P.sum fun q => T p q) =
+          P.sum Z + P.sum (fun p => P.sum (fun q => W p q)) := by
+        dsimp [T]
+        simp only [Finset.sum_add_distrib]
+        congr 1
+        apply Finset.sum_congr rfl
+        intro p hp
+        simp [hp]
+      have hlocal (p q : Real) :
+          (3 / 2 : Real) * I p q - 4 * J p q + (D p - 1 / (2 * X)) = C p q := by
+        rw [hI p q, hJ p q, hD p]
+        dsimp [C]
+        simp only [one_div, mul_inv_rev]
+        norm_num
+        ring
+      have hsumlocal :
+          (P.sum fun p => P.sum fun q => (3 / 2 : Real) * I p q - 4 * J p q + (D p - 1 / (2 * X))) =
+          P.sum (fun p => P.sum (fun q => C p q)) := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        apply Finset.sum_congr rfl
+        intro q hq
+        exact hlocal p q
+      have hconst : (P.sum fun p => P.sum fun _q => D p - 1 / (2 * X)) =
+          (P.card : Real) * P.sum D - (P.card : Real) ^ 2 / (2 * X) := by
+        simp only [Finset.sum_sub_distrib]
+        simp only [Finset.sum_const, nsmul_eq_mul]
+        rw [← Finset.mul_sum]
+        ring
+      have hledger : P.sum Z + P.sum (fun p => P.sum (fun q => W p q)) =
+          (3 / 2 : Real) * P.sum (fun p => P.sum (fun q => I p q)) -
+          4 * P.sum (fun p => P.sum (fun q => J p q)) +
+          ((P.card : Real) * P.sum D - (P.card : Real) ^ 2 / (2 * X)) := by
+        rw [← htSum, ← hs, ← hsumlocal]
+        simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum]
+        rw [← hconst]
+        simp only [Finset.sum_sub_distrib]
+      have hlo : (P.card : Real) / (2 * X) ≤ P.sum D := by
+        calc
+          _ = P.sum (fun _ : Real => 1 / (2 * X)) := by simp; ring
+          _ ≤ _ := by
+            apply Finset.sum_le_sum
+            intro p hp
+            rw [hD p]
+            exact one_div_le_one_div_of_le
+              (by linarith [(hP p hp).2] : 0 < 2 * X - p)
+              (by linarith [(hP p hp).1] : 2 * X - p ≤ 2 * X)
+      have hhi : P.sum D ≤ (P.card : Real) / X := by
+        calc
+          _ ≤ P.sum (fun _ : Real => 1 / X) := by
+            apply Finset.sum_le_sum
+            intro p hp
+            rw [hD p]
+            exact one_div_le_one_div_of_le hX (by linarith [(hP p hp).2])
+          _ = _ := by simp; ring
+      have hm : 0 ≤ (P.card : Real) := Nat.cast_nonneg _
+      have hmullo := mul_le_mul_of_nonneg_left hlo hm
+      have hmulhi := mul_le_mul_of_nonneg_left hhi hm
+      have hdiv : (P.card : Real) ^ 2 / X = 2 * ((P.card : Real) ^ 2 / (2 * X)) := by
+        simp only [div_eq_mul_inv, mul_inv_rev]
+        norm_num
+        ring
+      have hlo' : (P.card : Real) ^ 2 / (2 * X) ≤ (P.card : Real) * P.sum D := by
+        calc
+          _ = (P.card : Real) * ((P.card : Real) / (2 * X)) := by ring
+          _ ≤ _ := hmullo
+      have hhi' : (P.card : Real) * P.sum D ≤ (P.card : Real) ^ 2 / X := by
+        calc
+          _ ≤ (P.card : Real) * ((P.card : Real) / X) := hmulhi
+          _ = _ := by ring
+      refine ⟨hledger, sub_nonneg.mpr hlo', ?_⟩
+      linarith
+
+    intro P X H A f K B Z W D hX hP hH hA hf hK hB hZ hW hD
+    let ip : Real → Real → Real := fun p q => 1 / max p q - 1 / X
+    let jp : Real → Real → Real := fun p q =>
+      1 / (2 * max p q) - 1 / (2 * X) + 1 / (4 * (2 * X - p)) - 1 / (4 * (2 * max p q - p))
+    have hi := counting_square_integral P X H A f ip hX hP hH hA hf (fun p q => rfl)
+    have hj := counting_double_integral P X H A K B jp hX hP hH hA hK hB (fun p q => rfl)
+    have hw := finite_pair_ledger P X ip jp D Z W hX hP (fun p q => rfl) (fun p q => rfl) hD hZ hW
+    refine ⟨hi.1, hj.1, ?_, hw.2.1, hw.2.2⟩
+    rw [hi.2, hj.2]
+    exact hw.1)

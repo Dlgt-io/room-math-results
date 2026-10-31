@@ -1,5 +1,29 @@
 # Reproducing the formal results
 
+## Rev7: main theorem and comparator
+
+The exact abstract-matching target is [`Erdos271.main_result`](lean/rev7/Challenge.lean); its proof entry point is [`Solution.lean`](lean/rev7/Solution.lean). The trusted Challenge imports only [`Statement.lean`](lean/rev7/Statement.lean) and Mathlib. The [rev7 guide](lean/rev7/README.md) explains the inclusive count and unconditional `ENNReal` limsup.
+
+As a non-root Linux user with elan and a working bubblewrap sandbox:
+
+```bash
+cd lean/rev7
+sha256sum -c SHA256SUMS
+EXPECT_SUMS=034a7b22416c2bca96c2d4d997c6d41ce34af74f943402dcbc51993614d3b8b8 \
+  LEAN_NUM_THREADS=2 bash scripts/replay_fresh.sh /absolute/path/to/a/new-build
+```
+
+Start in a clean, trusted checking environment. The replay checks every dependency commit and invokes native Lean 4.35.0 comparator with its sandbox and independent nanoda kernel before any ordinary proof build. Subsequent full-project build, 27-name audit, 18 audit tests, and certificate/composition checks run in a nonnetwork bubblewrap sandbox. Source, checker binaries, and parent-owned evidence stay read-only to proof code; only `.lake` and temporary scratch space are writable. The comparator controls must accept a valid proof and reject a different statement and a forbidden axiom. `Challenge.lean` contains one intentional specification hole; it is excluded from the solution source scan and is never an allowed proof axiom.
+
+The clean combined replay completed successfully at 23:18:55 UTC on October 31, 2026. This rev7 edition is dated November 1, 2026. The [success receipt](verification/rev7/SUCCESS.json), [comparison and acceptance record](verification/rev7/comparison-and-acceptance.json), [printed theorem types and axioms](verification/rev7/axioms.log), and [exact-name audit](verification/rev7/acceptance.json) record 27 unique audited declarations and 18 passing audit tests, with no skips. All 43 project modules, including the trusted Challenge, have matching build outputs.
+
+The [main comparator log](verification/rev7/comparator/stdout.log) records statement comparison and acceptance by nanoda and Lean's default kernel. The [control inputs and verdicts](verification/rev7/controls/) and [sandbox controls](verification/rev7/sandbox-controls.log) record the validator checks. Comparator ran first; later build steps reused only outputs made inside this same fresh replay. All 26 earlier printed declaration types and axiom reports match rev6 after line-ending normalization. See the [evidence scope](verification/rev7/README.md) for runtime and dependency assumptions.
+
+Rev7's formal-source manifest SHA-256 is `034a7b22416c2bca96c2d4d997c6d41ce34af74f943402dcbc51993614d3b8b8`. Rev5 and rev6 source trees, manifests, old manuscripts, and evidence are preserved; all 39 inherited `.lean` proof modules in rev7 are byte-identical to rev6. The [previous package manifest](verification/rev7/package-SHA256SUMS-before-rev7) also remains available. This update is prepared for the GitHub archive and does not claim a new research-room adoption or a submission elsewhere.
+
+## Preserved rev5 and rev6 verification
+
+
 The exact source trees are in [lean/rev5](lean/rev5/) and [lean/rev6](lean/rev6/). Run these commands in a Bash environment with Git, Python 3, and the Lean toolchain manager elan available. Network access is needed for the default dependency download/cache step. Lean uses the checked-in `lean-toolchain` and `lake-manifest.json`.
 
 ## Current independently checked release: rev 6

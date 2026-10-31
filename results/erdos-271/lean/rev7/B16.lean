@@ -1,0 +1,595 @@
+import Mathlib
+
+-- ChatGPT (fe61e74f), verbatim from chatgpt-base16-counting-without-cylinders.md and
+-- chatgpt-base16-complement-checked.md (checker jobs 4c6c6d07, e4313686)
+namespace Erdos271.Base16
+
+theorem global_envelope_bundle :
+(∀ w : Real, ∀ r : Real, ((w = 2 ∧ r = 0) ∨ (w = 3 ∧ r = 1) ∨ (w = 5 ∧ r = 2) ∨ (w = 7 ∧ r = 3) ∨ (w = 10 ∧ r = 4) ∨ (w = 12 ∧ r = 5) ∨ (w = 14 ∧ r = 6) ∨ (w = 21 ∧ r = 7) ∨ (w = 23 ∧ r = 8) ∨ (w = 25 ∧ r = 9) ∨ (w = 28 ∧ r = 10)) → (14 / 3 + r) ^ 2 ≤ (289 / 36) * (w + 1) ∧ (14 / 3 + r - 2 / 5) ^ 2 ≤ (289 / 36) * (w + 13 / 25)) ∧ (∀ C : Real, ∀ w : Real, ∀ u : Real, ∀ d : Real, 1 ≤ C → 0 ≤ u → u ≤ 1 → 0 ≤ d → d ≤ 7 / 15 → d ≤ 3 * u ^ 2 → C ^ 2 ≤ (289 / 36) * (w + 1) → (C - 2 / 5) ^ 2 ≤ (289 / 36) * (w + 13 / 25) → (C - u) ^ 2 ≤ (289 / 36) * (w + 1 - d)) :=
+by
+  constructor
+  · intro w r h
+    rcases h with h | h | h | h | h | h | h | h | h | h | h <;>
+      rcases h with ⟨rfl, rfl⟩ <;> norm_num
+  · intro C w u d hC hu hu1 hd hd7 hd3 hzero hsplit
+    by_cases hsmall : u ≤ 2 / 5
+    · have hweight0 : 0 ≤ 1 - 5 * u / 2 := by linarith
+      have hweight1 : 0 ≤ 5 * u / 2 := by positivity
+      have hleft := mul_nonpos_of_nonneg_of_nonpos hweight0 (sub_nonpos.mpr hzero)
+      have hright := mul_nonpos_of_nonneg_of_nonpos hweight1 (sub_nonpos.mpr hsplit)
+      have hcurve := mul_nonneg hu (sub_nonneg.mpr hsmall)
+      nlinarith
+    · have hu2 : 2 / 5 ≤ u := le_of_not_ge hsmall
+      have hmono := mul_nonneg (sub_nonneg.mpr hu2)
+        (by linarith : 0 ≤ 2 * C - u - 2 / 5)
+      nlinarith
+
+end Erdos271.Base16
+
+namespace Erdos271.Base16
+
+theorem complement_bundle :
+(∀ R : Nat → Nat, ∀ E : Nat → Nat, R 0 = 0 → E 0 = 0 → (∀ n : Nat, ∃ q : Nat, q < 4 ∧ R (n + 1) = 4 * R n + q ∧ E (n + 1) = 16 * E n + 3 * (Nat.mod q 2) + 4 * (q / 2)) → ∀ n : Nat, E n ≤ 3 * R n ^ 2) ∧ (∀ D : Nat → Nat, D 0 = 0 → (∀ n : Nat, 16 * D n + 8 ≤ D (n + 1)) → ∀ n : Nat, 8 * 16 ^ n ≤ 15 * D n + 8) ∧ (∀ p : Real, ∀ q : Real, 11 / 3 ≤ p → p ^ 2 ≤ (289 / 36) * q → (p - 8 / 3) ^ 2 ≤ (289 / 36) * (q - 1)) :=
+by
+  constructor
+  · intro R E hR hE hrec n
+    induction n with
+    | zero => simp [hR, hE]
+    | succ n ih =>
+      obtain ⟨q, hq, hr, he⟩ := hrec n
+      have heq : 3 * (Nat.mod q 2) + 4 * (q / 2) ≤ 3 * q ^ 2 := by
+        have hcases : q = 0 ∨ q = 1 ∨ q = 2 ∨ q = 3 := by omega
+        rcases hcases with rfl | rfl | rfl | rfl <;> decide
+      rw [hr, he]
+      calc
+        16 * E n + 3 * (Nat.mod q 2) + 4 * (q / 2)
+            = 16 * E n + (3 * (Nat.mod q 2) + 4 * (q / 2)) := by omega
+        _ ≤ 16 * (3 * R n ^ 2) + 3 * q ^ 2 :=
+          Nat.add_le_add (Nat.mul_le_mul_left 16 ih) heq
+        _ ≤ 16 * (3 * R n ^ 2) + 3 * q ^ 2 + 24 * R n * q := Nat.le_add_right _ _
+        _ = 3 * (4 * R n + q) ^ 2 := by ring
+  · constructor
+    · intro D hD hrec n
+      induction n with
+      | zero => simp [hD]
+      | succ n ih =>
+        calc
+          8 * 16 ^ (n + 1) = 16 * (8 * 16 ^ n) := by rw [pow_succ]; ring
+          _ ≤ 16 * (15 * D n + 8) := Nat.mul_le_mul_left 16 ih
+          _ = 15 * (16 * D n + 8) + 8 := by ring
+          _ ≤ 15 * D (n + 1) + 8 := Nat.add_le_add_right (Nat.mul_le_mul_left 15 (hrec n)) 8
+    · intro p q hp hpq
+      nlinarith
+
+end Erdos271.Base16
+
+
+namespace Erdos271.B16
+
+def Wb (n : ℕ) : Bool :=
+  n == 2 || n == 3 || n == 5 || n == 7 || n == 10 || n == 12 || n == 14 ||
+  n == 21 || n == 23 || n == 25 || n == 28
+
+def Vb (r : ℕ) : Bool := r == 8 || r == 11 || r == 12 || r == 15
+
+def memF : ℕ → ℕ → Bool
+  | 0, _ => false
+  | f + 1, n => Wb n || (decide (16 ≤ n) && Vb (n % 16) && memF f (n / 16))
+
+def mem (n : ℕ) : Bool := memF (n + 1) n
+
+theorem memF_fuel : ∀ f g n, n < f → n < g → memF f n = memF g n := by
+  intro f
+  induction f with
+  | zero => intro g n h; omega
+  | succ f ih =>
+    intro g n hf hg
+    obtain ⟨g, rfl⟩ : ∃ g', g = g' + 1 := ⟨g - 1, by omega⟩
+    simp only [memF]
+    by_cases h16 : 16 ≤ n
+    · have : n / 16 < n := Nat.div_lt_self (by omega) (by norm_num)
+      rw [ih g (n / 16) (by omega) (by omega)]
+    · simp [h16]
+
+theorem mem_eq (n : ℕ) :
+    mem n = (Wb n || (decide (16 ≤ n) && Vb (n % 16) && mem (n / 16))) := by
+  rw [show mem (n / 16) = memF (n / 16 + 1) (n / 16) from rfl]
+  conv_lhs => rw [mem, memF]
+  by_cases h16 : 16 ≤ n
+  · have : n / 16 < n := Nat.div_lt_self (by omega) (by norm_num)
+    rw [memF_fuel n (n / 16 + 1) (n / 16) (by omega) (by omega)]
+  · simp [h16]
+
+/-- members ≥ 32 come from the tail recursion. -/
+theorem mem_big (n : ℕ) (h : 32 ≤ n) :
+    mem n = (Vb (n % 16) && mem (n / 16)) := by
+  rw [mem_eq]
+  have hw : Wb n = false := by
+    unfold Wb; simp only [Bool.or_eq_false_iff, beq_eq_false_iff_ne]; omega
+  simp [hw, show 16 ≤ n by omega]
+
+theorem mem_16m (m r : ℕ) (hm : 2 ≤ m) (hr : r < 16) :
+    mem (16 * m + r) = (Vb r && mem m) := by
+  rw [mem_big _ (by omega)]
+  congr 2
+  · omega
+  · omega
+
+/-- count of positive members below n. -/
+def N (n : ℕ) : ℕ := Nat.count (fun k => mem k = true) n
+
+theorem N_block (m r : ℕ) (hm : 2 ≤ m) (hr : r ≤ 16) :
+    N (16 * m + r) = N (16 * m) + (if mem m then Nat.count (fun k => Vb k = true) r else 0) := by
+  unfold N
+  rw [Nat.count_add]
+  congr 1
+  have : ∀ k, k < r → (mem (16 * m + k) = true ↔ (Vb k && mem m) = true) := by
+    intro k hk; rw [mem_16m m k hm (by omega)]
+  rw [Nat.count_eq_card_filter_range, Nat.count_eq_card_filter_range]
+  split_ifs with hmm
+  · congr 1
+    apply Finset.filter_congr
+    intro k hk
+    rw [this k (Finset.mem_range.mp hk)]; simp [hmm]
+  · rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+    intro k hk
+    rw [this k (Finset.mem_range.mp hk)]; simp [hmm]
+
+theorem countV16 : Nat.count (fun k => Vb k = true) 16 = 4 := by decide
+
+theorem N_32 : N 32 = 11 := by unfold N; decide
+theorem N_2 : N 2 = 0 := by unfold N; decide
+
+theorem N_16m (m : ℕ) (hm : 2 ≤ m) : N (16 * m) = 11 + 4 * N m := by
+  induction m, hm using Nat.le_induction with
+  | base => rw [N_32, N_2]
+  | succ m hm ih =>
+    have h1 := N_block m 16 hm le_rfl
+    rw [countV16] at h1
+    have h2 : N (m + 1) = N m + (if mem m then 1 else 0) := by
+      unfold N; rw [Nat.count_succ]
+    rw [show 16 * (m + 1) = 16 * m + 16 by ring, h1, ih, h2]
+    split_ifs <;> ring
+
+
+def Wv (i : ℕ) : ℕ := [2, 3, 5, 7, 10, 12, 14, 21, 23, 25, 28].getD i 0
+
+theorem small_members : ∀ x, x < 32 → mem x = true → ∃ i, i < 11 ∧ Wv i = x ∧ N (x + 1) = i + 1 := by
+  unfold N; decide
+
+theorem N_succ (y : ℕ) : N (y + 1) = N y + (if mem y then 1 else 0) := by
+  unfold N; rw [Nat.count_succ]
+
+theorem mem_ge2 (y : ℕ) (h : mem y = true) : 2 ≤ y := by
+  by_contra hy
+  interval_cases y <;> revert h <;> decide
+
+theorem step_N (Nx Ny i B j q : ℕ) (hNx : Nx = 11 + 4 * Ny + (q + 1))
+    (hN : 3 * (Ny + 1) + 11 = (11 + 3 * i) * B + 3 * (j + 1)) :
+    3 * Nx + 11 = (11 + 3 * i) * (4 * B) + 3 * (4 * j + q + 1) := by
+  subst hNx; ring_nf; ring_nf at hN; omega
+
+theorem step_E (E R e t : ℕ) (h : E ≤ 3 * R ^ 2) (he : e ≤ 3 * t ^ 2) :
+    16 * E + e ≤ 3 * (4 * R + t) ^ 2 := by
+  have : 3 * (4 * R + t) ^ 2 = 48 * R ^ 2 + 24 * R * t + 3 * t ^ 2 := by ring
+  rw [this]; have := Nat.zero_le (24 * R * t); omega
+
+theorem encode : ∀ x, mem x = true → ∃ i l j d E R : ℕ, i < 11 ∧
+    x = Wv i * 16 ^ l + d ∧ E + d + 1 = 16 ^ l ∧ R + j + 1 = 4 ^ l ∧
+    3 * N (x + 1) + 11 = (11 + 3 * i) * 4 ^ l + 3 * (j + 1) ∧
+    E ≤ 3 * R ^ 2 ∧ 8 * 16 ^ l ≤ 15 * d + 8 := by
+  intro x
+  induction x using Nat.strong_induction_on with
+  | _ x ih =>
+  intro hx
+  by_cases h32 : x < 32
+  · obtain ⟨i, hi, hw, hN⟩ := small_members x h32 hx
+    refine ⟨i, 0, 0, 0, 0, 0, hi, by simp [hw], by simp, by simp, by simp [hN]; ring, by simp, by simp⟩
+  · push Not at h32
+    rw [mem_big x h32] at hx
+    simp only [Bool.and_eq_true] at hx
+    obtain ⟨hv, hy⟩ := hx
+    set y := x / 16 with hydef
+    set v := x % 16 with hvdef
+    have hxy : x = 16 * y + v := (Nat.div_add_mod x 16).symm
+    have hylt : y < x := Nat.div_lt_self (by omega) (by norm_num)
+    have hy2 := mem_ge2 y hy
+    obtain ⟨i, l, j, d, E, R, hi, hyd, hE, hR, hN, hER, hd⟩ := ih y hylt hy
+    have hv16 : v < 16 := Nat.mod_lt _ (by norm_num)
+    have hNx : N (x + 1) = 11 + 4 * N y + Nat.count (fun k => Vb k = true) (v + 1) := by
+      rw [hxy, show 16 * y + v + 1 = 16 * y + (v + 1) by ring, N_block y (v + 1) hy2 (by omega),
+        N_16m y hy2, ite_eq_left_iff.mpr (fun h => absurd hy h)]
+    have hNy : N (y + 1) = N y + 1 := by rw [N_succ, ite_eq_left_iff.mpr (fun h => absurd hy h)]
+    have h16 : 16 ^ (l + 1) = 16 * 16 ^ l := by ring
+    have h4 : 4 ^ (l + 1) = 4 * 4 ^ l := by ring
+    have hvcases : (v = 8 ∧ Nat.count (fun k => Vb k = true) (v + 1) = 1) ∨
+        (v = 11 ∧ Nat.count (fun k => Vb k = true) (v + 1) = 2) ∨
+        (v = 12 ∧ Nat.count (fun k => Vb k = true) (v + 1) = 3) ∨
+        (v = 15 ∧ Nat.count (fun k => Vb k = true) (v + 1) = 4) := by
+      clear_value v
+      interval_cases v <;> revert hv <;> decide
+    rcases hvcases with ⟨hv', hc⟩ | ⟨hv', hc⟩ | ⟨hv', hc⟩ | ⟨hv', hc⟩ <;> rw [hc] at hNx
+    · refine ⟨i, l + 1, 4 * j, 16 * d + v, 16 * E + 7, 4 * R + 3, hi, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · rw [hxy, hyd, h16]; ring
+      · rw [h16]; omega
+      · rw [h4]; omega
+      · rw [hNy] at hN; rw [h4]; exact step_N _ _ _ _ _ 0 hNx hN
+      · exact step_E E R 7 3 hER (by norm_num)
+      · rw [h16]; omega
+    · refine ⟨i, l + 1, 4 * j + 1, 16 * d + v, 16 * E + 4, 4 * R + 2, hi, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · rw [hxy, hyd, h16]; ring
+      · rw [h16]; omega
+      · rw [h4]; omega
+      · rw [hNy] at hN; rw [h4]; exact step_N _ _ _ _ _ 1 hNx hN
+      · exact step_E E R 4 2 hER (by norm_num)
+      · rw [h16]; omega
+    · refine ⟨i, l + 1, 4 * j + 2, 16 * d + v, 16 * E + 3, 4 * R + 1, hi, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · rw [hxy, hyd, h16]; ring
+      · rw [h16]; omega
+      · rw [h4]; omega
+      · rw [hNy] at hN; rw [h4]; exact step_N _ _ _ _ _ 2 hNx hN
+      · exact step_E E R 3 1 hER (by norm_num)
+      · rw [h16]; omega
+    · refine ⟨i, l + 1, 4 * j + 3, 16 * d + v, 16 * E + 0, 4 * R + 0, hi, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · rw [hxy, hyd, h16]; ring
+      · rw [h16]; omega
+      · rw [h4]; omega
+      · rw [hNy] at hN; rw [h4]; exact step_N _ _ _ _ _ 3 hNx hN
+      · exact step_E E R 0 0 hER (by norm_num)
+      · rw [h16]; omega
+
+
+theorem member_bound
+    (GE : (∀ w : Real, ∀ r : Real, ((w = 2 ∧ r = 0) ∨ (w = 3 ∧ r = 1) ∨ (w = 5 ∧ r = 2) ∨ (w = 7 ∧ r = 3) ∨ (w = 10 ∧ r = 4) ∨ (w = 12 ∧ r = 5) ∨ (w = 14 ∧ r = 6) ∨ (w = 21 ∧ r = 7) ∨ (w = 23 ∧ r = 8) ∨ (w = 25 ∧ r = 9) ∨ (w = 28 ∧ r = 10)) → (14 / 3 + r) ^ 2 ≤ (289 / 36) * (w + 1) ∧ (14 / 3 + r - 2 / 5) ^ 2 ≤ (289 / 36) * (w + 13 / 25)) ∧ (∀ C : Real, ∀ w : Real, ∀ u : Real, ∀ d : Real, 1 ≤ C → 0 ≤ u → u ≤ 1 → 0 ≤ d → d ≤ 7 / 15 → d ≤ 3 * u ^ 2 → C ^ 2 ≤ (289 / 36) * (w + 1) → (C - 2 / 5) ^ 2 ≤ (289 / 36) * (w + 13 / 25) → (C - u) ^ 2 ≤ (289 / 36) * (w + 1 - d)))
+    (CB : (∀ R : Nat → Nat, ∀ E : Nat → Nat, R 0 = 0 → E 0 = 0 → (∀ n : Nat, ∃ q : Nat, q < 4 ∧ R (n + 1) = 4 * R n + q ∧ E (n + 1) = 16 * E n + 3 * (Nat.mod q 2) + 4 * (q / 2)) → ∀ n : Nat, E n ≤ 3 * R n ^ 2) ∧ (∀ D : Nat → Nat, D 0 = 0 → (∀ n : Nat, 16 * D n + 8 ≤ D (n + 1)) → ∀ n : Nat, 8 * 16 ^ n ≤ 15 * D n + 8) ∧ (∀ p : Real, ∀ q : Real, 11 / 3 ≤ p → p ^ 2 ≤ (289 / 36) * q → (p - 8 / 3) ^ 2 ≤ (289 / 36) * (q - 1))) :
+    ∀ x, mem x = true → 36 * (N (x + 1) + 1) ^ 2 ≤ 289 * x := by
+  intro x hx
+  obtain ⟨i, l, j, d, E, R, hi, hxd, hE, hR, hN, hER, hd⟩ := encode x hx
+  have hE15 : 15 * E + 7 ≤ 7 * 16 ^ l := by omega
+  have hw : ((Wv i : ℝ) = 2 ∧ (i : ℝ) = 0) ∨ ((Wv i : ℝ) = 3 ∧ (i : ℝ) = 1) ∨ ((Wv i : ℝ) = 5 ∧ (i : ℝ) = 2) ∨
+      ((Wv i : ℝ) = 7 ∧ (i : ℝ) = 3) ∨ ((Wv i : ℝ) = 10 ∧ (i : ℝ) = 4) ∨ ((Wv i : ℝ) = 12 ∧ (i : ℝ) = 5) ∨
+      ((Wv i : ℝ) = 14 ∧ (i : ℝ) = 6) ∨ ((Wv i : ℝ) = 21 ∧ (i : ℝ) = 7) ∨ ((Wv i : ℝ) = 23 ∧ (i : ℝ) = 8) ∨
+      ((Wv i : ℝ) = 25 ∧ (i : ℝ) = 9) ∨ ((Wv i : ℝ) = 28 ∧ (i : ℝ) = 10) := by
+    interval_cases i <;> norm_num [Wv]
+  obtain ⟨ht1, ht2⟩ := GE.1 (Wv i) i hw
+  set B : ℝ := (4 : ℝ) ^ l with hB
+  have hBpos : 0 < B := by positivity
+  have hB1 : 1 ≤ B := one_le_pow₀ (by norm_num)
+  have h16 : ((16 ^ l : ℕ) : ℝ) = B ^ 2 := by
+    rw [hB, ← pow_mul, mul_comm, pow_mul]; norm_num
+  have h4 : ((4 ^ l : ℕ) : ℝ) = B := by rw [hB]; norm_num
+  have hEr : (E : ℝ) + d + 1 = B ^ 2 := by rw [← h16]; exact_mod_cast hE
+  have hRr : (R : ℝ) + j + 1 = B := by rw [← h4]; exact_mod_cast hR
+  have hNr : 3 * (N (x + 1) : ℝ) + 11 = (11 + 3 * i) * B + 3 * (j + 1) := by
+    rw [← h4]; exact_mod_cast hN
+  have hERr : (E : ℝ) ≤ 3 * (R : ℝ) ^ 2 := by exact_mod_cast hER
+  have hE15r : 15 * (E : ℝ) + 7 ≤ 7 * B ^ 2 := by rw [← h16]; exact_mod_cast hE15
+  have hxr : (x : ℝ) = (Wv i : ℝ) * B ^ 2 + d := by rw [← h16]; exact_mod_cast hxd
+  have hB2 : 0 < B ^ 2 := by positivity
+  set u : ℝ := R / B with hu
+  set δ : ℝ := E / B ^ 2 with hδ
+  have hu0 : 0 ≤ u := by positivity
+  have hu1 : u ≤ 1 := by
+    rw [hu, div_le_one hBpos]; have : (0 : ℝ) ≤ j := by positivity
+    linarith
+  have hδ0 : 0 ≤ δ := by positivity
+  have hδ7 : δ ≤ 7 / 15 := by
+    rw [hδ, div_le_iff₀ hB2]; linarith
+  have hδ3 : δ ≤ 3 * u ^ 2 := by
+    rw [hδ, hu, div_pow, ← mul_div_assoc, div_le_div_iff_of_pos_right hB2]; exact hERr
+  have hi0 : (0 : ℝ) ≤ i := by positivity
+  have hs := GE.2 (14 / 3 + i) (Wv i) u δ (by linarith) hu0 hu1 hδ0 hδ7 hδ3 ht1 ht2
+  -- scale by B^2
+  set p : ℝ := (N (x + 1) : ℝ) + 11 / 3 with hp
+  have hpB : p = B * ((14 / 3 + i) - u) := by
+    rw [hu, mul_sub, mul_div_cancel₀ _ hBpos.ne']; rw [hp]; linarith
+  have hQ : B ^ 2 * ((Wv i : ℝ) + 1 - δ) = (x : ℝ) + 1 := by
+    rw [hδ, mul_sub, mul_div_cancel₀ _ hB2.ne', hxr]; linarith
+  have hp2 : p ^ 2 ≤ (289 / 36) * ((x : ℝ) + 1) := by
+    rw [hpB, mul_pow, ← hQ]
+    have := mul_le_mul_of_nonneg_left hs hB2.le
+    linarith
+  have hp3 : (11 / 3 : ℝ) ≤ p := by
+    rw [hp]; have : (0 : ℝ) ≤ (N (x + 1) : ℝ) := by positivity
+    linarith
+  have hfin := CB.2.2 p ((x : ℝ) + 1) hp3 hp2
+  have e1 : p - 8 / 3 = (N (x + 1) : ℝ) + 1 := by rw [hp]; ring
+  rw [e1, add_sub_cancel_right] at hfin
+  have : (36 : ℝ) * ((N (x + 1) : ℝ) + 1) ^ 2 ≤ 289 * (x : ℝ) := by linarith
+  exact_mod_cast this
+
+
+/-! ### Global upper bound -/
+
+theorem N_le_succ (n : ℕ) : N n ≤ N (n + 1) := by rw [N_succ]; omega
+
+theorem bound_all : ∀ n, 1 ≤ n → 36 * (N (n + 1) + 1) ^ 2 ≤ 289 * n := by
+  intro n hn
+  induction n, hn using Nat.le_induction with
+  | base => unfold N; decide
+  | succ n hn ih =>
+    by_cases hm : mem (n + 1) = true
+    · exact member_bound Erdos271.Base16.global_envelope_bundle Erdos271.Base16.complement_bundle _ hm
+    · have : N (n + 1 + 1) = N (n + 1) := by rw [N_succ]; simp [hm]
+      rw [this]; nlinarith
+
+/-! ### Top points 3F…F -/
+
+def top (l : ℕ) : ℕ := 4 * 16 ^ l - 1
+
+theorem top_succ (l : ℕ) : top (l + 1) = 16 * top l + 15 := by
+  unfold top; have : 1 ≤ 16 ^ l := Nat.one_le_pow _ _ (by norm_num)
+  rw [pow_succ]; omega
+
+theorem top_mem : ∀ l, mem (top l) = true ∧ 3 * N (top l + 1) + 11 = 17 * 4 ^ l := by
+  intro l
+  induction l with
+  | zero => unfold top N; decide
+  | succ l ih =>
+    obtain ⟨hm, hN⟩ := ih
+    have h2 := mem_ge2 _ hm
+    refine ⟨?_, ?_⟩
+    · rw [top_succ, mem_16m _ _ h2 (by norm_num), hm]; decide
+    · rw [top_succ, show 16 * top l + 15 + 1 = 16 * (top l + 1) by ring, N_16m _ (by omega),
+        N_succ, if_pos hm, pow_succ]
+      have : 3 * (N (top l) + 1) + 11 = 17 * 4 ^ l := by rw [N_succ, if_pos hm] at hN; exact hN
+      omega
+
+/-! ### Covering -/
+
+def chk : ℕ → List ℕ → Bool
+  | _, [] => true
+  | n, b :: bs => (decide (b < n) && decide (n < 2 * b) && mem (2 * b - n) && mem b) && chk (n + 1) bs
+
+theorem chk_spec : ∀ (L : List ℕ) (n : ℕ), chk n L = true → ∀ m, n ≤ m → m < n + L.length →
+    ∃ b, b < m ∧ m < 2 * b ∧ mem (2 * b - m) = true ∧ mem b = true := by
+  intro L
+  induction L with
+  | nil => intro n _ m h1 h2; simp at h2; omega
+  | cons b bs ih =>
+    intro n h m h1 h2
+    simp only [chk, Bool.and_eq_true, decide_eq_true_eq] at h
+    obtain ⟨⟨⟨⟨hb1, hb2⟩, ha⟩, hb⟩, hrest⟩ := h
+    by_cases hm : m = n
+    · subst hm; exact ⟨b, hb1, hb2, ha, hb⟩
+    · exact ih (n + 1) hrest m (by omega) (by simp at h2; omega)
+
+def cert : List ℕ := [47, 59, 47, 47, 59, 91, 59, 92, 59, 56, 60, 56, 63, 56, 63, 59, 56, 59, 56, 59, 56, 56, 59, 63, 59, 63, 59, 59, 60, 60, 63, 88, 63, 91, 63, 63, 92, 91, 95, 92, 88, 95, 95, 88, 88, 95, 91, 88, 92, 91, 91, 92, 92, 91, 95, 92, 120, 95, 95, 88, 120, 95, 88, 120, 88, 91, 88, 92, 91, 123, 91, 124, 91, 88, 92, 88, 95, 88, 95, 91, 88, 91, 88, 91, 88, 88, 91, 95, 91, 95, 91, 91, 92, 92, 95, 120, 95, 123, 95, 95, 124, 123, 127, 124, 120, 127, 127, 120, 120, 127, 123, 120, 124, 123, 123, 124, 124, 123, 127, 124, 168, 127, 127, 120, 168, 127, 120, 168, 120, 123, 120, 124, 123, 171, 123, 172, 123, 120, 124, 120, 127, 120, 127, 123, 120, 123, 120, 123, 120, 120, 123, 127, 123, 127, 123, 123, 124, 124, 127, 168, 127, 171, 127, 127, 172, 171, 175, 172, 232, 175, 175, 232, 232, 175, 235, 232, 236, 235, 235, 236, 236, 235, 239, 236, 168, 239, 239, 168, 168, 239, 171, 168, 172, 171, 171, 172, 172, 171, 175, 172, 168, 175, 175, 168, 168, 175, 171, 168, 172, 171, 171, 172, 172, 171, 175, 172, 200, 175, 175, 168, 200, 175, 168, 200, 168, 171, 168, 172, 171, 203, 171, 204, 171, 168, 172, 168, 175, 168, 175, 171, 168, 171, 168, 171, 168, 168, 171, 175, 171, 175, 171, 171, 172, 172, 175, 200, 175, 203, 175, 175, 204, 203, 207, 204, 200, 207, 207, 200, 200, 207, 203, 200, 204, 203, 203, 204, 204, 203, 207, 204, 232, 207, 207, 200, 232, 207, 200, 232, 200, 203, 200, 204, 203, 235, 203, 236, 203, 200, 204, 200, 207, 200, 207, 203, 200, 203, 200, 203, 200, 200, 203, 207, 203, 207, 203, 203, 204, 204, 207, 232, 207, 235, 207, 207, 236, 235, 239, 236, 232, 239, 239, 232, 232, 239, 235, 232, 236, 235, 235, 236, 236, 235, 239, 236, 408, 239, 239, 232, 408, 239, 232, 408, 232, 235, 232, 236, 235, 411, 235, 412, 235, 232, 236, 232, 239, 232, 239, 235, 232, 235, 232, 235, 232, 232, 235, 239, 235, 239, 235, 235, 236, 236, 239, 408, 239, 411, 239, 239, 412, 411, 415, 412, 344, 415, 415, 344, 344, 415, 347, 344, 348, 347, 347, 348, 348, 347, 351, 348, 456, 351, 351, 456, 456, 351, 459, 456, 460, 459, 459, 460, 460, 459, 463, 460, 344, 463, 463, 344, 344, 463, 347, 344, 348, 347, 347, 348, 348, 347, 351, 348, 456, 351, 351, 456, 456, 351, 459, 456, 460, 459, 459, 460, 460, 459, 463, 460, 376, 463, 463, 376, 376, 463, 379, 376, 380, 379, 379, 380, 380, 379, 383, 380, 344, 383, 383, 344, 344, 383, 347, 344, 348, 347, 347, 348, 348, 347, 351, 348, 376, 351, 351, 376, 376, 351, 379, 376, 380, 379, 379, 380, 380, 379, 383, 380, 344, 383, 383, 344, 344, 383, 347, 344, 348, 347, 347, 348, 348, 347, 351, 348, 408, 351, 351, 408, 408, 351, 411, 408, 412, 411, 411, 412, 412, 411, 415, 412, 344, 415, 415, 344, 344, 415, 347, 344, 348, 347, 347, 348, 348, 347, 351, 348, 344, 351, 351, 344, 344, 351, 347, 344, 348, 347, 347, 348, 348, 347, 351, 348, 376, 351, 351, 344, 376, 351, 344, 376, 344, 347, 344, 348, 347, 379, 347, 380, 347, 344, 348, 344, 351, 344, 351, 347, 344, 347, 344, 347, 344, 344, 347, 351, 347, 351, 347, 347, 348, 348, 351, 376, 351, 379, 351, 351, 380, 379, 383, 380, 376, 383, 383, 376, 376, 383, 379, 376, 380, 379, 379, 380, 380, 379, 383, 380, 408, 383, 383, 376, 408, 383, 376, 408, 376, 379, 376, 380, 379, 411, 379, 412, 379, 376, 380, 376, 383, 376, 383, 379, 376, 379, 376, 379, 376, 376, 379, 383, 379, 383, 379, 379, 380, 380, 383, 408, 383, 411, 383, 383, 412, 411, 415, 412, 408, 415, 415, 408, 408, 415, 411, 408, 412, 411, 411, 412, 412, 411, 415, 412, 456, 415, 415, 408, 456, 415, 408, 456, 408, 411, 408, 412, 411, 459, 411, 460, 411, 408, 412, 408, 415, 408, 415, 411, 408, 411, 408, 411, 408, 408, 411, 415, 411, 415, 411, 411, 412, 412, 415, 456, 415, 459, 415, 415, 460, 459, 463, 460, 648, 463, 463, 648, 648, 463, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 456, 655, 655, 456, 456, 655, 459, 456, 460, 459, 459, 460, 460, 459, 463, 460, 456, 463, 463, 456, 456, 463, 459, 456, 460, 459, 459, 460, 460, 459, 463, 460, 648, 463, 463, 456, 648, 463, 456, 648, 456, 459, 456, 460, 459, 651, 459, 652, 459, 456, 460, 456, 463, 456, 463, 459, 456, 459, 456, 459, 456, 456, 459, 463, 459, 463, 459, 459, 460, 460, 463, 648, 463, 651, 463, 463, 652, 651, 655, 652, 696, 655, 655, 696, 696, 655, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 648, 703, 703, 648, 648, 703, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 712, 655, 655, 712, 712, 655, 715, 712, 716, 715, 715, 716, 716, 715, 719, 716, 696, 719, 719, 696, 696, 719, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 952, 703, 703, 952, 952, 703, 955, 952, 956, 955, 955, 956, 956, 955, 959, 956, 696, 959, 959, 696, 696, 959, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 968, 703, 703, 968, 968, 703, 971, 968, 972, 971, 971, 972, 972, 971, 975, 972, 696, 975, 975, 696, 696, 975, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 648, 703, 703, 648, 648, 703, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 712, 655, 655, 712, 712, 655, 715, 712, 716, 715, 715, 716, 716, 715, 719, 716, 648, 719, 719, 648, 648, 719, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 760, 655, 655, 760, 760, 655, 763, 760, 764, 763, 763, 764, 764, 763, 767, 764, 648, 767, 767, 648, 648, 767, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 760, 655, 655, 760, 760, 655, 763, 760, 764, 763, 763, 764, 764, 763, 767, 764, 696, 767, 767, 696, 696, 767, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 648, 703, 703, 648, 648, 703, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 696, 655, 655, 696, 696, 655, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 648, 703, 703, 648, 648, 703, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 696, 655, 655, 696, 696, 655, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 648, 703, 703, 648, 648, 703, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 648, 655, 655, 648, 648, 655, 651, 648, 652, 651, 651, 652, 652, 651, 655, 652, 696, 655, 655, 648, 696, 655, 648, 696, 648, 651, 648, 652, 651, 699, 651, 700, 651, 648, 652, 648, 655, 648, 655, 651, 648, 651, 648, 651, 648, 648, 651, 655, 651, 655, 651, 651, 652, 652, 655, 696, 655, 699, 655, 655, 700, 699, 703, 700, 760, 703, 703, 760, 760, 703, 763, 760, 764, 763, 763, 764, 764, 763, 767, 764, 696, 767, 767, 696, 696, 767, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 696, 703, 703, 696, 696, 703, 699, 696, 700, 699, 699, 700, 700, 699, 703, 700, 712, 703, 703, 696, 712, 703, 696, 712, 696, 699, 696, 700, 699, 715, 699, 716, 699, 696, 700, 696, 703, 696, 703, 699, 696, 699, 696, 699, 696, 696, 699, 703, 699, 703, 699, 699, 700, 700, 703, 760, 703, 715, 703, 703, 715, 763, 715, 764, 715, 712, 716, 712, 719, 712, 719, 715, 712, 715, 712, 715, 712, 712, 715, 719, 715, 719, 715, 715, 716, 716, 719, 760, 719, 763, 719, 719, 764, 763, 767, 764, 952, 767, 767, 952, 952, 767]
+
+theorem cert_ok : chk 89 cert = true := by decide +kernel
+
+theorem cert_len : cert.length = 1358 := by decide +kernel
+
+theorem residues : ∀ r, r < 16 → ∃ v1, v1 < 16 ∧ ∃ v2, v2 < 16 ∧ Vb v1 = true ∧ Vb v2 = true ∧
+    v2 + 1 ≤ 2 * v1 ∧ 2 * v1 ≤ v2 + 22 ∧ (2 * v1 - v2) % 16 = r := by decide
+
+theorem cover_all : ∀ n, 89 ≤ n →
+    ∃ b, b < n ∧ n < 2 * b ∧ mem (2 * b - n) = true ∧ mem b = true := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+  intro hn
+  by_cases hsmall : n ≤ 1446
+  · exact chk_spec cert 89 cert_ok n hn (by rw [cert_len]; omega)
+  · obtain ⟨v1, hv1, v2, hv2, hV1, hV2, h1, h2, hr⟩ := residues (n % 16) (Nat.mod_lt _ (by norm_num))
+    set t := 2 * v1 - v2 with ht
+    have hn' : n = 16 * ((n - t) / 16) + t := by omega
+    set n' := (n - t) / 16 with hn'def
+    obtain ⟨b', hb1, hb2, ha', hb'⟩ := ih n' (by omega) (by omega)
+    have hb2' := mem_ge2 _ hb'
+    have ha2' := mem_ge2 _ ha'
+    refine ⟨16 * b' + v1, by omega, by omega, ?_, ?_⟩
+    · have : 2 * (16 * b' + v1) - n = 16 * (2 * b' - n') + v2 := by omega
+      rw [this, mem_16m _ _ ha2' hv2, hV2, ha']; rfl
+    · rw [mem_16m _ _ hb2' hv1, hV1, hb']; rfl
+
+/-! ### The set and the final theorem -/
+
+def S16 : Set ℕ := {n | n = 0 ∨ mem n = true}
+
+theorem mem_zero : mem 0 = false := by decide
+
+theorem ncard_eq (m : ℕ) : (Set.ncard (S16 ∩ Set.Icc 1 m) : ℝ) = (N (m + 1) : ℝ) := by
+  have e : S16 ∩ Set.Icc 1 m = ↑((Finset.range (m + 1)).filter (fun k => mem k = true)) := by
+    ext k
+    simp only [S16, Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_Icc, Finset.coe_filter,
+      Finset.mem_range]
+    constructor
+    · rintro ⟨h | h, h1, h2⟩
+      · omega
+      · exact ⟨by omega, h⟩
+    · rintro ⟨h1, h2⟩
+      refine ⟨Or.inr h2, ?_, by omega⟩
+      by_contra h0; push Not at h0
+      have : k = 0 := by omega
+      subst this; rw [mem_zero] at h2; exact absurd h2 (by decide)
+  rw [e, Set.ncard_coe_finset, N, Nat.count_eq_card_filter_range]
+
+/-- **Claude's base-16 set is a strong AP3-covering set beyond 88 (every z > 88, members included), with a > 0.** -/
+theorem S16_cover : ∀ z : ℕ, 88 < z → ∃ a : ℕ, ∃ b : ℕ, a ∈ S16 ∧ b ∈ S16 ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z := by
+  intro z hz
+  obtain ⟨b, hb1, hb2, ha, hb⟩ := cover_all z (by omega)
+  exact ⟨2 * b - z, b, Or.inr ha, Or.inr hb, by omega, by omega, hb1, by omega⟩
+
+/-- **Uniform upper bound** (0 counted): `A(x) + 1 ≤ (17/6)√x` for all `x ≥ 1`. -/
+theorem S16_upper : ∀ x : ℝ, 1 ≤ x →
+    (Set.ncard (S16 ∩ Set.Icc 1 (Nat.floor x)) : ℝ) + 1 ≤ 17 / 6 * Real.sqrt x := by
+  intro x hx
+  rw [ncard_eq]
+  have hn : 1 ≤ ⌊x⌋₊ := Nat.le_floor (by simpa using hx)
+  have h := bound_all _ hn
+  have hr : 36 * ((N (⌊x⌋₊ + 1) : ℝ) + 1) ^ 2 ≤ 289 * (⌊x⌋₊ : ℝ) := by exact_mod_cast h
+  have hfx : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le (by linarith)
+  have hsq : ((N (⌊x⌋₊ + 1) : ℝ) + 1) ≤ Real.sqrt ((17 / 6) ^ 2 * x) := by
+    apply Real.le_sqrt_of_sq_le; nlinarith
+  rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (by norm_num)] at hsq
+  exact hsq
+
+/-- **Sharpness**: for every `U < 17/6` there are arbitrarily large `x` with `U√x < A(x)`. -/
+theorem S16_lower : ∀ U : ℝ, U < 17 / 6 → ∀ M : ℝ, ∃ x : ℝ, M ≤ x ∧
+    U * Real.sqrt x < (Set.ncard (S16 ∩ Set.Icc 1 (Nat.floor x)) : ℝ) := by
+  intro U hU M
+  have hpos : 0 < 17 - 6 * U := by linarith
+  obtain ⟨K, hK⟩ := exists_nat_gt (max M (12 / (17 - 6 * U)))
+  have hl : K < 4 ^ K := Nat.lt_pow_self (by norm_num)
+  obtain ⟨hm, hN⟩ := top_mem K
+  refine ⟨(top K : ℝ), ?_, ?_⟩
+  · have h1 : (4 : ℕ) ^ K ≤ top K := by
+      unfold top; have : 4 ^ K ≤ 16 ^ K := Nat.pow_le_pow_left (by norm_num) K
+      have : 1 ≤ 4 ^ K := Nat.one_le_pow _ _ (by norm_num)
+      omega
+    have : (K : ℝ) < (top K : ℝ) := by exact_mod_cast (lt_of_lt_of_le hl h1)
+    linarith [le_max_left M (12 / (17 - 6 * U))]
+  · rw [Nat.floor_natCast, ncard_eq]
+    set P : ℝ := (4 : ℝ) ^ K with hP
+    have hNr : 3 * (N (top K + 1) : ℝ) + 11 = 17 * P := by rw [hP]; exact_mod_cast hN
+    have htop : (top K : ℝ) + 1 = 4 * P ^ 2 := by
+      have : top K + 1 = 4 * 16 ^ K := by
+        unfold top; have : 1 ≤ 16 ^ K := Nat.one_le_pow _ _ (by norm_num)
+        omega
+      have h' : ((top K + 1 : ℕ) : ℝ) = 4 * P ^ 2 := by
+        rw [this, hP]; push_cast; rw [← pow_mul, mul_comm K 2, pow_mul]; norm_num
+      exact_mod_cast h'
+    have hP0 : 0 < P := by positivity
+    have hsx : Real.sqrt (top K : ℝ) ≤ 2 * P := by
+      rw [Real.sqrt_le_left (by positivity)]; nlinarith
+    have hKP : (K : ℝ) < P := by rw [hP]; exact_mod_cast hl
+    have h12 : 12 / (17 - 6 * U) < P := lt_trans (lt_of_le_of_lt (le_max_right _ _) hK) hKP
+    have h12' : 12 < (17 - 6 * U) * P := by rwa [div_lt_iff₀ hpos, mul_comm] at h12
+    by_cases hU0 : U ≤ 0
+    · have : U * Real.sqrt (top K : ℝ) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hU0 (Real.sqrt_nonneg _)
+      have hP1 : (1 : ℝ) ≤ P := by rw [hP]; exact one_le_pow₀ (by norm_num)
+      have : (0 : ℝ) < N (top K + 1) := by linarith
+      linarith
+    · push Not at hU0
+      have : U * Real.sqrt (top K : ℝ) ≤ U * (2 * P) := mul_le_mul_of_nonneg_left hsx hU0.le
+      nlinarith
+
+/-- **Main theorem (17/6).** The set defined by the base-16 recursion (Claude's A') is a strong AP3-covering
+set beyond 88 (every z > 88, members included; a > 0), satisfies `A(x) + 1 ≤ (17/6)√x` for all x ≥ 1, and `A(x) > U√x` for
+arbitrarily large x whenever U < 17/6. Hence limsup A(x)/√x = 17/6. -/
+theorem B16_main :
+∀ S : Set Nat,
+(∀ n : Nat, Membership.mem S n ↔ (n = 0 ∨ n = 2 ∨ n = 3 ∨ n = 5 ∨ n = 7 ∨ n = 10 ∨ n = 12 ∨ n = 14 ∨ n = 21 ∨ n = 23 ∨ n = 25 ∨ n = 28 ∨ (16 ≤ n ∧ (Nat.mod n 16 = 8 ∨ Nat.mod n 16 = 11 ∨ Nat.mod n 16 = 12 ∨ Nat.mod n 16 = 15) ∧ 0 < n / 16 ∧ Membership.mem S (n / 16)))) →
+(∀ z : Nat, 88 < z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z) ∧
+(∀ x : Real, 1 ≤ x → (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real) + 1 ≤ 17 / 6 * Real.sqrt x) ∧
+(∀ U : Real, U < 17 / 6 → ∀ M : Real, ∃ x : Real, M ≤ x ∧ U * Real.sqrt x < (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real)) := by
+  intro S hS
+  have key : ∀ n, n ∈ S ↔ (n = 0 ∨ mem n = true) := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+    rw [hS n, mem_eq n]
+    have e : Nat.mod n 16 = n % 16 := rfl
+    rw [e]
+    have hW : Wb n = true ↔ (n = 2 ∨ n = 3 ∨ n = 5 ∨ n = 7 ∨ n = 10 ∨ n = 12 ∨ n = 14 ∨ n = 21 ∨ n = 23 ∨ n = 25 ∨ n = 28) := by
+      unfold Wb; simp only [Bool.or_eq_true, beq_iff_eq, or_assoc]
+    have hV : Vb (n % 16) = true ↔ (n % 16 = 8 ∨ n % 16 = 11 ∨ n % 16 = 12 ∨ n % 16 = 15) := by
+      unfold Vb; simp only [Bool.or_eq_true, beq_iff_eq, or_assoc]
+    simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq, hW, hV, or_assoc, and_assoc]
+    iterate 12 refine or_congr_right ?_
+    by_cases h16 : 16 ≤ n
+    · have hlt : n / 16 < n := Nat.div_lt_self (by omega) (by norm_num)
+      rw [ih (n / 16) hlt]
+      have hp : 0 < n / 16 := by omega
+      constructor
+      · rintro ⟨h1, h2, h3, h4 | h4⟩
+        · omega
+        · exact ⟨h1, h2, h4⟩
+      · rintro ⟨h1, h2, h4⟩
+        exact ⟨h1, h2, hp, Or.inr h4⟩
+    · constructor
+      · rintro ⟨h1, -⟩; omega
+      · rintro ⟨h1, -⟩; omega
+  have hSS : S = S16 := by
+    ext n; rw [key n]; rfl
+  rw [hSS]
+  exact ⟨S16_cover, S16_upper, S16_lower⟩
+
+/-- The characterising recursion has a solution, namely `S16` (so `B16_main` is not vacuous). -/
+theorem S16_char :
+(∀ n : Nat, Membership.mem S16 n ↔ (n = 0 ∨ n = 2 ∨ n = 3 ∨ n = 5 ∨ n = 7 ∨ n = 10 ∨ n = 12 ∨ n = 14 ∨ n = 21 ∨ n = 23 ∨ n = 25 ∨ n = 28 ∨ (16 ≤ n ∧ (Nat.mod n 16 = 8 ∨ Nat.mod n 16 = 11 ∨ Nat.mod n 16 = 12 ∨ Nat.mod n 16 = 15) ∧ 0 < n / 16 ∧ Membership.mem S16 (n / 16)))) := by
+  intro n
+  have hS16 : ∀ k, k ∈ S16 ↔ (k = 0 ∨ mem k = true) := fun k => Iff.rfl
+  rw [hS16 n, mem_eq n]
+  have e : Nat.mod n 16 = n % 16 := rfl
+  rw [e]
+  have hW : Wb n = true ↔ (n = 2 ∨ n = 3 ∨ n = 5 ∨ n = 7 ∨ n = 10 ∨ n = 12 ∨ n = 14 ∨ n = 21 ∨ n = 23 ∨ n = 25 ∨ n = 28) := by
+    unfold Wb; simp only [Bool.or_eq_true, beq_iff_eq, or_assoc]
+  have hV : Vb (n % 16) = true ↔ (n % 16 = 8 ∨ n % 16 = 11 ∨ n % 16 = 12 ∨ n % 16 = 15) := by
+    unfold Vb; simp only [Bool.or_eq_true, beq_iff_eq, or_assoc]
+  simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq, hW, hV, or_assoc, and_assoc]
+  iterate 12 refine or_congr_right ?_
+  rw [hS16 (n / 16)]
+  constructor
+  · rintro ⟨h1, h2, h4⟩
+    exact ⟨h1, h2, by have := mem_ge2 _ h4; omega, Or.inr h4⟩
+  · rintro ⟨h1, h2, h3, h4 | h4⟩
+    · omega
+    · exact ⟨h1, h2, h4⟩
+
+/-- Packaged form: there is a set with the recursion, and every such set has the three properties. -/
+theorem B16_exists : ∃ S : Set ℕ,
+    (∀ n : Nat, Membership.mem S n ↔ (n = 0 ∨ n = 2 ∨ n = 3 ∨ n = 5 ∨ n = 7 ∨ n = 10 ∨ n = 12 ∨ n = 14 ∨ n = 21 ∨ n = 23 ∨ n = 25 ∨ n = 28 ∨ (16 ≤ n ∧ (Nat.mod n 16 = 8 ∨ Nat.mod n 16 = 11 ∨ Nat.mod n 16 = 12 ∨ Nat.mod n 16 = 15) ∧ 0 < n / 16 ∧ Membership.mem S (n / 16)))) ∧
+    ((∀ z : Nat, 88 < z → ∃ a : Nat, ∃ b : Nat, Membership.mem S a ∧ Membership.mem S b ∧ 0 < a ∧ a < b ∧ b < z ∧ 2 * b - a = z) ∧ (∀ x : Real, 1 ≤ x → (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real) + 1 ≤ 17 / 6 * Real.sqrt x) ∧ (∀ U : Real, U < 17 / 6 → ∀ M : Real, ∃ x : Real, M ≤ x ∧ U * Real.sqrt x < (Set.ncard (Inter.inter S (Set.Icc 1 (Nat.floor x))) : Real))) :=
+  ⟨S16, S16_char, B16_main S16 S16_char⟩
+
+/-! ### Fidelity with Claude's block definition `A = {0} ∪ ⋃_l ⋃_w (w·16^l + D_l)` -/
+
+/-- `inD l d`: `d` has exactly `l` base-16 digits, all in `V` (leading digits included). -/
+def inD : ℕ → ℕ → Prop
+  | 0, d => d = 0
+  | l + 1, d => Vb (d % 16) = true ∧ inD l (d / 16)
+
+theorem small_W : ∀ n, n < 32 → mem n = true → Wb n = true := by decide
+
+theorem W_ge2 (w : ℕ) (hw : Wb w = true) : 2 ≤ w := by
+  by_contra h; interval_cases w <;> revert hw <;> decide
+
+theorem mem_iff_blocks : ∀ n, mem n = true ↔ ∃ l w d, Wb w = true ∧ inD l d ∧ n = w * 16 ^ l + d := by
+  intro n
+  constructor
+  · induction n using Nat.strong_induction_on with
+    | _ n ih =>
+    intro hn
+    by_cases h32 : n < 32
+    · have hw : Wb n = true := small_W n h32 hn
+      exact ⟨0, n, 0, hw, rfl, by simp⟩
+    · push Not at h32
+      rw [mem_big n h32] at hn
+      simp only [Bool.and_eq_true] at hn
+      obtain ⟨hv, hy⟩ := hn
+      obtain ⟨l, w, d, hw, hd, he⟩ := ih (n / 16) (Nat.div_lt_self (by omega) (by norm_num)) hy
+      refine ⟨l + 1, w, 16 * d + n % 16, hw, ?_, ?_⟩
+      · simp only [inD]
+        have h1 : (16 * d + n % 16) % 16 = n % 16 := by omega
+        have h2 : (16 * d + n % 16) / 16 = d := by omega
+        rw [h1, h2]; exact ⟨hv, hd⟩
+      · have := Nat.div_add_mod n 16
+        rw [pow_succ]; nlinarith
+  · rintro ⟨l, w, d, hw, hd, rfl⟩
+    induction l generalizing d with
+    | zero =>
+      simp only [inD] at hd; subst hd
+      rw [mem_eq]; simp [hw]
+    | succ l ih =>
+      simp only [inD] at hd
+      obtain ⟨hv, hd'⟩ := hd
+      have hw2 := W_ge2 w hw
+      have hpos : 1 ≤ 16 ^ l := Nat.one_le_pow _ _ (by norm_num)
+      have e : w * 16 ^ (l + 1) + d = 16 * (w * 16 ^ l + d / 16) + d % 16 := by
+        have := Nat.div_add_mod d 16
+        rw [pow_succ]; nlinarith
+      have h2 : 2 ≤ w * 16 ^ l + d / 16 := by
+        have := Nat.mul_le_mul hw2 hpos
+        omega
+      rw [e, mem_16m _ _ h2 (Nat.mod_lt _ (by norm_num)), hv, ih _ hd']; rfl
+
+end Erdos271.B16
+
+#print axioms Erdos271.B16.S16_cover
+#print axioms Erdos271.B16.S16_upper
+#print axioms Erdos271.B16.S16_lower
+#print axioms Erdos271.B16.B16_main
+#print axioms Erdos271.B16.B16_exists
+#print axioms Erdos271.B16.mem_iff_blocks

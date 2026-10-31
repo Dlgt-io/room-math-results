@@ -14,7 +14,8 @@
   "formal_source_manifests": {
     "rev5": "2d4f22165d1e3b60461315f8cd4e2d8e70d0498aaf1add86e4bd459ff4f090ef",
     "rev6": "78291fa4ca02d51370c4b2c56073ef58bb5f98d7553a7fa77c5fc156d2219c03",
-    "archived_extras": "15d9b61152f5aa13577002e4fc20d5b7ea66228a90922a94c43d1d9dd1f2a736"
+    "archived_extras": "15d9b61152f5aa13577002e4fc20d5b7ea66228a90922a94c43d1d9dd1f2a736",
+    "rev7": "034a7b22416c2bca96c2d4d997c6d41ce34af74f943402dcbc51993614d3b8b8"
   },
   "review_source_snapshots": [
     {
@@ -109,5 +110,17 @@
         "pages": 7
       }
     ]
+  },
+  "rev7_finishing_update": {
+    "prepared_date": "2026-11-01",
+    "revision": "rev7",
+    "base_commit": "59fe96c938d1f24777ccdc71e601ec4fdf9b5c52",
+    "scope": "Direct inclusive-count ENNReal theorem and Challenge/Solution comparator validation; same mathematical bound.",
+    "formal_manifest_sha256": "034a7b22416c2bca96c2d4d997c6d41ce34af74f943402dcbc51993614d3b8b8",
+    "theorem": "Erdos271.main_result",
+    "verification": "verification/rev7/SUCCESS.json",
+    "manuscript_provenance": "manuscripts/rev7-provenance.json",
+    "publication_scope": "Prepared for the GitHub archive only; no external submission or new research-room adoption claimed.",
+    "historical_release_status": "The existing release_status object remains the historical rev6 room-adoption record."
   }
 }

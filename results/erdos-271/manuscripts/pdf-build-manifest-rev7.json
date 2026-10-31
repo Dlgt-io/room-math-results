@@ -1,0 +1,27 @@
+{
+  "compiler": "Tectonic 0.17.0",
+  "untrusted_mode": true,
+  "files": [
+    {
+      "source": "Erdos271_Weighted_Covering_Review_v2.7.tex",
+      "source_sha256": "c4b5cbb57a1967a8c8ee454693dd1374192b9fd7de581811ce37ec3530a8242a",
+      "pdf": "Erdos271_Weighted_Covering_Review_v2.7.pdf",
+      "pdf_sha256": "cfbc15261eec032bb7ab66b9bd82df4054ab886525cab89b30fbeb29c21923f4",
+      "pdf_bytes": 125724,
+      "exit_code": 0,
+      "pages": 11
+    },
+    {
+      "source": "Erdos271_Verification_Supplement_v1.3.tex",
+      "source_sha256": "ae16798c90d4ad32d0dc9095bf4f840f0a552cebcbdb0a8ccba06f5d910b07cd",
+      "pdf": "Erdos271_Verification_Supplement_v1.3.pdf",
+      "pdf_sha256": "484259a91890dd68b992ad099acbecd209be795e10d3020acdd098ac540200c1",
+      "pdf_bytes": 79725,
+      "exit_code": 0,
+      "pages": 7
+    }
+  ],
+  "edition": "Rev7 finishing update, 2026-11-01",
+  "command": "tectonic --untrusted --keep-logs --outdir output DOCUMENT.tex",
+  "validation": "All 18 pages rendered and visually inspected. No overfull-box, undefined-reference, or missing-character warnings. Underfull-box warnings remain in dense provenance text. PDF author metadata is blank and no private path is embedded."
+}
